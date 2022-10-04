@@ -34,6 +34,7 @@ public class ArrayVector {
          * @param axis Axis of rotation
          */
         public MatrixRotation(Double rot, String axis){
+            this.rot = rot;
             switch (axis){
                 case "Z":
                     matrix = new Double[][]{
@@ -70,6 +71,14 @@ public class ArrayVector {
             Double z = (vector[0] * matrix[0][2]) + (vector[1] * matrix[1][2]) + (vector[2] * matrix[2][2]) + (w * matrix[3][2]);
 
             return new Double[] {x, y, z};
+        }
+
+        /**
+         * Return the rotation angle in degrees
+         * @return rotation angle of the matrix in degrees
+         */
+        public Double getRot() {
+            return Math.toDegrees(rot);
         }
     }
 }

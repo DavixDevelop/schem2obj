@@ -2,16 +2,14 @@ package com.davixdevelop.schem2obj.wavefront;
 
 import com.davixdevelop.schem2obj.blockmodels.BlockModel;
 import com.davixdevelop.schem2obj.blockmodels.CubeElement;
+import com.davixdevelop.schem2obj.models.Hashed3KeyList;
 import com.davixdevelop.schem2obj.namespace.Namespace;
 import com.davixdevelop.schem2obj.utilities.ArrayVector;
 import com.davixdevelop.schem2obj.wavefront.material.IMaterial;
 import com.davixdevelop.schem2obj.wavefront.material.Material;
 
 import java.io.PrintWriter;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public class WavefrontUtility {
 
@@ -132,28 +130,50 @@ public class WavefrontUtility {
             //Calculate the origin of the UV face
             Double[] faceOrigin = getUVFaceOrigin(UVFace);
 
-            //Set the rotation matrix in the axis Z
-            ArrayVector.MatrixRotation uvRotation = new ArrayVector.MatrixRotation(Math.toRadians(face.getRotation()),"Z");
-            for(int c = 0; c < UVFace.size(); c++){
-                Double[] uv = UVFace.get(c);
-                //Rotate the uv with rotatePoint by construction in vector that has an z value of 0
-                Double[] new_uv = rotatePoint(new Double[] {uv[0], uv[1], 0.0}, uvRotation, faceOrigin);
-                uv[0] = new_uv[0];
-                uv[1] = new_uv[1];
-                //Set back the uv to the UVFace
-                UVFace.set(c, uv);
-            }
+            UVFace = rotateUV(UVFace, face.getRotation(), faceOrigin);
+
         }
 
         return UVFace;
     }
 
-    private static Double[] getUVFaceOrigin(ArrayList<Double[]> UVFace){
-        Double x1 = null;
-        Double x2 = null;
-        Double y1 = null;
-        Double y2 = null;
+    public static ArrayList<Double[]> rotateUV(ArrayList<Double[]> uvs, Double angle, Double[] rotationOrigin){
+        //Set the rotation matrix in the axis Z
+        ArrayVector.MatrixRotation uvRotation = new ArrayVector.MatrixRotation(Math.toRadians(angle),"Z");
+        for(int c = 0; c < uvs.size(); c++){
+            Double[] uv = uvs.get(c);
+            //Rotate the uv with rotatePoint by construction in vector that has an z value of 0
+            Double[] new_uv = rotatePoint(new Double[] {uv[0], uv[1], 0.0}, uvRotation, rotationOrigin);
+            uv[0] = (double) Math.round(new_uv[0]);
+            uv[1] = (double) Math.round(new_uv[1]);
+            //Set back the uv to the UVFace
+            uvs.set(c, uv);
+        }
 
+        return uvs;
+    }
+
+    public static ArrayList<Double[]> offsetUV(ArrayList<Double[]> uvs, Double x, Double y){
+        for(int c = 0; c < uvs.size(); c++ ){
+            Double[] uv = uvs.get(c);
+            if(x > 0.0)
+                uv[0] = uv[0] - x;
+            if(y > 0.0)
+                uv[1] = uv[1] - y;
+
+            uvs.set(c, uv);
+        }
+
+        return uvs;
+    }
+
+    private static Double[] getUVFaceOrigin(ArrayList<Double[]> UVFace){
+        Double x1 = UVFace.stream().min(Comparator.comparing(v -> v[0])).get()[0]; //Min x
+        Double x2 = UVFace.stream().max(Comparator.comparing(v -> v[0])).get()[0]; //Max x
+        Double y1 = UVFace.stream().min(Comparator.comparing(v -> v[1])).get()[1]; //Min y
+        Double y2 = UVFace.stream().max(Comparator.comparing(v -> v[1])).get()[1]; //Max y
+
+        /*
         for(Double[] uv : UVFace){
             if(x1 == null){
                 x1 = uv[0];
@@ -171,7 +191,7 @@ public class WavefrontUtility {
                 if(uv[1] > y2)
                     y2 = uv[1];
             }
-        }
+        }*/
 
         return new Double[] {(x1 + x2) / 2, (y1 + y2) / 2, 0.0};
     }
@@ -317,7 +337,88 @@ public class WavefrontUtility {
         point = rotation.rotate(point, 1.0);
 
         //Add the rotated point and block origin, so that the origin become 0.5, 0.5, 0.5 again
-        return ArrayVector.add(point, origin);
+        point = ArrayVector.add(point, origin);
+
+        for(int c = 0; c < point.length; c++)
+            point[c] = (double) Math.round(point[c]);
+
+        return point;
+    }
+
+    public static ArrayList<Double[]> getFaceVertices(Hashed3KeyList<Double> vertices, ArrayList<Integer[]> face){
+        ArrayList<Double[]> faceVertices = new ArrayList<>();
+        for(Integer[] faceIndices : face){
+             faceVertices.add(vertices.get(faceIndices[0]));
+        }
+
+        return faceVertices;
+    }
+
+    public static String coordOrientationToOrientation(List<Integer> coord){
+
+        if(coord.get(2) == 1)
+            return "up";
+        else if(coord.get(2) == -1)
+            return "down";
+        else if(coord.get(1) == 1)
+            return "north";
+        else if(coord.get(1) == -1)
+            return "south";
+        else if(coord.get(0) == -1)
+            return "west";
+        else if(coord.get(0) == 1)
+            return "east";
+
+        return null;
+    }
+
+    public static List<Integer> orientationToCoords(String orientation){
+        List<Integer> list = new ArrayList<>();
+        list.add(0);
+        list.add(0);
+        list.add(0);
+
+        switch (orientation){
+            case "up":
+                list.set(2,1);
+                break;
+            case "down":
+                list.set(2,-1);
+                break;
+            case "north":
+                list.set(1,1);
+                break;
+            case "south":
+                list.set(1,-1);
+                break;
+            case "east":
+                list.set(0,1);
+                break;
+            case "west":
+                list.set(0,-1);
+        }
+
+        return list;
+    }
+
+    /**
+     * Check if two objects bounding boxes are connected on face1 and face2
+     * @param objectBoundingBox The object bounding box faces
+     * @param parentObject The parent object to check
+     * @param face1 //The name of the face on the object to check
+     * @param face2 //The name of the face on the parent object to check
+     * @return True if the two faces are connected, else false
+     */
+    public static boolean checkFaceing(Set<String> objectBoundingBox, IWavefrontObject parentObject, String face1, String face2){
+        if(parentObject == null)
+            return false;
+
+        if(objectBoundingBox.contains(face1)){
+            Set<String> parentObjectBoundingBox = parentObject.getBoundingFaces().keySet();
+            if(parentObjectBoundingBox.contains(face2))
+                return true;
+        }
+        return false;
     }
 
     public static void writeObjectData(IWavefrontObject object, PrintWriter f){
@@ -352,6 +453,9 @@ public class WavefrontUtility {
             ArrayList<ArrayList<Integer[]>> faces = materialFaces.get(materialName);
             //Write all faces
             for (ArrayList<Integer[]> face : faces) {
+                if(face == null)
+                    continue;
+
                 String faceEntry = "f";
                 for (int x = face.size() - 1; x >= 0; x--) {
                     Integer[] indices = face.get(x);

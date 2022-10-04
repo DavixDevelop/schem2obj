@@ -1,6 +1,7 @@
 package com.davixdevelop.schem2obj.wavefront;
 
 import com.davixdevelop.schem2obj.blockmodels.BlockModelCollection;
+import com.davixdevelop.schem2obj.blockstates.BlockState;
 import com.davixdevelop.schem2obj.blockstates.BlockStateCollection;
 import com.davixdevelop.schem2obj.namespace.Namespace;
 import com.davixdevelop.schem2obj.wavefront.material.MaterialCollection;
@@ -27,7 +28,12 @@ public class WavefrontCollection {
 
             block.fromNamespace(blockNamespace);
 
-            wavefrontObjecs.put(blockNamespace, block);
+            //Get the BlockState for the block
+            BlockState blockState = WavefrontCollection.BLOCKS_STATES.getBlockState(blockNamespace);
+            //Only store object in memory if to does not have random variants (multiple variants in "variants" field)
+            //If it does recreate it every time
+            if(!blockState.isRandomVariants())
+                wavefrontObjecs.put(blockNamespace, block);
 
             return block;
 

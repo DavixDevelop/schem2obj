@@ -77,4 +77,13 @@ public class ArrayUtility {
 
         return new Object[] {pair1, pair2};
     }
+
+    public static boolean arrayContainsOnlyNullElement(Iterable<?> list){
+        for(Object obj : list){
+            if(obj != null)
+                return false;
+        }
+
+        return true;
+    }
 }

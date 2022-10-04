@@ -167,7 +167,7 @@ public class SEUSMaterial extends Material {
             if(!hasSpec)
                 matLines.add(String.format("map_Ke /%s/%s.png", textureFolderName, getTextureName()));
             else
-                matLines.add(String.format("map_Ke /%s/%s_r.png", textureFolderName, WavefrontUtility.textureName(specularTexture).replace("_s","")));
+                matLines.add(String.format("map_Ke /%s/%s_e.png", textureFolderName, WavefrontUtility.textureName(specularTexture).replace("_s","")));
         }
 
         //If material has normal define it

@@ -21,14 +21,20 @@ public class BlockState {
     private HashMap<Object, Integer[]> variantMultiKeys;
 
     private Boolean multiPart;
+    private Boolean randomVariants;
 
     //List of variants
     private List<Variant> variants;
 
-    public BlockState(List<Variant> variants, HashMap<Object, Integer[]> variantMultiKeys, Boolean multiPart){
+    public BlockState(List<Variant> variants, HashMap<Object, Integer[]> variantMultiKeys, Boolean multiPart, Boolean randomVariants){
         this.variants = variants;
         this.variantMultiKeys = variantMultiKeys;
         this.multiPart = multiPart;
+        this.randomVariants = randomVariants;
+    }
+
+    public Boolean isRandomVariants() {
+        return randomVariants;
     }
 
     public static BlockState readFromJson(InputStream jsonInputStream){
@@ -41,6 +47,8 @@ public class BlockState {
 
         List<Variant> variants = new ArrayList<>();
         HashMap<Object, Integer[]> variantMultiKeys = new HashMap<>();
+
+        Boolean randomVariants = false;
 
         //Check if BlockState contains variants
         if(rawModel.variants != null){
@@ -55,6 +63,8 @@ public class BlockState {
                 Object rawPropValue = rawVariants.get(rawProps);
                 //Check if variant contains multiple models (applies)
                 if(rawPropValue instanceof List){
+                    randomVariants = true;
+
                     //Convert rawPropValue (List) back to JSON
                     JsonElement jsonVariants = gson.toJsonTree(rawPropValue);
                     //Deserialize jsonVariants back to ArrayList<BlockStateTemplate.Apply>
@@ -170,11 +180,11 @@ public class BlockState {
         }
 
 
-        return new BlockState(variants, variantMultiKeys, rawModel.multipart != null);
+        return new BlockState(variants, variantMultiKeys, rawModel.multipart != null, randomVariants);
     }
 
     public static Variant ApplyToVariant(BlockStateTemplate.Apply apply){
-        return new Variant(apply.model, (apply.x != null) ? apply.x.doubleValue() : null, (apply.y != null) ? apply.y.doubleValue() : null, apply.uvlock, (apply.weight != null) ? apply.weight.intValue() : 1);
+        return new Variant(apply.model, (apply.x != null) ? apply.x.doubleValue() : null, (apply.y != null) ? apply.y.doubleValue() : null, (apply.uvlock != null) ? apply.uvlock : false, (apply.weight != null) ? apply.weight.intValue() : 1);
     }
 
     public ArrayList<Variant> getVariants(Namespace blockNamespace){
@@ -392,6 +402,10 @@ public class BlockState {
 
         public Integer getWeight() {
             return weight;
+        }
+
+        public Boolean getUvlock() {
+            return uvlock;
         }
     }
 

@@ -13,7 +13,6 @@ import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.text.NumberFormat;
 import java.util.*;
 
 public class SchemeToObj {
@@ -27,6 +26,8 @@ public class SchemeToObj {
         //ToDo: Add support for one or more texture packs
         ArrayList<String> texture_pack_path = new ArrayList<>();
         String output_path = null;
+
+        boolean exportAllBlock = false;
 
         String rootFolder = Paths.get(".").toAbsolutePath().normalize().toString();
 
@@ -111,12 +112,22 @@ public class SchemeToObj {
                 }
             }else
                 return;
+
+            //Read additional parameters (ex -allBlocks)
+            if(nextArgIndex + 2 < arg.length){
+                nextArgIndex += 2;
+                while (nextArgIndex < arg.length){
+                    if(arg[nextArgIndex].equals("-allBlocks"))
+                        exportAllBlock = true;
+                    nextArgIndex += 1;
+                }
+            }
         }else
             System.console().writer().println("Add arguments (-i <input schematic file> -t <path to resource pack> -o <output OBJ file>)");
 
         SchemeToObj s = new SchemeToObj();
 
-        ArrayList<IWavefrontObject> objects = s.schemToObj(schem_path);
+        ArrayList<IWavefrontObject> objects = s.schemToObj(schem_path, exportAllBlock);
 
         if(objects.isEmpty()){
             Utility.Log("Failed to convert schematic to OBJ");
@@ -134,7 +145,7 @@ public class SchemeToObj {
 
     }
 
-    public ArrayList<IWavefrontObject> schemToObj(String schemPath){
+    public ArrayList<IWavefrontObject> schemToObj(String schemPath, boolean exportAllBlocks){
         Schematic schematic = null;
 
         try {
@@ -152,37 +163,108 @@ public class SchemeToObj {
             return null;
         }
 
+        //The final blocks to export
         ArrayList<IWavefrontObject> blocks = new ArrayList<>();
+        //All blocks (including air -> null)
+        HashMap<Integer,IWavefrontObject> allBlocks = new HashMap<>();
 
         Integer width = Integer.valueOf(schematic.getWidth());
         Integer length = Integer.valueOf(schematic.getLength());
         Integer height = Integer.valueOf(schematic.getHeight());
 
-        for(int x = 0; x < width; x++){
-            for(int y = 0; y < height; y++){
-                for(int z = 0; z < schematic.getLength(); z++){
+        for (int x = 0; x < width; x++)  {
+            for (int y = 0; y < height; y++) {
+                for(int z = 0; z < length; z++) {
                     final int index = x + (y * length + z) * width;
 
                     int blockID = schematic.getBlocks()[index];
-                    //Ignore air
-                    if(blockID == 0)
-                        continue;
+
+                    //If block is air and individual blocks is disabled, ignore air
+                    //Else add a empty object to all blocks
+                    if (blockID == 0)
+                        if (exportAllBlocks)
+                            continue;
+                        else{
+                            allBlocks.put(index, null);
+                            continue;
+                        }
 
                     int meta = schematic.getData()[index];
 
                     Namespace blockNamespace = BLOCK_MAPPING.getBlockNamespace(blockID + ":" + meta);
 
                     //ToDo: Write custom blocks (ex, Water, Chest, Sign, Wall Sign...). Until then, ignore these blocks
-                    if(blockNamespace.getDomain().equals("builtin"))
-                        continue;
+                    if (blockNamespace.getDomain().equals("builtin"))
+                        if (exportAllBlocks)
+                            continue;
+                        else {
+                            allBlocks.put(index, null);
+                            continue;
+                        }
 
                     //Get  singleton wavefrontBlock from memory
                     IWavefrontObject wavefrontObject = WAVEFRONT_COLLECTION.fromNamespace(blockNamespace);
 
                     //Translate the singleton block to the position of the block in the space
-                    wavefrontObject = WavefrontUtility.translateWavefrontBlock(wavefrontObject, new Integer[]{ x, z, y}, new Integer[] {Integer.valueOf(schematic.getWidth()), Integer.valueOf(schematic.getLength()), Integer.valueOf(schematic.getHeight())});
+                    wavefrontObject = WavefrontUtility.translateWavefrontBlock(wavefrontObject, new Integer[]{x, z, y}, new Integer[]{Integer.valueOf(schematic.getWidth()), Integer.valueOf(schematic.getLength()), Integer.valueOf(schematic.getHeight())});
 
-                    blocks.add(wavefrontObject);
+                    if (exportAllBlocks)
+                        blocks.add(wavefrontObject);
+                    else
+                        allBlocks.put(index, wavefrontObject);
+
+                }
+            }
+        }
+
+        if(!exportAllBlocks){
+            //If exportAllBlocks all blocks is false, loop through allBlocks from bottom to top and delete hidden faces
+            for (int y = 0; y < height; y++){
+                for (int x = 0; x < width; x++){
+                    for(int z = 0; z < length; z++) {
+                        final int index = x + (y * length + z) * width;
+                        final IWavefrontObject object = allBlocks.get(index);
+                        if(object != null){
+                            final Set<String> objectBoundingFaces = object.getBoundingFaces().keySet();
+
+                            //West block check
+                            if(x > 0)
+                                if(WavefrontUtility.checkFaceing(objectBoundingFaces, allBlocks.get((x - 1) + (y * length + z) * width), "west", "east"))
+                                    object.deleteFaces("west");
+
+
+                            //East block check
+                            if(x + 1 < width)
+                                if(WavefrontUtility.checkFaceing(objectBoundingFaces, allBlocks.get((x + 1) + (y* length + z) * width), "east", "west"))
+                                    object.deleteFaces("east");
+
+
+                            //North block check
+                            if(z > 0)
+                                if(WavefrontUtility.checkFaceing(objectBoundingFaces, allBlocks.get(x + (y * length + (z - 1)) * width), "north", "south"))
+                                    object.deleteFaces("north");
+
+
+                            //South block check
+                            if(z + 1 < length)
+                                if(WavefrontUtility.checkFaceing(objectBoundingFaces, allBlocks.get(x + (y * length + (z + 1)) * width), "south", "north"))
+                                    object.deleteFaces("south");
+
+
+                            //Up block check
+                            if(y + 1 < height)
+                                if(WavefrontUtility.checkFaceing(objectBoundingFaces, allBlocks.get(x + ((y + 1) * length + z) * width), "up", "down"))
+                                    object.deleteFaces("up");
+
+
+                            //Down block check
+                            if(y > 0)
+                                if(WavefrontUtility.checkFaceing(objectBoundingFaces, allBlocks.get(x + ((y - 1) * length + z) * width), "down", "up"))
+                                    object.deleteFaces("down");
+
+                            blocks.add(object);
+                        }
+                    }
                 }
             }
         }
@@ -196,8 +278,6 @@ public class SchemeToObj {
     public boolean writeObjToFile(ArrayList<IWavefrontObject> objects, String outputPath){
         Path output_path = Paths.get(outputPath);
 
-        NumberFormat format = NumberFormat.getInstance();
-
         String fileName = output_path.toFile().getName().replace(".obj","");
         try{
             OutputStream outputStream = new FileOutputStream(output_path.toFile().getAbsolutePath());
@@ -208,8 +288,10 @@ public class SchemeToObj {
             //Specify which material library to use
             f.println(String.format("mtllib %s.mtl", fileName));
 
-            for(IWavefrontObject object : objects)
-                WavefrontUtility.writeObjectData(object, f);
+            for(IWavefrontObject object : objects){
+                if(!object.getMaterialFaces().isEmpty())
+                    WavefrontUtility.writeObjectData(object, f);
+            }
 
             //Flush and close output stream
             f.flush();
