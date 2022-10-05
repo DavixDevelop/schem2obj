@@ -6,6 +6,8 @@ import java.awt.image.BufferedImage;
 import java.io.*;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.HashSet;
+import java.util.Set;
 
 public class ImageUtility {
     public static boolean copyImageToFile(InputStream imageStream, String filePath){
@@ -111,5 +113,75 @@ public class ImageUtility {
             return null;
         }
 
+    }
+
+    public static BufferedImage colorImage(InputStream image, int color){
+        Color overlayColor = new Color(color);
+        try {
+            BufferedImage bufferedImage = ImageIO.read(image);
+            BufferedImage coloredImage = new BufferedImage(bufferedImage.getWidth(), bufferedImage.getHeight(), bufferedImage.getType());
+
+            boolean hasAlpha = bufferedImage.getTransparency() == 3;
+
+            for(int x = 0; x < bufferedImage.getWidth(); x++){
+                for(int y = 0; y < bufferedImage.getHeight(); y++){
+                    int c = bufferedImage.getRGB(x, y);
+                    Color rgb = new Color(c, hasAlpha);
+
+                    if(rgb.getAlpha() != 0){
+                        int luminosity = RGBtoLuminosity(rgb);
+
+                        rgb = new Color(Math.abs(overlayColor.getRed() - luminosity), Math.abs(overlayColor.getGreen() - luminosity), Math.abs(overlayColor.getBlue() - luminosity), rgb.getAlpha());
+
+                    }
+                    coloredImage.setRGB(x, y, rgb.getRGB());
+                }
+            }
+
+            return coloredImage;
+
+        }catch (Exception ex){
+            Utility.Log("Failed to read input image");
+            Utility.Log(ex.getMessage());
+            return null;
+        }
+    }
+
+    public static BufferedImage colorAndCombineImages(InputStream image, BufferedImage overlay){
+        try{
+            BufferedImage orgImage = ImageIO.read(image);
+            boolean hasAlpha = overlay.getTransparency() == 3;
+            BufferedImage combinedImage = new BufferedImage(orgImage.getWidth(), orgImage.getHeight(), orgImage.getType());
+
+            for(int x = 0; x < orgImage.getWidth(); x++){
+                for(int y = 0; y < orgImage.getHeight(); y++){
+                    final int color1 = orgImage.getRGB(x, y);
+                    final int x1 = (x * overlay.getWidth()) / orgImage.getWidth();
+                    final int y1 = (y * overlay.getHeight()) / orgImage.getHeight();
+                    final int color2 = overlay.getRGB(x1, y1);
+
+                    Color orginalColor = new Color(color1);
+                    Color overlayColor = new Color(color2, hasAlpha);
+                    if(overlayColor.getAlpha() != 0){
+                        int luminosity = RGBtoLuminosity(orginalColor);
+
+                        orginalColor = new Color(Math.abs(overlayColor.getRed() - luminosity), Math.abs(overlayColor.getGreen() - luminosity), Math.abs(overlayColor.getBlue() - luminosity), orginalColor.getAlpha());
+                    }
+
+                    combinedImage.setRGB(x, y, orginalColor.getRGB());
+                }
+            }
+
+            return combinedImage;
+
+        }catch (Exception ex){
+            Utility.Log("Failed to combine images");
+            Utility.Log(ex.getMessage());
+            return null;
+        }
+    }
+
+    private static int RGBtoLuminosity(Color rgba){
+        return (int) Math.round(100 * (((0.299*rgba.getRed()) + (0.587* rgba.getGreen()) + (0.114 * rgba.getBlue())) / 255));
     }
 }

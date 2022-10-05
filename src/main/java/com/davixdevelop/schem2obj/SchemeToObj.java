@@ -16,10 +16,6 @@ import java.nio.file.Paths;
 import java.util.*;
 
 public class SchemeToObj {
-
-    public static final WavefrontCollection WAVEFRONT_COLLECTION = new WavefrontCollection();
-    public static final BlockMapping BLOCK_MAPPING = new BlockMapping();
-
     public static void main(String[] arg) {
 
         String schem_path = null;
@@ -75,7 +71,7 @@ public class SchemeToObj {
                                 reader.close();
 
                                 if(packMetaJson.pack.pack_format.intValue() == 3) {
-                                    WavefrontCollection.BLOCK_MATERIALS.registerTexturePack(format, resourcePath);
+                                    Constants.BLOCK_MATERIALS.registerTexturePack(format, resourcePath);
                                 }else
                                     Utility.Log(String.format("Incompatible resource pack (Pack format: %d). Using built resource pack instead",packMetaJson.pack.pack_format.intValue()));
                             }catch (Exception ex){
@@ -189,7 +185,7 @@ public class SchemeToObj {
 
                     int meta = schematic.getData()[index];
 
-                    Namespace blockNamespace = BLOCK_MAPPING.getBlockNamespace(blockID + ":" + meta);
+                    Namespace blockNamespace = Constants.BLOCK_MAPPING.getBlockNamespace(blockID + ":" + meta);
 
                     //ToDo: Write custom blocks (ex, Water, Chest, Sign, Wall Sign...). Until then, ignore these blocks
                     if (blockNamespace.getDomain().equals("builtin"))
@@ -201,7 +197,7 @@ public class SchemeToObj {
                         }
 
                     //Get  singleton wavefrontBlock from memory
-                    IWavefrontObject wavefrontObject = WAVEFRONT_COLLECTION.fromNamespace(blockNamespace);
+                    IWavefrontObject wavefrontObject = Constants.WAVEFRONT_COLLECTION.fromNamespace(blockNamespace);
 
                     //Translate the singleton block to the position of the block in the space
                     wavefrontObject = WavefrontUtility.translateWavefrontBlock(wavefrontObject, new Integer[]{x, z, y}, new Integer[]{Integer.valueOf(schematic.getWidth()), Integer.valueOf(schematic.getLength()), Integer.valueOf(schematic.getHeight())});
@@ -323,8 +319,8 @@ public class SchemeToObj {
             //Texture path is the same folder as the output path in the folder of the same name as the object file
             String textureFileOutPath = Paths.get(output_path.toFile().getParent(), fileName).toFile().toString();
 
-            for(String materialName : WavefrontCollection.BLOCK_MATERIALS.usedMaterials()){
-                IMaterial material = WavefrontCollection.BLOCK_MATERIALS.getMaterial(materialName);
+            for(String materialName : Constants.BLOCK_MATERIALS.usedMaterials()){
+                IMaterial material = Constants.BLOCK_MATERIALS.getMaterial(materialName);
 
                 //Get the material lines
                 ArrayList<String> materialLines = material.toMat(textureFileOutPath);

@@ -65,7 +65,7 @@ public class WavefrontObject implements IWavefrontObject {
     }
 
     @Override
-    public void fromNamespace(Namespace blockNamespace) { }
+    public boolean fromNamespace(Namespace blockNamespace) { return false; }
 
     @Override
     public HashMap<String, HashMap<String, ArrayList<Integer>>> getBoundingFaces() {

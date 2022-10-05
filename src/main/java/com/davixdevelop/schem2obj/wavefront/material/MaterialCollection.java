@@ -10,10 +10,11 @@ import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.regex.MatchResult;
 import java.util.regex.Matcher;
 
 public class MaterialCollection {
-    private HashMap<String, IMaterial> materials;
+    private HashMap<String, Material> materials;
     private Set<String> usedMaterials;
 
     public MaterialCollection(){
@@ -21,11 +22,11 @@ public class MaterialCollection {
         usedMaterials = new HashSet<>();
     }
 
-    public IMaterial getMaterial(String name){
+    public Material getMaterial(String name){
         return materials.get(name);
     }
 
-    public void setMaterial(String name, IMaterial material){
+    public void setMaterial(String name, Material material){
         materials.put(name, material);
         usedMaterials.add(name);
     }
@@ -68,12 +69,13 @@ public class MaterialCollection {
                 if(matcher.find()){
                     String textureName = matcher.group(1);
 
+
                     String materialName = String.format("%s/%s",textureFolderName,textureName);
                     //Check if material (texture folder + / + texture name, example blocks/grass)
                     //Is not already in memory
                     if(!containsMaterial(materialName)){
                         //Create material depending on the format (SEUS, Specular, Vanilla)
-                        IMaterial material = null;
+                        Material material = null;
 
                         switch (format){
                             case "SEUS":

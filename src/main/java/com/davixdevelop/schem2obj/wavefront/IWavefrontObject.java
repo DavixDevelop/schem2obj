@@ -16,9 +16,11 @@ public interface IWavefrontObject {
 
     /**
      * Generate wavefront object from block namespace
-     * @param blockNamespace
+     * Return true to store block in memory or not
+     * @param blockNamespace The namespace of the block
+     * @return true to store in memory, else not
      */
-    void fromNamespace(Namespace blockNamespace);
+    boolean fromNamespace(Namespace blockNamespace);
 
     /**
      * Get the bounding face of the object (the faces that are connected with other objects)

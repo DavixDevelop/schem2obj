@@ -1,5 +1,6 @@
 package com.davixdevelop.schem2obj.wavefront;
 
+import com.davixdevelop.schem2obj.Constants;
 import com.davixdevelop.schem2obj.blockmodels.BlockModel;
 import com.davixdevelop.schem2obj.blockmodels.CubeElement;
 import com.davixdevelop.schem2obj.namespace.Namespace;
@@ -11,9 +12,6 @@ import java.io.PrintWriter;
 import java.util.*;
 
 public class WavefrontUtility {
-
-    public static final Double[] BLOCK_ORIGIN = new Double[] {0.5,0.5,0.5};
-
     /**
      * Extract default materials from models and return a map with texture variables
      * and names of the material
@@ -35,13 +33,13 @@ public class WavefrontUtility {
 
                     String materialName = value;
 
-                    if (WavefrontCollection.BLOCK_MATERIALS.containsMaterial(materialName)) {
-                        if(!WavefrontCollection.BLOCK_MATERIALS.usedMaterials().contains(materialName)){
+                    if (Constants.BLOCK_MATERIALS.containsMaterial(materialName)) {
+                        if(!Constants.BLOCK_MATERIALS.usedMaterials().contains(materialName)){
                             //If material isn't yet used, but It's in BLOCK_MATERIALS collection, it means It's a custom material, added from a resource pack
                             //Modify the material to include the lightValue of the block
-                            IMaterial material = WavefrontCollection.BLOCK_MATERIALS.getMaterial(materialName);
+                            Material material = Constants.BLOCK_MATERIALS.getMaterial(materialName);
                             material.setLightValue(blockNamespace.getLightValue());
-                            WavefrontCollection.BLOCK_MATERIALS.setMaterial(materialName, material);
+                            Constants.BLOCK_MATERIALS.setMaterial(materialName, material);
                         }
                         textureMaterials.put(key, materialName);
                     }else {
@@ -61,12 +59,12 @@ public class WavefrontUtility {
                             }
                         }*/
 
-                        material.setTexture(value);
-                        material.setTextureName(textureName(value));
+                        material.setDiffuseTexturePath(value);
+                        material.setDiffuseTextureName(textureName(value));
                         material.setLightValue(blockNamespace.getLightValue());
                         material.setName(materialName);
 
-                        WavefrontCollection.BLOCK_MATERIALS.setMaterial(materialName, material);
+                        Constants.BLOCK_MATERIALS.setMaterial(materialName, material);
 
                         if(!textureMaterials.containsKey(key))
                             textureMaterials.put(key, materialName);

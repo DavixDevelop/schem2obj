@@ -1,5 +1,6 @@
 package com.davixdevelop.schem2obj.wavefront;
 
+import com.davixdevelop.schem2obj.Constants;
 import com.davixdevelop.schem2obj.blockmodels.BlockModel;
 import com.davixdevelop.schem2obj.blockmodels.CubeElement;
 import com.davixdevelop.schem2obj.blockstates.BlockState;
@@ -11,17 +12,31 @@ import com.davixdevelop.schem2obj.utilities.ArrayVector;
 import java.util.*;
 
 public class BlockWavefrontObject extends WavefrontObject {
+
     @Override
-    public void fromNamespace(Namespace blockNamespace) {
+    public boolean fromNamespace(Namespace blockNamespace) {
         //Get the BlockState for the block
-        BlockState blockState = WavefrontCollection.BLOCKS_STATES.getBlockState(blockNamespace);
+        BlockState blockState = Constants.BLOCKS_STATES.getBlockState(blockNamespace);
 
         //Get the model/models the block uses based on the BlockState
-        BlockModel[] blockModels = WavefrontCollection.BLOCK_MODELS.getBlockModel(blockNamespace, blockState);
+        BlockModel[] blockModels = Constants.BLOCK_MODELS.getBlockModel(blockNamespace, blockState);
 
-        toObj(blockModels, blockState.getVariants(blockNamespace),blockNamespace);
+        ArrayList<BlockState.Variant> variants = blockState.getVariants(blockNamespace);
+
+        //If block state uses "variants" with random variants, don't store them in memory
+        boolean storeInMemory = true;
+
+        if(blockState.isRandomVariants()){
+            storeInMemory = false;
+        }
+
+        toObj(blockModels, variants,blockNamespace);
+
+        return storeInMemory;
 
     }
+
+    private HashMap<String, IWavefrontObject> RandomVariants = new HashMap<>();
 
     /**
      * Convert a block models to wavefront object.
@@ -99,7 +114,7 @@ public class BlockWavefrontObject extends WavefrontObject {
 
                         //loop through the corners (vertices) and rotate each vertex
                         for (String corner : cubeCorners.keySet())
-                            cubeCorners.put(corner, WavefrontUtility.rotatePoint(cubeCorners.get(corner), matrixRotation, (cubeRotation.getOrigin() != null) ? cubeRotation.getOrigin() : WavefrontUtility.BLOCK_ORIGIN));
+                            cubeCorners.put(corner, WavefrontUtility.rotatePoint(cubeCorners.get(corner), matrixRotation, (cubeRotation.getOrigin() != null) ? cubeRotation.getOrigin() : Constants.BLOCK_ORIGIN));
                     }
 
                     boolean uvLock = false;
@@ -127,10 +142,10 @@ public class BlockWavefrontObject extends WavefrontObject {
                                 //Loop through the cube corners and to rotate them
                                 for (String corner : cubeCorners.keySet()) {
                                     if (rotationX != null)
-                                        cubeCorners.put(corner, WavefrontUtility.rotatePoint(cubeCorners.get(corner), rotationX, WavefrontUtility.BLOCK_ORIGIN));
+                                        cubeCorners.put(corner, WavefrontUtility.rotatePoint(cubeCorners.get(corner), rotationX, Constants.BLOCK_ORIGIN));
 
                                     if (rotationY != null)
-                                        cubeCorners.put(corner, WavefrontUtility.rotatePoint(cubeCorners.get(corner), rotationY, WavefrontUtility.BLOCK_ORIGIN));
+                                        cubeCorners.put(corner, WavefrontUtility.rotatePoint(cubeCorners.get(corner), rotationY, Constants.BLOCK_ORIGIN));
                                 }
                             }
                             break;
