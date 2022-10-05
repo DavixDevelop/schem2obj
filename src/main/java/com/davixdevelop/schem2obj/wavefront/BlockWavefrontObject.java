@@ -3,8 +3,7 @@ package com.davixdevelop.schem2obj.wavefront;
 import com.davixdevelop.schem2obj.blockmodels.BlockModel;
 import com.davixdevelop.schem2obj.blockmodels.CubeElement;
 import com.davixdevelop.schem2obj.blockstates.BlockState;
-import com.davixdevelop.schem2obj.models.Hashed2KeyList;
-import com.davixdevelop.schem2obj.models.Hashed3KeyList;
+import com.davixdevelop.schem2obj.models.HashedDoubleList;
 import com.davixdevelop.schem2obj.namespace.Namespace;
 import com.davixdevelop.schem2obj.utilities.ArrayUtility;
 import com.davixdevelop.schem2obj.utilities.ArrayVector;
@@ -37,9 +36,8 @@ public class BlockWavefrontObject extends WavefrontObject {
         setName(blockNamespace.getName());
 
         //Each item is an array with the following values [vx, vy, vz, vnx, vny, vnz]
-        Hashed3KeyList<Double> verticesAndNormals = new Hashed3KeyList<>();
-        //Hashed3KeyList<Double> normals = new Hashed3KeyList<>();
-        Hashed2KeyList<Double> textureCoordinates = new Hashed2KeyList<>();
+        HashedDoubleList verticesAndNormals = new HashedDoubleList(3);
+        HashedDoubleList textureCoordinates = new HashedDoubleList(2);
         //Map of materialName and It's faces, where each face consists of an list of array indices
         //Each indice consists of the vertex index, texture coordinate index and vertex normal index
         HashMap<String, ArrayList<ArrayList<Integer[]>>> faces = new HashMap<>();
@@ -141,7 +139,7 @@ public class BlockWavefrontObject extends WavefrontObject {
 
                     //Append cube corner to object vertices and get the indexes to vertex's and normals in verticesAndNormals
                     for (String corner : cubeCorners.keySet())
-                        CornersIndex.put(corner, verticesAndNormals.add(cubeCorners.get(corner)));
+                        CornersIndex.put(corner, verticesAndNormals.put(cubeCorners.get(corner)));
 
                     //Get element faces
                     HashMap<String, CubeElement.CubeFace> elementFaces = element.getFaces();
@@ -259,7 +257,7 @@ public class BlockWavefrontObject extends WavefrontObject {
                             if (textureCoordinates.containsKey(uv[0], uv[1])) {
                                 UVIndexes[c] = textureCoordinates.getIndex(uv[0], uv[1]);
                             } else {
-                                UVIndexes[c] = textureCoordinates.add(uv);
+                                UVIndexes[c] = textureCoordinates.put(uv);
                             }
                         }
                         //Create the wavefront face out of the cube face
@@ -341,7 +339,6 @@ public class BlockWavefrontObject extends WavefrontObject {
 
                                 //Set v pair back to verticesAndNormals (to set the new normal)
                                 verticesAndNormals.update(vertexIndex, v);
-                                ;
                             }
 
                         }

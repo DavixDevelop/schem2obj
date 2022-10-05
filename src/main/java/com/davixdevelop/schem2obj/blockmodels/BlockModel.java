@@ -102,8 +102,9 @@ public class BlockModel {
                 CubeElement.CubeRotation cubeRotation = null;
 
                 //Get cube corner start position
+                //As MC uses the y axis as the z axis, swap them
                 for(int c = 0; c < element.from.size(); c++)
-                    from[c] = element.from.get(c).doubleValue();
+                    from[(c == 1) ? 2 : (c == 2) ? 1 : c] = element.from.get(c).doubleValue();
 
                 //The reason why we call flattenArray here, is to cap the values of the cube vertices to 1.0 instead of 16.0,
                 //So that the cube's are the size of 1 meter or less, rather then 16 meters
@@ -111,8 +112,9 @@ public class BlockModel {
                 from = ArrayUtility.flattenArray(from, 16);
 
                 //Get cube corner end position
+                //As MC uses the y axis as the z axis, swap them
                 for(int c = 0; c < element.to.size(); c++)
-                    to[c] = element.to.get(c).doubleValue();
+                    to[(c == 1) ? 2 : (c == 2) ? 1 : c] = element.to.get(c).doubleValue();
 
                 to = ArrayUtility.flattenArray(to, 16);
 
@@ -142,6 +144,9 @@ public class BlockModel {
                 }
 
                 if(element.faces != null){
+
+                    Double MaxUVValue = 16.0;
+
                     for(Object face : element.faces.keySet()){
                         Double[] uv = null;
                         String texture = null;
@@ -153,12 +158,13 @@ public class BlockModel {
                         if(faceValue.containsKey("uv")){
                             uv = new Double[4];
                             List<Number> rawUv = (List<Number>) faceValue.get("uv");
-                            for(int c = 0; c < rawUv.size(); c++)
+                            for(int c = 0; c < rawUv.size(); c++){
                                 uv[c] = rawUv.get(c).doubleValue();
 
-                            //The reason why we call flattenArrayHere, is to cap the values of the cube texture coords to 1.0 instead of 16.0,
-                            //So that the cube face's uv's aren't bigger than the texture bounds
-                            uv = ArrayUtility.flattenArray(uv, 16);
+                                //Find max UV Value
+                                if(uv[c] > MaxUVValue)
+                                    MaxUVValue = uv[c];
+                            }
                         }
 
                         if(faceValue.containsKey("texture"))
@@ -174,6 +180,28 @@ public class BlockModel {
                             tintindex = ((Number) faceValue.get("tintindex")).doubleValue();
 
                         cubeFaces.put((String) face, new CubeElement.CubeFace(uv, texture, cullface, rotation, tintindex));
+                    }
+
+                    if(MaxUVValue / 16 > 1.0){
+                        Integer maxVal = ((Double)(MaxUVValue / 16.0)).intValue();
+                        MaxUVValue = maxVal.doubleValue() * 16.0;
+                    }
+
+                    //Convert faces uv's from top left, bottom right to bottom left, top right that obj uses
+                    for(String face : cubeFaces.keySet()){
+                        CubeElement.CubeFace cubeFace = cubeFaces.get(face);
+                        Double[] uv = cubeFace.getUv();
+                        if(uv != null){
+                            double bottom = uv[3];
+                            double top = uv[1];
+                            uv[1] = MaxUVValue - bottom;
+                            uv[3] = MaxUVValue - top;
+
+                            //The reason why we call flattenArrayHere, is to cap the values of the cube texture coords to 1.0 instead of 16.0,
+                            //So that the cube face's uv's aren't bigger than the texture bounds
+                            uv = ArrayUtility.flattenArray(uv, MaxUVValue.intValue());
+                            cubeFace.setUv(uv);
+                        }
                     }
                 }
 

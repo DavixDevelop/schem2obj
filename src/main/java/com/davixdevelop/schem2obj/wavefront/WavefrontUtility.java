@@ -2,7 +2,6 @@ package com.davixdevelop.schem2obj.wavefront;
 
 import com.davixdevelop.schem2obj.blockmodels.BlockModel;
 import com.davixdevelop.schem2obj.blockmodels.CubeElement;
-import com.davixdevelop.schem2obj.models.Hashed3KeyList;
 import com.davixdevelop.schem2obj.namespace.Namespace;
 import com.davixdevelop.schem2obj.utilities.ArrayVector;
 import com.davixdevelop.schem2obj.wavefront.material.IMaterial;
@@ -111,18 +110,18 @@ public class WavefrontUtility {
     public static ArrayList<Double[]> setAndRotateUVFace(CubeElement.CubeFace face, Double[] from, Double[] to){
         ArrayList<Double[]> UVFace = new ArrayList<>();
         if(face.getUv() == null){
-            UVFace.add(new Double[]{from[0], to[1]}); //3
-            UVFace.add(new Double[]{from[0], from[1]}); //0
-            UVFace.add(new Double[]{to[0], from[1]}); //1
-            UVFace.add(new Double[]{to[0], to[1]}); //2
+            UVFace.add(new Double[]{from[0], to[1]}); //1
+            UVFace.add(new Double[]{from[0], from[1]}); //2
+            UVFace.add(new Double[]{to[0], from[1]}); //3
+            UVFace.add(new Double[]{to[0], to[1]}); //4
 
         }else{
             //MC face uv is a 4 item array [x1, y1, x2, y2]
             Double[] rawUV = face.getUv();
-            UVFace.add(new Double[]{rawUV[0], rawUV[1]});
-            UVFace.add(new Double[]{rawUV[2], rawUV[0]});
+            UVFace.add(new Double[]{rawUV[2], rawUV[1]});
             UVFace.add(new Double[]{rawUV[2], rawUV[3]});
             UVFace.add(new Double[]{rawUV[0], rawUV[3]});
+            UVFace.add(new Double[]{rawUV[0], rawUV[1]});
         }
 
         //Rotate uv, to simulate rotation of texture
@@ -345,15 +344,6 @@ public class WavefrontUtility {
         return point;
     }
 
-    public static ArrayList<Double[]> getFaceVertices(Hashed3KeyList<Double> vertices, ArrayList<Integer[]> face){
-        ArrayList<Double[]> faceVertices = new ArrayList<>();
-        for(Integer[] faceIndices : face){
-             faceVertices.add(vertices.get(faceIndices[0]));
-        }
-
-        return faceVertices;
-    }
-
     public static String coordOrientationToOrientation(List<Integer> coord){
 
         if(coord.get(2) == 1)
@@ -462,10 +452,7 @@ public class WavefrontUtility {
                     //Format: vert index/texture coordinate/vert normal index
                     //Each index is negative, so it uses the the newest added vertices...
                     //Example, and index of -1 uses the last added vertex
-                    //As the vertices/uv/normals list and faces are order in the same way (from 0 on forward), to get index to the last added
-                    //vertex's, we need to decrease the indices index of v and vn by 8 (8 vertex in a cube),
-                    // and we need to increase vt index by 1 and multiply it by -1
-                    faceEntry += String.format(" %d/%d/%d", indices[0] - 8, (indices[1] + 1) * -1, indices[2] - 8);
+                    faceEntry += String.format(" %d/%d/%d", indices[0] - vertices.size(), indices[1] - uvs.size(), indices[2] - vertNormals.size());
                 }
                 f.println(faceEntry);
             }

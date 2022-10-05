@@ -23,8 +23,6 @@ public class SchemeToObj {
     public static void main(String[] arg) {
 
         String schem_path = null;
-        //ToDo: Add support for one or more texture packs
-        ArrayList<String> texture_pack_path = new ArrayList<>();
         String output_path = null;
 
         boolean exportAllBlock = false;
@@ -335,7 +333,7 @@ public class SchemeToObj {
                 for(String line : materialLines)
                     f.println(line);
 
-                //If material is lit and it emmits light, set the material name to lit_ + material name
+                //If material is lit and it emits light, set the material name to lit_ + material name
                 /*if(material.isLit() || material.getLightValue() > 0.0)
                     materialName = "lit_" + materialName;*/
             }
