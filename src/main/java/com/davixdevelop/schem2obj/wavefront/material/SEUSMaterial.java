@@ -19,7 +19,6 @@ import java.util.ArrayList;
 public class SEUSMaterial extends Material {
     private String resourcePath;
 
-    private String diffuseTexture;
     private String normalsTexture;
     private String specularTexture;
 
@@ -49,6 +48,8 @@ public class SEUSMaterial extends Material {
             specularTexture = Paths.get(textureParentFolderName, String.format("%s_s", getDiffuseTextureName())).toString();
 
     }
+
+    public SEUSMaterial(){}
 
     @Override
     public InputStream getDiffuseImage() {
@@ -160,25 +161,47 @@ public class SEUSMaterial extends Material {
         if(getLightValue() > 0.0){
             matLines.add(String.format("Ke %f %f %f",getLightValue() / 16, getLightValue() / 16, getLightValue() / 16));
         }
-        matLines.add(String.format("map_Kd -boost %f /%s/%s.png", 1.0, textureFolderName, getDiffuseTextureName()));
+        matLines.add(String.format("map_Ka %s/%s.png", textureFolderName, getDiffuseTextureName()));
+        matLines.add("interpolateMode NEAREST_MAGNIFICATION_TRILINEAR_MIPMAP_MINIFICATION");
+        matLines.add(String.format("map_Kd %s/%s.png", textureFolderName, getDiffuseTextureName()));
+        if(getName().contains("glass") || getName().contains("leaves"))
+            matLines.add(String.format("map_d %s/%s.png", textureFolderName, getDiffuseTextureName()));
         if(getLightValue() > 0.0){
             if(!hasSpec)
-                matLines.add(String.format("map_Ke /%s/%s.png", textureFolderName, getDiffuseTextureName()));
+                matLines.add(String.format("map_Ke %s/%s.png", textureFolderName, getDiffuseTextureName()));
             else
-                matLines.add(String.format("map_Ke /%s/%s_e.png", textureFolderName, WavefrontUtility.textureName(specularTexture).replace("_s","")));
+                matLines.add(String.format("map_Ke %s/%s_e.png", textureFolderName, WavefrontUtility.textureName(specularTexture).replace("_s","")));
         }
 
         //If material has normal define it
         if(hasNormal){
-            matLines.add(String.format("map_bump -bm 1.0 /%s/%s.png", textureFolderName, WavefrontUtility.textureName(normalsTexture)));
+            matLines.add(String.format("map_bump -bm 1.0 %s/%s.png", textureFolderName, WavefrontUtility.textureName(normalsTexture)));
         }
 
         if(hasSpec){
-            matLines.add(String.format("map_Pr /%s/%s_r.png", textureFolderName, WavefrontUtility.textureName(specularTexture).replace("_s","")));
-            matLines.add(String.format("map_Pm /%s/%s_m.png", textureFolderName, WavefrontUtility.textureName(specularTexture).replace("_s","")));
+            matLines.add(String.format("map_Pr %s/%s_r.png", textureFolderName, WavefrontUtility.textureName(specularTexture).replace("_s","")));
+            matLines.add(String.format("map_Pm %s/%s_m.png", textureFolderName, WavefrontUtility.textureName(specularTexture).replace("_s","")));
         }
 
 
         return matLines;
+    }
+
+    @Override
+    public IMaterial clone() {
+        SEUSMaterial seusMaterial = new SEUSMaterial();
+        seusMaterial.copy(this);
+
+        return seusMaterial;
+    }
+
+    @Override
+    public void copy(IMaterial clone) {
+        super.copy(clone);
+        SEUSMaterial seusCopy = (SEUSMaterial)clone;
+        customDiffuse = seusCopy.customDiffuse;
+        resourcePath = seusCopy.resourcePath;
+        normalsTexture = seusCopy.normalsTexture;
+        specularTexture = seusCopy.specularTexture;
     }
 }

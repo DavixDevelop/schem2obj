@@ -11,7 +11,7 @@ import java.util.ArrayList;
 /**Default Material that only uses the defuse texture
  * @author DavixDevelop
  */
-public class Material implements IMaterial, Cloneable {
+public class Material implements IMaterial {
     private String diffuseTextureName;
     private String diffuseTexturePath;
     private double lightValue;
@@ -101,9 +101,13 @@ public class Material implements IMaterial, Cloneable {
         if(getLightValue() > 0.0){
             matLines.add(String.format("Ke %f %f %f",getLightValue(), getLightValue(), getLightValue()));
         }
-        matLines.add(String.format("map_Kd -boost %f /%s/%s.png", 1.0, diffuseTextureOut.getParent().toFile().getName(), getDiffuseTextureName()));
+        matLines.add(String.format("map_Ka %s/%s.png", diffuseTextureOut.getParent().toFile().getName(), getDiffuseTextureName()));
+        matLines.add("interpolateMode NEAREST_MAGNIFICATION_TRILINEAR_MIPMAP_MINIFICATION");
+        matLines.add(String.format("map_Kd %s/%s.png", diffuseTextureOut.getParent().toFile().getName(), getDiffuseTextureName()));
+        if(getName().contains("glass") || getName().contains("leaves"))
+            matLines.add(String.format("map_d %s/%s.png", diffuseTextureOut.getParent().toFile().getName(), getDiffuseTextureName()));
         if(getLightValue() > 0.0){
-            matLines.add(String.format("map_Ke /%s/%s.png", diffuseTextureOut.getParent().toFile().getName(), getDiffuseTextureName()));
+            matLines.add(String.format("map_Ke %s/%s.png", diffuseTextureOut.getParent().toFile().getName(), getDiffuseTextureName()));
         }
 
 
@@ -111,7 +115,22 @@ public class Material implements IMaterial, Cloneable {
     }
 
     @Override
-    public Object clone() throws CloneNotSupportedException {
-        return super.clone();
+    public IMaterial clone() {
+        Material material = new Material();
+        material.copy(this);
+
+        return material;
     }
+
+    @Override
+    public void copy(IMaterial clone) {
+        Material cloneMaterial = (Material) clone;
+        customDiffuse = cloneMaterial.customDiffuse;
+        diffuseTextureName = cloneMaterial.diffuseTextureName;
+        diffuseTexturePath = cloneMaterial.diffuseTexturePath;
+        lightValue = cloneMaterial.lightValue;
+        name = cloneMaterial.name;
+    }
+
+
 }

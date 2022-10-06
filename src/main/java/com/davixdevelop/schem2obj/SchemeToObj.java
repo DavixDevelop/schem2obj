@@ -217,7 +217,7 @@ public class SchemeToObj {
                 for (int x = 0; x < width; x++){
                     for(int z = 0; z < length; z++) {
                         final int index = x + (y * length + z) * width;
-                        final IWavefrontObject object = allBlocks.get(index);
+                        IWavefrontObject object = allBlocks.get(index);
                         if(object != null){
                             final Set<String> objectBoundingFaces = object.getBoundingFaces().keySet();
 

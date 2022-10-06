@@ -19,7 +19,7 @@ public class WavefrontCollection {
 
     public IWavefrontObject fromNamespace(Namespace blockNamespace){
         if(wavefrontObjecs.containsKey(blockNamespace))
-            return wavefrontObjecs.get(blockNamespace);
+            return wavefrontObjecs.get(blockNamespace).clone();
         else{
             IWavefrontObject block = null;
 
@@ -36,7 +36,7 @@ public class WavefrontCollection {
             if(block.fromNamespace(blockNamespace))
                 wavefrontObjecs.put(blockNamespace, block);
 
-            return block;
+            return block.clone();
 
         }
     }

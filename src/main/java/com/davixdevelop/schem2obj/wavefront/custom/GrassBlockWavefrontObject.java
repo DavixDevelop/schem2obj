@@ -37,20 +37,15 @@ public class GrassBlockWavefrontObject extends BlockWavefrontObject {
 
         //Color the grass top with biome snow color and create new copy of it
         if(!SNOWY_MATERIAL_GENERATED){
-            Material grass_top = Constants.BLOCK_MATERIALS.getMaterial("blocks/grass_top");
+            IMaterial grass_top = Constants.BLOCK_MATERIALS.getMaterial("blocks/grass_top");
 
-            try {
-                Constants.BLOCK_MATERIALS.setMaterial("blocks/snowy_grass_top", (Material) grass_top.clone());
-            }catch (Exception ex){
-                Utility.Log(ex.getMessage());
-            }
+
+            Constants.BLOCK_MATERIALS.setMaterial("blocks/snowy_grass_top", grass_top.clone());
 
             IMaterial snowy_grass_top = Constants.BLOCK_MATERIALS.getMaterial("blocks/snowy_grass_top");
             snowy_grass_top.setName("snowy_grass_top");
             snowy_grass_top.setDiffuseTextureName("snowy_grass_top");
             snowy_grass_top.setDiffuseImage(ImageUtility.colorImage(grass_top.getDiffuseImage(), Constants.SNOW_COLOR));
-
-
         }
 
         //Color the grass top and sides with biome grass color
@@ -59,10 +54,18 @@ public class GrassBlockWavefrontObject extends BlockWavefrontObject {
             IMaterial grass_side = Constants.BLOCK_MATERIALS.getMaterial("blocks/grass_side");
             IMaterial grass_side_overlay = Constants.BLOCK_MATERIALS.getMaterial("blocks/grass_side_overlay");
 
-            grass_top.setDiffuseImage(ImageUtility.colorImage(grass_top.getDiffuseImage(), Constants.BIOME_GRASS_COLOR));
+            //Color the gray grass top with the biome grass color
+            BufferedImage coloredTop = ImageUtility.colorImage(grass_top.getDiffuseImage(), Constants.BIOME_GRASS_COLOR);
 
+            //Set grass top diffuse image to colored top
+            grass_top.setDiffuseImage(coloredTop);
+
+            //Color the gray grass side overlay with the biome grass color
             BufferedImage colored_side_overlay = ImageUtility.colorImage(grass_side_overlay.getDiffuseImage(), Constants.BIOME_GRASS_COLOR);
-            grass_side.setDiffuseImage(ImageUtility.colorAndCombineImages(grass_side.getDiffuseImage(),colored_side_overlay));
+
+            //Combine the grass side and colored overlay
+            BufferedImage combinedOverlay = ImageUtility.colorAndCombineImages(grass_side.getDiffuseImage(),colored_side_overlay);
+            grass_side.setDiffuseImage(combinedOverlay);
         }
 
         if(blockNamespace.getData().get("snowy").equals("false") && blockState.isRandomVariants()){
@@ -79,13 +82,8 @@ public class GrassBlockWavefrontObject extends BlockWavefrontObject {
 
                 RANDOM_VARIANTS.put(variants.get(0), this);
             }else{
-                GrassBlockWavefrontObject variantObject = (GrassBlockWavefrontObject) RANDOM_VARIANTS.get(variants.get(0));
-                this.setName(variantObject.getName());
-                this.setVertices(variantObject.getVertices());
-                this.setVertexNormals(variantObject.getVertexNormals());
-                this.setTextureCoordinates(variantObject.getTextureCoordinates());
-                this.setMaterialFaces(variantObject.getMaterialFaces());
-                this.setBoundingFaces(variantObject.getBoundingFaces());
+                IWavefrontObject variantObject = RANDOM_VARIANTS.get(variants.get(0));
+                super.copy(variantObject);
             }
 
             return false;

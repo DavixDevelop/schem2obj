@@ -37,12 +37,15 @@ public class WavefrontUtility {
                         if(!Constants.BLOCK_MATERIALS.usedMaterials().contains(materialName)){
                             //If material isn't yet used, but It's in BLOCK_MATERIALS collection, it means It's a custom material, added from a resource pack
                             //Modify the material to include the lightValue of the block
-                            Material material = Constants.BLOCK_MATERIALS.getMaterial(materialName);
+                            IMaterial material = Constants.BLOCK_MATERIALS.getMaterial(materialName);
                             material.setLightValue(blockNamespace.getLightValue());
                             Constants.BLOCK_MATERIALS.setMaterial(materialName, material);
                         }
                         textureMaterials.put(key, materialName);
                     }else {
+                        if(materialName.contains("glass")){
+                            String w = "2";
+                        }
 
                         Material material = new Material();
                         //ToDo: Implement this in LitBlockWavefrontObject
@@ -62,7 +65,7 @@ public class WavefrontUtility {
                         material.setDiffuseTexturePath(value);
                         material.setDiffuseTextureName(textureName(value));
                         material.setLightValue(blockNamespace.getLightValue());
-                        material.setName(materialName);
+                        material.setName(textureName(value));
 
                         Constants.BLOCK_MATERIALS.setMaterial(materialName, material);
 

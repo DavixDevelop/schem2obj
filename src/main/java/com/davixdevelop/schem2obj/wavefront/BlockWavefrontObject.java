@@ -13,6 +13,8 @@ import java.util.*;
 
 public class BlockWavefrontObject extends WavefrontObject {
 
+    private static HashMap<BlockState.Variant, IWavefrontObject> BLOCK_RANDOM_VARIANTS = new HashMap<>();
+
     @Override
     public boolean fromNamespace(Namespace blockNamespace) {
         //Get the BlockState for the block
@@ -27,7 +29,18 @@ public class BlockWavefrontObject extends WavefrontObject {
         boolean storeInMemory = true;
 
         if(blockState.isRandomVariants()){
-            storeInMemory = false;
+            //Check if random variant is not in BLOCK_RANDOM_VARIANTS, generate it and store it
+            //Else get a copy of the singleton
+            if(!BLOCK_RANDOM_VARIANTS.containsKey(variants.get(0))){
+                toObj(blockModels, variants, blockNamespace);
+                BLOCK_RANDOM_VARIANTS.put(variants.get(0), this);
+
+            }else{
+                IWavefrontObject copy = BLOCK_RANDOM_VARIANTS.get(variants.get(0)).clone();
+                super.copy(copy);
+            }
+
+            return false;
         }
 
         toObj(blockModels, variants,blockNamespace);
@@ -35,8 +48,6 @@ public class BlockWavefrontObject extends WavefrontObject {
         return storeInMemory;
 
     }
-
-    private HashMap<String, IWavefrontObject> RandomVariants = new HashMap<>();
 
     /**
      * Convert a block models to wavefront object.

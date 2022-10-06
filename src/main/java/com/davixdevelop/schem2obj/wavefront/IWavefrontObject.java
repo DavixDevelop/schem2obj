@@ -35,4 +35,16 @@ public interface IWavefrontObject {
      * @param orientation The orientation (ex. top, up, north...)
      */
     void deleteFaces(String orientation);
+
+    /**
+     * Return a deep copy of the Object
+     * @return The deep copy of the object
+     */
+    IWavefrontObject clone();
+
+    /**
+     * Create deep copy from clone
+     * @param clone The cloned wavefront object
+     */
+    void copy(IWavefrontObject clone);
 }

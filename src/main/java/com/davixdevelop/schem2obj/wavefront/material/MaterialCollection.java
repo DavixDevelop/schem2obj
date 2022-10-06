@@ -14,7 +14,7 @@ import java.util.regex.MatchResult;
 import java.util.regex.Matcher;
 
 public class MaterialCollection {
-    private HashMap<String, Material> materials;
+    private HashMap<String, IMaterial> materials;
     private Set<String> usedMaterials;
 
     public MaterialCollection(){
@@ -22,11 +22,11 @@ public class MaterialCollection {
         usedMaterials = new HashSet<>();
     }
 
-    public Material getMaterial(String name){
+    public IMaterial getMaterial(String name){
         return materials.get(name);
     }
 
-    public void setMaterial(String name, Material material){
+    public void setMaterial(String name, IMaterial material){
         materials.put(name, material);
         usedMaterials.add(name);
     }
@@ -63,7 +63,6 @@ public class MaterialCollection {
 
             //Loop through the textures
             for(File texture : textures){
-
                 //Pattern to get texture name from png texture (example grass_n.png or grass.png -> grass)
                 matcher = Utility.TEXTURE_NAME_FROM_FILE.matcher(texture.getName());
                 if(matcher.find()){

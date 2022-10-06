@@ -7,6 +7,8 @@ import com.davixdevelop.schem2obj.wavefront.material.Material;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 public class WavefrontObject implements IWavefrontObject {
     private String name;
@@ -103,4 +105,27 @@ public class WavefrontObject implements IWavefrontObject {
             }
         }
     }
+
+    @Override
+    public IWavefrontObject clone() {
+        WavefrontObject wavefrontObject = new WavefrontObject();
+        wavefrontObject.copy(this);
+
+        return wavefrontObject;
+    }
+
+    @Override
+    public void copy(IWavefrontObject clone) {
+        WavefrontObject cloneObject = (WavefrontObject) clone;
+        name = cloneObject.name;
+        v = new ArrayList<>(cloneObject.v);
+        vt = new ArrayList<>(cloneObject.vt);
+        vn = new ArrayList<>(cloneObject.vn);
+        f = new HashMap<>(cloneObject.f.entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey, x -> new ArrayList<>(x.getValue()))));
+        facing = new HashMap<>(cloneObject.facing.entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey,
+                x -> new HashMap<>(x.getValue().entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey,
+                        y -> new ArrayList<>(y.getValue())))))));
+    }
+
+
 }

@@ -1158,7 +1158,7 @@
     "ID": 24,
     "variants": {
       "0": {
-        "variantName": "sandstone_sandstone",
+        "variantName": "sandstone",
         "lightValue": 0,
         "properties": {}
       },
@@ -10544,14 +10544,14 @@
     "ID": 182,
     "variants": {
       "0": {
-        "variantName": "red_sandstone",
+        "variantName": "red_sandstone_slab",
         "lightValue": 0,
         "properties": {
           "half": "bottom"
         }
       },
       "8": {
-        "variantName": "red_sandstone",
+        "variantName": "red_sandstone_slab",
         "lightValue": 0,
         "properties": {
           "half": "top"
