@@ -111,7 +111,7 @@ public class CubeElement {
         private Double rotation;
         private Double tintindex;
 
-        CubeFace(Double[] uv, String texture, String cullface, Double rotation, Double tintindex){
+        public CubeFace(Double[] uv, String texture, String cullface, Double rotation, Double tintindex){
             this.uv = uv;
             this.texture = texture;
             this.cullface = cullface;

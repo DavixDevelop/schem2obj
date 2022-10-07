@@ -2,13 +2,18 @@ package com.davixdevelop.schem2obj.wavefront.custom;
 
 import com.davixdevelop.schem2obj.Constants;
 import com.davixdevelop.schem2obj.blockmodels.BlockModel;
+import com.davixdevelop.schem2obj.blockmodels.CubeElement;
 import com.davixdevelop.schem2obj.blockstates.BlockState;
+import com.davixdevelop.schem2obj.models.HashedDoubleList;
 import com.davixdevelop.schem2obj.namespace.Namespace;
+import com.davixdevelop.schem2obj.utilities.ArrayUtility;
+import com.davixdevelop.schem2obj.utilities.ArrayVector;
 import com.davixdevelop.schem2obj.utilities.ImageUtility;
 import com.davixdevelop.schem2obj.utilities.Utility;
 import com.davixdevelop.schem2obj.wavefront.BlockWavefrontObject;
 import com.davixdevelop.schem2obj.wavefront.IWavefrontObject;
 import com.davixdevelop.schem2obj.wavefront.WavefrontCollection;
+import com.davixdevelop.schem2obj.wavefront.WavefrontUtility;
 import com.davixdevelop.schem2obj.wavefront.material.IMaterial;
 import com.davixdevelop.schem2obj.wavefront.material.Material;
 
@@ -29,9 +34,6 @@ public class GrassBlockWavefrontObject extends BlockWavefrontObject {
     public boolean fromNamespace(Namespace blockNamespace) {
 
         BlockState blockState = Constants.BLOCKS_STATES.getBlockState(blockNamespace);
-
-        //Get the model/models the block uses based on the BlockState
-        BlockModel[] blockModels = Constants.BLOCK_MODELS.getBlockModel(blockNamespace, blockState);
 
         ArrayList<BlockState.Variant> variants = blockState.getVariants(blockNamespace);
 
@@ -71,15 +73,7 @@ public class GrassBlockWavefrontObject extends BlockWavefrontObject {
         if(blockNamespace.getData().get("snowy").equals("false") && blockState.isRandomVariants()){
             if(!RANDOM_VARIANTS.containsKey(variants.get(0)))
             {
-                toObj(blockModels, variants, blockNamespace);
-                getMaterialFaces().remove("blocks/grass_side_overlay");
-
-                for(String orientation : getBoundingFaces().keySet()){
-                    HashMap<String, ArrayList<Integer>> materialFaces = getBoundingFaces().get(orientation);
-                    if(materialFaces.containsKey("blocks/grass_side_overlay"))
-                        materialFaces.remove("blocks/grass_side_overlay");
-                }
-
+                createNormalVariant(blockNamespace, variants.get(0));
                 RANDOM_VARIANTS.put(variants.get(0), this);
             }else{
                 IWavefrontObject variantObject = RANDOM_VARIANTS.get(variants.get(0));
@@ -89,21 +83,83 @@ public class GrassBlockWavefrontObject extends BlockWavefrontObject {
             return false;
         }
 
-        toObj(blockModels, variants,blockNamespace);
-
-        ArrayList<ArrayList<Integer[]>> topFaces = getMaterialFaces().get("grass_top");
-        getMaterialFaces().remove("grass_top");
-        getMaterialFaces().put("snowy_grass_top",topFaces);
-
-        for(String orientation : getBoundingFaces().keySet()){
-            HashMap<String, ArrayList<Integer>> materialFaces = getBoundingFaces().get(orientation);
-            if(materialFaces.containsKey("grass_top")){
-                ArrayList<Integer> faceIndexes = materialFaces.get("grass_top");
-                materialFaces.remove("grass_top");
-                materialFaces.put("snowy_grass_top", faceIndexes);
-            }
-        }
+        createSnowyVariant(blockNamespace);
 
         return true;
+    }
+
+    public void createSnowyVariant(Namespace blockNamespace){
+        createGrassBlock("snowy_grass", "blocks/snowy_grass_top", "blocks/grass_side_snowed", blockNamespace, null);
+    }
+
+    public void createNormalVariant(Namespace blockNamespace, BlockState.Variant randomVariant){
+        ArrayVector.MatrixRotation rotationY = null;
+        if(randomVariant.getY() != null)
+            rotationY = new ArrayVector.MatrixRotation(Math.toRadians(-randomVariant.getY()), "Z");
+
+        createGrassBlock("grass", "blocks/grass_top", "blocks/grass_side", blockNamespace, rotationY);
+    }
+
+
+
+    public void createGrassBlock(String name, String top_texture, String side_texture, Namespace blockNamespace, ArrayVector.MatrixRotation rotationY){
+        setName(name);
+
+        //Each item is an array with the following values [vx, vy, vz, vnx, vny, vnz]
+        HashedDoubleList verticesAndNormals = new HashedDoubleList(3);
+        HashedDoubleList textureCoordinates = new HashedDoubleList(2);
+        //Map of materialName and It's faces, where each face consists of an list of array indices
+        //Each indice consists of the vertex index, texture coordinate index and vertex normal index
+        HashMap<String, ArrayList<ArrayList<Integer[]>>> faces = new HashMap<>();
+
+        //A map that keeps track of what faces (indexes) bounds the block bounding box on that specific orientation
+        //Map<Facing (Orientation):String, Map<MaterialName:String, List<FaceIndex:Integer>>>
+        HashMap<String, HashMap<String, ArrayList<Integer>>> boundingFaces = new HashMap<>();
+
+
+
+        HashMap<String,String> modelsMaterials = new HashMap<>();
+        WavefrontUtility.generateOrGetMaterial("blocks/dirt", blockNamespace);
+        WavefrontUtility.generateOrGetMaterial(top_texture, blockNamespace);
+        WavefrontUtility.generateOrGetMaterial(side_texture, blockNamespace);
+        modelsMaterials.put("bottom", "blocks/dirt");
+        modelsMaterials.put("top", top_texture);
+        modelsMaterials.put("side", side_texture);
+
+        HashMap<String, CubeElement.CubeFace> cubeFaces = new HashMap<>();
+        cubeFaces.put("down", new CubeElement.CubeFace(new Double[]{0.0, 0.0, 1.0, 1.0}, "#bottom", "down", null, null));
+        cubeFaces.put("up", new CubeElement.CubeFace(new Double[]{0.0, 0.0, 1.0, 1.0}, "#top", "up", null, null));
+        cubeFaces.put("north", new CubeElement.CubeFace(new Double[]{0.0, 0.0, 1.0, 1.0}, "#side", "north", null, null));
+        cubeFaces.put("south", new CubeElement.CubeFace(new Double[]{0.0, 0.0, 1.0, 1.0}, "#side", "south", null, null));
+        cubeFaces.put("west", new CubeElement.CubeFace(new Double[]{0.0, 0.0, 1.0, 1.0}, "#side", "west", null, null));
+        cubeFaces.put("east", new CubeElement.CubeFace(new Double[]{0.0, 0.0, 1.0, 1.0}, "#side", "east", null, null));
+
+        CubeElement cube = new CubeElement(
+                new Double[]{0.0,0.0,0.0},
+                new Double[]{1.0,1.0,1.0},
+                false,
+                null,
+                cubeFaces);
+
+        //Convert cube to obj
+        WavefrontUtility.convertCubeToWavefront(cube, false, null, rotationY, verticesAndNormals, textureCoordinates, faces, boundingFaces, modelsMaterials);
+
+        //Split verticesAndNormals to two list's
+        Object[] vertex_and_normals = ArrayUtility.splitArrayPairsToLists(verticesAndNormals.toList(), 3);
+
+        //Get vertex list form vertex_and_normals
+        ArrayList<Double[]> verticesArray = (ArrayList<Double[]>) vertex_and_normals[0];
+
+        //Get normals list from vertex_and_normals
+        ArrayList<Double[]> normalsArray = (ArrayList<Double[]>) vertex_and_normals[1];
+
+        //Normalize vertex normals
+        WavefrontUtility.normalizeNormals(normalsArray);
+
+        setVertices(verticesArray);
+        setVertexNormals(normalsArray);
+        setTextureCoordinates(textureCoordinates.toList());
+        setMaterialFaces(faces);
+        setBoundingFaces(boundingFaces);
     }
 }

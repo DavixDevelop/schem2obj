@@ -12,5 +12,6 @@ Optional parameters:<br>
 All basic blocks (that are only basic cubes) are supported. The ones that do use only a basic cube and are not working properly or rely on parent blocks to work properly (ex. glass panes) are currently being implemented. 
 <br>List of custom block implemented:
 - Grass Block (non-snowy and snowy)
+- Magma Block (fixed compressed texture)
 
 Currently in development.

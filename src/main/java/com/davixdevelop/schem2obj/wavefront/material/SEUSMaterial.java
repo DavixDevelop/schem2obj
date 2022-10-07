@@ -11,6 +11,7 @@ import java.io.InputStream;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Locale;
 
 /**
  * Represents a SEUS Material (PBR Material)
@@ -133,6 +134,10 @@ public class SEUSMaterial extends Material {
                     for(int c =0 ; c < 3; c++){
                         String texturePBRName = String.format("%s_%s",rawName, (c == 0) ? "r" : (c == 1) ? "m" : "e");
 
+                        if(c == 2){
+                            RME[c] = ImageUtility.maskImage(getDiffuseImage(), RME[c]);
+                        }
+
                         //Path to output texture
                         String textureOut = Paths.get(textureFolder, texturePBRName + ".png").toFile().toString();
 
@@ -159,12 +164,11 @@ public class SEUSMaterial extends Material {
         matLines.add(String.format("newmtl %s", getName()));
 
         if(getLightValue() > 0.0){
-            matLines.add(String.format("Ke %f %f %f",getLightValue() / 16, getLightValue() / 16, getLightValue() / 16));
+            matLines.add(String.format(Locale.ROOT, "Ke %f %f %f",getLightValue(), getLightValue(), getLightValue()));
         }
         matLines.add(String.format("map_Ka %s/%s.png", textureFolderName, getDiffuseTextureName()));
-        matLines.add("interpolateMode NEAREST_MAGNIFICATION_TRILINEAR_MIPMAP_MINIFICATION");
         matLines.add(String.format("map_Kd %s/%s.png", textureFolderName, getDiffuseTextureName()));
-        if(getName().contains("glass") || getName().contains("leaves"))
+        if(getName().contains("glass") || getName().contains("leaves") || getName().equals("slime"))
             matLines.add(String.format("map_d %s/%s.png", textureFolderName, getDiffuseTextureName()));
         if(getLightValue() > 0.0){
             if(!hasSpec)

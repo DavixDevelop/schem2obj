@@ -87,12 +87,13 @@ public class ImageUtility {
             Color rougness = null;
             Color metalness = null;
             Color emission = null;
+
             for(int x = 0; x < specularImage.getWidth(); x++){
                 for(int y = 0; y < specularImage.getHeight(); y++){
                     color = new Color(specularImage.getRGB(x, y));
 
-                    //Roughness in the inverse of glossiness (255 - channel value)
-                    rougness = new Color(255 - color.getRed(),255 - color.getRed(), 255 - color.getRed(), color.getAlpha());
+                    //Roughness is the inverse of glossiness (255 - channel value)
+                    rougness = new Color(Math.abs(255 - color.getRed()),Math.abs(255 - color.getRed()), Math.abs(255 - color.getRed()), color.getAlpha());
                     metalness = new Color(color.getGreen(), color.getGreen(), color.getGreen(), color.getAlpha());
                     emission = new Color(color.getBlue(), color.getBlue(), color.getBlue(), color.getAlpha());
 
@@ -113,6 +114,62 @@ public class ImageUtility {
             return null;
         }
 
+    }
+
+    public static BufferedImage maskImage(InputStream image, BufferedImage mask){
+        try {
+            BufferedImage originalImage = ImageIO.read(image);
+            BufferedImage maskedImage = new BufferedImage(originalImage.getWidth(), originalImage.getHeight(), BufferedImage.TYPE_INT_ARGB_PRE);
+
+            Color color = null;
+            Color maskColor = null;
+
+            /*Integer max_mask = null;
+            Integer min_mask = null;
+
+            for(int x = 0; x < mask.getWidth(); x++) {
+                for (int y = 0; y < mask.getHeight(); y++) {
+                    int col = mask.getRGB(x, y);
+                    maskColor = new Color(col);
+
+                    if(max_mask == null){
+                        max_mask = maskColor.getRed();
+                        min_mask = maskColor.getRed();
+                    }else{
+                        if(maskColor.getRed() > max_mask)
+                            max_mask = maskColor.getRed();
+
+                        if(maskColor.getRed() < min_mask)
+                            min_mask = maskColor.getRed();
+                    }
+                }
+            }
+
+            Integer mask_limit = max_mask - min_mask;*/
+
+            for(int x = 0; x < originalImage.getWidth(); x++){
+                for(int y = 0; y < originalImage.getHeight(); y++){
+                    int col = originalImage.getRGB(x, y);
+
+                    int m = mask.getRGB((x * mask.getWidth()) / originalImage.getWidth(), (y * mask.getHeight()) / originalImage.getHeight());
+                    maskColor = new Color(m);
+
+                    color = new Color(col);
+                    color = new Color(color.getRed(), color.getGreen(), color.getBlue(), maskColor.getRed());
+                    //Double perc = (maskColor.getRed() - min_mask) / mask_limit.doubleValue();
+                    //color = new Color(color.getRed(), color.getGreen(), color.getBlue(), (int) Math.round(perc * max_mask));
+                    maskedImage.setRGB(x, y, color.getRGB());
+                }
+            }
+
+            image.close();
+            return maskedImage;
+
+        }catch (Exception ex){
+            Utility.Log("Could not mask image");
+            Utility.Log(ex.getMessage());
+            return null;
+        }
     }
 
     public static BufferedImage colorImage(InputStream image, int color){

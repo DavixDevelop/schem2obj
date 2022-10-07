@@ -5,6 +5,7 @@ import com.davixdevelop.schem2obj.blockstates.BlockState;
 import com.davixdevelop.schem2obj.blockstates.BlockStateCollection;
 import com.davixdevelop.schem2obj.namespace.Namespace;
 import com.davixdevelop.schem2obj.wavefront.custom.GrassBlockWavefrontObject;
+import com.davixdevelop.schem2obj.wavefront.custom.MagmaBlockWavefrontObject;
 import com.davixdevelop.schem2obj.wavefront.material.MaterialCollection;
 
 import java.util.HashMap;
@@ -26,6 +27,9 @@ public class WavefrontCollection {
             switch (blockNamespace.getName()){
                 case "grass":
                     block = new GrassBlockWavefrontObject();
+                    break;
+                case "magma":
+                    block = new MagmaBlockWavefrontObject();
                     break;
                 default:
                     block = new BlockWavefrontObject();

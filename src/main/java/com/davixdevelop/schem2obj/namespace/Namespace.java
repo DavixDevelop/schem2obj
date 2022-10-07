@@ -1,6 +1,8 @@
 package com.davixdevelop.schem2obj.namespace;
 
 import java.util.HashMap;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * Represents a Minecraft namespace, with a field for additional data
@@ -52,5 +54,13 @@ public class Namespace {
 
     public Double getLightValue() {
         return lightValue;
+    }
+
+    public Namespace clone(){
+        HashMap<String, String> cloneData = new HashMap<>();
+        if(data != null || !data.isEmpty())
+            cloneData = new HashMap<>(data.entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey,Map.Entry::getValue)));
+
+        return new Namespace(id, domain, name,cloneData, lightValue);
     }
 }

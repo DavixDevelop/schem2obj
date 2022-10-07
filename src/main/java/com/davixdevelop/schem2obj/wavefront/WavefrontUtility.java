@@ -3,7 +3,10 @@ package com.davixdevelop.schem2obj.wavefront;
 import com.davixdevelop.schem2obj.Constants;
 import com.davixdevelop.schem2obj.blockmodels.BlockModel;
 import com.davixdevelop.schem2obj.blockmodels.CubeElement;
+import com.davixdevelop.schem2obj.blockstates.BlockState;
+import com.davixdevelop.schem2obj.models.HashedDoubleList;
 import com.davixdevelop.schem2obj.namespace.Namespace;
+import com.davixdevelop.schem2obj.utilities.ArrayUtility;
 import com.davixdevelop.schem2obj.utilities.ArrayVector;
 import com.davixdevelop.schem2obj.wavefront.material.IMaterial;
 import com.davixdevelop.schem2obj.wavefront.material.Material;
@@ -18,7 +21,7 @@ public class WavefrontUtility {
      * @param models An array of models
      * @return map of key: texture variable, value: name of default material
      */
-    public static HashMap<String, String> texturesToMaterials(BlockModel[] models, Namespace blockNamespace) {
+    public static HashMap<String, String> texturesToMaterials(List<BlockModel> models, Namespace blockNamespace) {
         HashMap<String, String> textureMaterials = new HashMap<>();
 
         for (BlockModel model : models) {
@@ -33,45 +36,10 @@ public class WavefrontUtility {
 
                     String materialName = value;
 
-                    if (Constants.BLOCK_MATERIALS.containsMaterial(materialName)) {
-                        if(!Constants.BLOCK_MATERIALS.usedMaterials().contains(materialName)){
-                            //If material isn't yet used, but It's in BLOCK_MATERIALS collection, it means It's a custom material, added from a resource pack
-                            //Modify the material to include the lightValue of the block
-                            IMaterial material = Constants.BLOCK_MATERIALS.getMaterial(materialName);
-                            material.setLightValue(blockNamespace.getLightValue());
-                            Constants.BLOCK_MATERIALS.setMaterial(materialName, material);
-                        }
+                    generateOrGetMaterial(materialName, blockNamespace);
+
+                    if(!textureMaterials.containsKey(key))
                         textureMaterials.put(key, materialName);
-                    }else {
-                        if(materialName.contains("glass")){
-                            String w = "2";
-                        }
-
-                        Material material = new Material();
-                        //ToDo: Implement this in LitBlockWavefrontObject
-                        /*boolean isLit = false;
-                        //Loop through the variants and check if the model root parent name is the same same as the model name
-                        //If it is, check if the variant model start's with lit_ and set isLit to true
-                        //This approach enables a material to be named lit_ + texture name and still keep the texture name the same
-                        for(BlockState.Variant variant : variants){
-                            if(variant.getModel().equals(model.getRootParent())){
-                                if(variant.getModel().startsWith("lit_")) {
-                                    isLit = true;
-                                    break;
-                                }
-                            }
-                        }*/
-
-                        material.setDiffuseTexturePath(value);
-                        material.setDiffuseTextureName(textureName(value));
-                        material.setLightValue(blockNamespace.getLightValue());
-                        material.setName(textureName(value));
-
-                        Constants.BLOCK_MATERIALS.setMaterial(materialName, material);
-
-                        if(!textureMaterials.containsKey(key))
-                            textureMaterials.put(key, materialName);
-                    }
 
                 } else {
                     //Check if texture materials already contains a key with the same variable name (removed # from the value)
@@ -85,6 +53,39 @@ public class WavefrontUtility {
         }
 
         return textureMaterials;
+    }
+
+    public static void generateOrGetMaterial(String materialName, Namespace blockNamespace){
+        if (Constants.BLOCK_MATERIALS.containsMaterial(materialName)) {
+            if(!Constants.BLOCK_MATERIALS.usedMaterials().contains(materialName)){
+                //If material isn't yet used, but It's in BLOCK_MATERIALS collection, it means It's a custom material, added from a resource pack
+                //Modify the material to include the lightValue of the block
+                IMaterial material = Constants.BLOCK_MATERIALS.getMaterial(materialName);
+                material.setLightValue(blockNamespace.getLightValue());
+                Constants.BLOCK_MATERIALS.setMaterial(materialName, material);
+            }
+        }else {
+            Material material = new Material();
+            //ToDo: Implement this in LitBlockWavefrontObject
+                        /*boolean isLit = false;
+                        //Loop through the variants and check if the model root parent name is the same same as the model name
+                        //If it is, check if the variant model start's with lit_ and set isLit to true
+                        //This approach enables a material to be named lit_ + texture name and still keep the texture name the same
+                        for(BlockState.Variant variant : variants){
+                            if(variant.getModel().equals(model.getRootParent())){
+                                if(variant.getModel().startsWith("lit_")) {
+                                    isLit = true;
+                                    break;
+                                }
+                            }
+                        }*/
+
+            material.setDiffuseTexturePath(materialName);
+            material.setDiffuseTextureName(textureName(materialName));
+            material.setLightValue(blockNamespace.getLightValue());
+            material.setName(textureName(materialName));
+            Constants.BLOCK_MATERIALS.setMaterial(materialName, material);
+        }
     }
 
     /**
@@ -412,27 +413,303 @@ public class WavefrontUtility {
         return false;
     }
 
-    public static void writeObjectData(IWavefrontObject object, PrintWriter f){
+
+    public static void convertCubeToWavefront(CubeElement element, boolean uvLock, ArrayVector.MatrixRotation rotationX, ArrayVector.MatrixRotation rotationY,  HashedDoubleList verticesAndNormals, HashedDoubleList textureCoordinates, HashMap<String, ArrayList<ArrayList<Integer[]>>> faces, HashMap<String, HashMap<String, ArrayList<Integer>>> boundingFaces, HashMap<String, String> modelsMaterials){
+        //Variable to store cube corner and their vertices index
+        //Key: corner (ex. A), Value: Index of vertex
+        Map<String, Integer> CornersIndex = new HashMap<>();
+        //Variable to store index of UV's
+        Integer[] UVIndexes = new Integer[]{0,1,2,3};
+
+        //Get starting point of cube
+
+        Double[] from = element.getFrom();
+        //Get end point of cube
+        Double[] to = element.getTo();
+
+        //Create vertices for each corner of a face that the cube uses and add them to the object vertices
+        Map<String, Double[]> cubeCorners = WavefrontUtility.createCubeVerticesFromPoints(from, to, element.getFaces().keySet());
+
+
+        //Check if element has rotation
+        if (element.getRotation() != null) {
+            CubeElement.CubeRotation cubeRotation = element.getRotation();
+
+            //Construct matrix rotation based on the axis and angle
+            ArrayVector.MatrixRotation matrixRotation = new ArrayVector.MatrixRotation(Math.toRadians(cubeRotation.getAngle()), cubeRotation.getAxis());
+
+            //loop through the corners (vertices) and rotate each vertex
+            for (String corner : cubeCorners.keySet())
+                cubeCorners.put(corner, WavefrontUtility.rotatePoint(cubeCorners.get(corner), matrixRotation, (cubeRotation.getOrigin() != null) ? cubeRotation.getOrigin() : Constants.BLOCK_ORIGIN));
+        }
+
+
+        //Loop through the cube corners and to rotate them if variant specifies that it should be rotated
+        if(rotationX != null || rotationY != null) {
+            for (String corner : cubeCorners.keySet()) {
+                if (rotationX != null)
+                    cubeCorners.put(corner, WavefrontUtility.rotatePoint(cubeCorners.get(corner), rotationX, Constants.BLOCK_ORIGIN));
+
+                if (rotationY != null)
+                    cubeCorners.put(corner, WavefrontUtility.rotatePoint(cubeCorners.get(corner), rotationY, Constants.BLOCK_ORIGIN));
+            }
+        }
+
+        //Append cube corner to object vertices and get the indexes to vertex's and normals in verticesAndNormals
+        for (String corner : cubeCorners.keySet())
+            CornersIndex.put(corner, verticesAndNormals.put(cubeCorners.get(corner)));
+
+        //Get element faces
+        HashMap<String, CubeElement.CubeFace> elementFaces = element.getFaces();
+
+        //Map to store what material is used per face before any kind of rotation has been done on the faces
+        //Key: Orientation in coords (ex. up -> 0,0,1, east -> 1,0,0...)
+        HashMap<List<Integer>, String> materialPerOrientation = new HashMap<>();
+
+        for (String originalOrientation : elementFaces.keySet()) {
+            CubeElement.CubeFace face = elementFaces.get(originalOrientation);
+
+            //Get the coord of the orientation of the face
+            List<Integer> orientationCoord = WavefrontUtility.orientationToCoords(originalOrientation);
+
+            //Get the variable of the face (ex. #all)
+            String faceTextureVariable = face.getTexture().substring(1);
+            //Get the actual value of the material variable (ex. blocks/dirt)
+            String faceMaterial = modelsMaterials.get(faceTextureVariable);
+
+            materialPerOrientation.put(orientationCoord, faceMaterial);
+
+            if (!faces.containsKey(faceMaterial)) {
+                //Create an empty collection which It's key is the face material, if faces does not contain it yet
+                ArrayList<ArrayList<Integer[]>> textureFaces = new ArrayList<>();
+                faces.put(faceMaterial, textureFaces);
+            }
+        }
+
+        for (String key : elementFaces.keySet()) {
+            CubeElement.CubeFace face = elementFaces.get(key);
+
+            //Get the coord of the orientation of the face
+            List<Integer> orientationCoord = WavefrontUtility.orientationToCoords(key);
+
+            //Get the face uv's, or set them, if It's not defined in the uv field
+            ArrayList<Double[]> faceUV = WavefrontUtility.setAndRotateUVFace(face, to, from);
+
+            if (uvLock) {
+                if (rotationX != null) {
+                    //If face orientation is west or east rotate the uv coords by the rotation X
+                    //on the origin 0.5 0.5
+                    if (key.equals("west") || key.equals("east"))
+                        faceUV = WavefrontUtility.rotateUV(faceUV, rotationX.getRot(), new Double[]{0.5, 0.5, 0.0});
+                    else {
+                        //Else rotate orientationCoord by closest right angle (ex, 100 -> 90)
+                        ArrayVector.MatrixRotation rotation = rotationX;
+
+                        //If the rotation angle on x isn't a right angle, move the uv coords by the modulu 90 (ex. 100 % 90 = 10 / 90 -> 0.1111..)
+                        if (rotationX.getRot() % 90 != 0) {
+                            Double angle = rotation.getRot() / 90;
+                            rotation = new ArrayVector.MatrixRotation(Math.toRadians(Math.floor(angle)), "X");
+                            Double offsetX = (rotationX.getRot() % 90) / 90;
+                            faceUV = WavefrontUtility.offsetUV(faceUV, offsetX, 0.0);
+                        }
+                        Double[] newOrientationCoord = new Double[]{orientationCoord.get(0).doubleValue(), orientationCoord.get(1).doubleValue(), orientationCoord.get(2).doubleValue()};
+                        newOrientationCoord = WavefrontUtility.rotatePoint(newOrientationCoord, rotation, new Double[]{0.0, 0.0, 0.0});
+                        orientationCoord.set(0, newOrientationCoord[0].intValue());
+                        orientationCoord.set(1, newOrientationCoord[1].intValue());
+                        orientationCoord.set(2, newOrientationCoord[2].intValue());
+                    }
+                }
+
+                if (rotationY != null) {
+                    //If face orientation is top or down, rotate by the rotation Y
+                    //on the origin 0.5 0.5
+                    if (orientationCoord.get(2) == 1 || orientationCoord.get(2) == -1)
+                        faceUV = WavefrontUtility.rotateUV(faceUV, rotationY.getRot(), new Double[]{0.5, 0.5, 0.0});
+                    else {
+                        //Else rotate orientationCoord by closest right angle (ex, 100 -> 90)
+                        ArrayVector.MatrixRotation rotation = rotationY;
+
+                        //If the rotation angle on x isn't a right angle, move the uv coords by the modulu 90 (ex. 100 % 90 = 10 / 90 -> 0.1111..)
+                        if (rotationY.getRot() % 90 != 0) {
+                            Double angle = rotation.getRot() / 90;
+                            rotation = new ArrayVector.MatrixRotation(Math.toRadians(Math.floor(angle)), "Z");
+                            Double offsetY = (rotationX.getRot() % 90) / 90;
+                            faceUV = WavefrontUtility.offsetUV(faceUV, 0.0, offsetY);
+                        }
+                        Double[] newOrientationCoord = new Double[]{orientationCoord.get(0).doubleValue(), orientationCoord.get(1).doubleValue(), orientationCoord.get(2).doubleValue()};
+                        newOrientationCoord = WavefrontUtility.rotatePoint(newOrientationCoord, rotation, new Double[]{0.0, 0.0, 0.0});
+                        orientationCoord.set(0, newOrientationCoord[0].intValue());
+                        orientationCoord.set(1, newOrientationCoord[1].intValue());
+                        orientationCoord.set(2, newOrientationCoord[2].intValue());
+                    }
+                }
+            }else{
+                if(rotationX != null){
+                    if(!key.equals("west") && !key.equals("east")){
+                        Double[] newOrientationCoord = new Double[]{orientationCoord.get(0).doubleValue(), orientationCoord.get(1).doubleValue(), orientationCoord.get(2).doubleValue()};
+                        newOrientationCoord = WavefrontUtility.rotatePoint(newOrientationCoord, rotationX, new Double[]{0.0, 0.0, 0.0});
+                        orientationCoord.set(0, newOrientationCoord[0].intValue());
+                        orientationCoord.set(1, newOrientationCoord[1].intValue());
+                        orientationCoord.set(2, newOrientationCoord[2].intValue());
+                    }
+                }
+
+                if(rotationY != null){
+                    if(orientationCoord.get(2) != -1 && orientationCoord.get(2) != 1) {
+                        Double[] newOrientationCoord = new Double[]{orientationCoord.get(0).doubleValue(), orientationCoord.get(1).doubleValue(), orientationCoord.get(2).doubleValue()};
+                        newOrientationCoord = WavefrontUtility.rotatePoint(newOrientationCoord, rotationY, new Double[]{0.0, 0.0, 0.0});
+                        orientationCoord.set(0, newOrientationCoord[0].intValue());
+                        orientationCoord.set(1, newOrientationCoord[1].intValue());
+                        orientationCoord.set(2, newOrientationCoord[2].intValue());
+                    }
+                }
+            }
+
+            //Get the material of the the face
+            String faceMaterial = materialPerOrientation.get((!uvLock) ? WavefrontUtility.orientationToCoords(key) : orientationCoord);
+
+            ///Append custom uv's cords to texture coordinates
+            UVIndexes = new Integer[faceUV.size()];
+            for (int c = 0; c < faceUV.size(); c++) {
+                Double[] uv = faceUV.get(c);
+                if (textureCoordinates.containsKey(uv[0], uv[1])) {
+                    UVIndexes[c] = textureCoordinates.getIndex(uv[0], uv[1]);
+                } else {
+                    UVIndexes[c] = textureCoordinates.put(uv);
+                }
+            }
+            //Create the wavefront face out of the cube face
+            ArrayList<Integer[]> wvFace = WavefrontUtility.createWavefrontFace(face, CornersIndex, UVIndexes, key);
+
+            ArrayList<Integer> boundingMaterialFaceIndexes = null;
+            String faceOrientation = null;
+
+            //Face is a cullface, add it to the the boundingFace
+            if (face.getCullface() != null) {
+                //Get the orientation from the orientationCoord
+                faceOrientation = WavefrontUtility.coordOrientationToOrientation(orientationCoord);
+
+
+                if (faceOrientation != null) {
+                    //Put orientation if It's not yet present
+                    if (!boundingFaces.containsKey(faceOrientation))
+                        boundingFaces.put(faceOrientation, new HashMap<>());
+
+                    //Get the material faces of orientation
+                    HashMap<String, ArrayList<Integer>> boundingMaterialFaces = boundingFaces.get(faceOrientation);
+
+                    //Put material into bounding material faces if It's not yet present
+                    if (!boundingMaterialFaces.containsKey(faceMaterial)){
+                        boundingMaterialFaces.put(faceMaterial, new ArrayList<>());
+                        boundingFaces.put(faceOrientation, boundingMaterialFaces);
+                    }
+
+                    boundingMaterialFaceIndexes = boundingMaterialFaces.get(faceMaterial);
+                }
+            }
+
+            //Append the wavefront face to the collection faces of the material, that the new face uses
+            ArrayList<ArrayList<Integer[]>> textureFaces = faces.get(faceMaterial);
+            textureFaces.add(wvFace);//Add the index of the added face to the face indexes the material that faces the bounding box bounds
+            if (faceOrientation != null) {
+                boundingMaterialFaceIndexes.add(textureFaces.size() - 1);
+            }
+
+        }
+
+        //Map<Integer, Integer> indexOccourance = new HashMap<>();
+
+        //Normalize the cube/cubes
+        for (String materialName : faces.keySet()) {
+            //Get the faces that the texture uses
+            ArrayList<ArrayList<Integer[]>> materialFaces = faces.get(materialName);
+            for (ArrayList<Integer[]> materialFace : materialFaces) {
+
+                //Calculate face normal (↑B - ↑A) × (↑C - ↑A)
+                //ex: A = first pair of vertex and vertex normal of face (verticesAndNormals.get(wvf.get(0 <- first indic)[0 <- first element in indic is the vertex index]))
+                //↑A = first 3 items of A (splitArray(A))
+                //Get 3 vertices
+                Double[] av = (Double[]) ArrayUtility.splitArray(verticesAndNormals.get(materialFace.get(0)[0]), 3)[0];
+                Double[] bv = (Double[]) ArrayUtility.splitArray(verticesAndNormals.get(materialFace.get(1)[0]), 3)[0];
+                Double[] cv = (Double[]) ArrayUtility.splitArray(verticesAndNormals.get(materialFace.get(2)[0]), 3)[0];
+                Double[] face_normal = ArrayVector.multiply(ArrayVector.subtract(bv, av), ArrayVector.subtract(cv, av));
+
+                for (int x = 0; x < 4; x++) {
+                    //Get vertex and vertex normal pair for each vert in face
+                    Integer vertexIndex = materialFace.get(x)[0];
+
+                    Double[] v = verticesAndNormals.get(vertexIndex);
+                    //If the length of the pair is 4, the vertex normal hasn't been set yet
+                    if (v.length == 3) {
+                        //Append face_normal to the pair, to complete it it
+                        v = (Double[]) ArrayUtility.combineArray(v, face_normal);
+                    } else {
+                        //Split the v pair
+                        Object[] v_and_n = ArrayUtility.splitArray(v, 3);
+                        //Get the normal from the pair
+                        Double[] vn = (Double[]) v_and_n[1];
+                        //Add face_normal to vertex normal
+                        vn = ArrayVector.add(vn, face_normal);
+
+                        //Create new pair from vertex and normal
+                        v = (Double[]) ArrayUtility.combineArray((Double[]) v_and_n[0], vn);
+                    }
+
+                    //Set v pair back to verticesAndNormals (to set the new normal)
+                    verticesAndNormals.update(vertexIndex, v);
+                }
+
+            }
+        }
+    }
+
+    public static void normalizeNormals(ArrayList<Double[]> normalsArray){
+        //Loop through vertex normals and normalize it
+        for(int c = 0; c < normalsArray.size(); c++){
+            Double[] vn = normalsArray.get(c);
+
+            if(vn[0] != null){
+                vn = ArrayVector.normalize(vn);
+                normalsArray.set(c, vn);
+            }else{
+                normalsArray.remove(c);
+                c--;
+            }
+        }
+    }
+
+    /**
+     * Write the Wavefront OBJ to the print writer, and return an array that keeps count of all written
+     * vertices/uv's/vertex normals
+     * @param object The wavefront object to write the data
+     * @param f The PrintWriter to write the data to
+     * @param countTracker A 3 length integer array to keep count of all written vertices/uv's/vertex normals
+     * @return A 3 length integer array that keeps count of all written vertices/uv's/vertex normals
+     */
+    public static int[] writeObjectData(IWavefrontObject object, PrintWriter f, int[] countTracker){
         //Specify new object
         f.println(String.format("o %s", object.getName()));
 
         ArrayList<Double[]> vertices = object.getVertices();
+
         //Write all vertices
         for(Double[] v : vertices){
-            f.println(String.format("v %f %f %f", v[0], v[2], -v[1]));
+            f.println(String.format(Locale.ROOT, "v %f %f %f", v[0], v[2], -v[1]));
         }
 
         ArrayList<Double[]> uvs = object.getTextureCoordinates();
         //Write all texture coordinates
         for(Double[] vt : uvs){
-            f.println(String.format("vt %f %f", vt[0], vt[1]));
+            f.println(String.format(Locale.ROOT, "vt %f %f", vt[0], vt[1]));
         }
 
         ArrayList<Double[]> vertNormals = object.getVertexNormals();
         //Write all vertex normals
         for(Double[] vn : vertNormals){
-            f.println(String.format("vn %f %f %f", vn[0], vn[1], vn[2]));
+            f.println(String.format(Locale.ROOT, "vn %f %f %f", vn[0], vn[1], vn[2]));
         }
+
+
 
 
         //key: materialName (ex. texture:blocks/dirt), value: list of faces
@@ -451,14 +728,24 @@ public class WavefrontUtility {
                 for (int x = face.size() - 1; x >= 0; x--) {
                     Integer[] indices = face.get(x);
                     //Format: vert index/texture coordinate/vert normal index
-                    //Each index is negative, so it uses the the newest added vertices...
-                    //Example, and index of -1 uses the last added vertex
-                    faceEntry += String.format(" %d/%d/%d", indices[0] - vertices.size(), indices[1] - uvs.size(), indices[2] - vertNormals.size());
+                    //Each index is calculated based on the sum of written vertices/uv/vertex normals + 1 (as in the Wavefront OBJ format indexes start with 1) + local index (ex 0)
+                    faceEntry += String.format(" %d/%d/%d", countTracker[0] + 1 + indices[0], countTracker[1] + 1 + indices[1], countTracker[2] + 1 + indices[2]);
                 }
                 f.println(faceEntry);
             }
 
         }
+
+        //Update size of written vertices on countTracker
+        countTracker[0] += vertices.size();
+
+        //Update size of written vertex normals on countTracker
+        countTracker[2] += vertices.size();
+
+        //Update size of written texture coordinates on countTracker
+       countTracker[1] += uvs.size();
+
+        return countTracker;
     }
 
 }

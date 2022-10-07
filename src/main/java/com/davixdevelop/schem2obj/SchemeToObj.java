@@ -140,19 +140,24 @@ public class SchemeToObj {
     }
 
     public ArrayList<IWavefrontObject> schemToObj(String schemPath, boolean exportAllBlocks){
-        Schematic schematic = null;
+
 
         try {
             InputStream schemInput = new FileInputStream(schemPath);
 
             try{
                 //Read schematic
-                schematic = Schematic.loadSchematic(schemInput);}
+                Schematic schematic = null; schematic = Schematic.loadSchematic(schemInput);
+                //Load schematic into LOADED_SCHEMATIC
+                Constants.LOADED_SCHEMATIC.setSchematic(schematic);
+            }
             catch(IOException exception){
+                Utility.Log("Error while reading schematic");
                 Utility.Log(exception.getMessage());
                 return null;
             }
         }catch (FileNotFoundException exception){
+            Utility.Log("Could not find specified schematic");
             Utility.Log(exception.getMessage());
             return null;
         }
@@ -162,33 +167,19 @@ public class SchemeToObj {
         //All blocks (including air -> null)
         HashMap<Integer,IWavefrontObject> allBlocks = new HashMap<>();
 
-        Integer width = Integer.valueOf(schematic.getWidth());
-        Integer length = Integer.valueOf(schematic.getLength());
-        Integer height = Integer.valueOf(schematic.getHeight());
+        Integer width = (int) Constants.LOADED_SCHEMATIC.getWidth();
+        Integer length = (int) Constants.LOADED_SCHEMATIC.getLength();
+        Integer height = (int) Constants.LOADED_SCHEMATIC.getHeight();
 
         for (int x = 0; x < width; x++)  {
             for (int y = 0; y < height; y++) {
                 for(int z = 0; z < length; z++) {
                     final int index = x + (y * length + z) * width;
 
-                    int blockID = schematic.getBlocks()[index];
-
-                    //If block is air and individual blocks is disabled, ignore air
-                    //Else add a empty object to all blocks
-                    if (blockID == 0)
-                        if (exportAllBlocks)
-                            continue;
-                        else{
-                            allBlocks.put(index, null);
-                            continue;
-                        }
-
-                    int meta = schematic.getData()[index];
-
-                    Namespace blockNamespace = Constants.BLOCK_MAPPING.getBlockNamespace(blockID + ":" + meta);
+                    Namespace blockNamespace = Constants.LOADED_SCHEMATIC.getNamespace(x, y, z);
 
                     //ToDo: Write custom blocks (ex, Water, Chest, Sign, Wall Sign...). Until then, ignore these blocks
-                    if (blockNamespace.getDomain().equals("builtin"))
+                    if (blockNamespace == null || blockNamespace.getDomain().equals("builtin"))
                         if (exportAllBlocks)
                             continue;
                         else {
@@ -200,7 +191,7 @@ public class SchemeToObj {
                     IWavefrontObject wavefrontObject = Constants.WAVEFRONT_COLLECTION.fromNamespace(blockNamespace);
 
                     //Translate the singleton block to the position of the block in the space
-                    wavefrontObject = WavefrontUtility.translateWavefrontBlock(wavefrontObject, new Integer[]{x, z, y}, new Integer[]{Integer.valueOf(schematic.getWidth()), Integer.valueOf(schematic.getLength()), Integer.valueOf(schematic.getHeight())});
+                    wavefrontObject = WavefrontUtility.translateWavefrontBlock(wavefrontObject, new Integer[]{x, z, y}, new Integer[]{width,length,height});
 
                     if (exportAllBlocks)
                         blocks.add(wavefrontObject);
@@ -277,14 +268,21 @@ public class SchemeToObj {
             OutputStream outputStream = new FileOutputStream(output_path.toFile().getAbsolutePath());
 
             //Write wavefront objects to output file
-            PrintWriter f = new PrintWriter(outputStream);
-
+            PrintWriter f = new PrintWriter(outputStream){
+                @Override
+                public void println() {
+                    write('\n');
+                }
+            };
             //Specify which material library to use
             f.println(String.format("mtllib %s.mtl", fileName));
 
+            //Array variable to keep track of how many vertices, texture coordinates and vertex normals were writen
+            int[] countTracker = new int[]{0,0,0};
+
             for(IWavefrontObject object : objects){
                 if(!object.getMaterialFaces().isEmpty())
-                    WavefrontUtility.writeObjectData(object, f);
+                    countTracker = WavefrontUtility.writeObjectData(object, f, countTracker);
             }
 
             //Flush and close output stream
@@ -314,7 +312,12 @@ public class SchemeToObj {
             Path materialFile = Paths.get(output_path.toFile().getParent(), String.format("%s.mtl", fileName));
             OutputStream outputStream = new FileOutputStream(materialFile.toFile());
 
-            PrintWriter f = new PrintWriter(outputStream);
+            PrintWriter f = new PrintWriter(outputStream){
+                @Override
+                public void println() {
+                    write('\n');
+                }
+            };
 
             //Texture path is the same folder as the output path in the folder of the same name as the object file
             String textureFileOutPath = Paths.get(output_path.toFile().getParent(), fileName).toFile().toString();

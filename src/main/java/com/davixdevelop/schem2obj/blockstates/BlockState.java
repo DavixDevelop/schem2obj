@@ -219,12 +219,12 @@ public class BlockState {
             }
 
             //Check if block data has any data
-            if(!blockNamespace.getData().isEmpty()) {
+            if(!blockProps.isEmpty()) {
                 for (Object when : variantMultiKeys.keySet()) {
                     if (when instanceof HashMap) { //Check if when is regular HashMap
                         //Get the when properties
                         HashMap<String, String> whenProps = (HashMap<String, String>) when;
-                        variantIndexes = getVariantIndexesFromBlockProps(when, whenProps, blockProps, variantIndexes);
+                        getVariantIndexesFromBlockProps(when, whenProps, blockProps, variantIndexes);
                     }
                 }
             }
@@ -233,17 +233,17 @@ public class BlockState {
             if(variantIndexes.isEmpty()){
                 if(isSeamless != null){
                     if(isSeamless.equals("false") && variantMultiKeys.containsKey("normal"))
-                        variantIndexes = getMultiPartVariantIndexes("normal", variantIndexes);
+                        getMultiPartVariantIndexes("normal", variantIndexes);
                     else if (variantMultiKeys.containsKey("all"))
-                        variantIndexes = getMultiPartVariantIndexes("all", variantIndexes);
+                        getMultiPartVariantIndexes("all", variantIndexes);
                     else
-                        variantIndexes = getMultiPartVariantIndexes("normal", variantIndexes);
+                         getMultiPartVariantIndexes("normal", variantIndexes);
                 }else {
 
                     if (variantMultiKeys.containsKey("normal"))
-                        variantIndexes = getMultiPartVariantIndexes("normal", variantIndexes);
+                         getMultiPartVariantIndexes("normal", variantIndexes);
                     else if (variantMultiKeys.containsKey("all"))
-                        variantIndexes = getMultiPartVariantIndexes("all", variantIndexes);
+                        getMultiPartVariantIndexes("all", variantIndexes);
                 }
             }
 
@@ -282,18 +282,18 @@ public class BlockState {
                     List<Map<String, String>> orWhens = (List<Map<String, String>>) when;
 
                     for(Map<String, String> whenProps : orWhens){
-                        variantIndexes = getVariantIndexesFromBlockProps(when, whenProps, blockProps, variantIndexes);
+                         getVariantIndexesFromBlockProps(when, whenProps, blockProps, variantIndexes);
                     }
 
                 }else if(when instanceof Map){ //Check if when is regular HashMap
                     //Get the when properties
                     Map<String, String> whenProps = (Map<String, String>) when;
-                    variantIndexes = getVariantIndexesFromBlockProps(when, whenProps, blockProps, variantIndexes);
+                    getVariantIndexesFromBlockProps(when, whenProps, blockProps, variantIndexes);
 
 
                 }else {
                     //The default variant/variants
-                    variantIndexes = getMultiPartVariantIndexes(null, variantIndexes);
+                     getMultiPartVariantIndexes(null, variantIndexes);
                 }
             }
 
@@ -313,15 +313,13 @@ public class BlockState {
      * @param currentVariantIndexes The list of current variants (to prevent duplicates)
      * @return An list of multipart variant indexes the block uses
      */
-    private Set<Integer> getMultiPartVariantIndexes(Object when, Set<Integer> currentVariantIndexes){
+    private void getMultiPartVariantIndexes(Object when, Set<Integer> currentVariantIndexes){
         Integer[] variantIndexes = variantMultiKeys.get(when);
         for(Integer index : variantIndexes){
             //Only add index if It's not in current list yet
             if(!currentVariantIndexes.contains(index))
                 currentVariantIndexes.add(index);
         }
-
-        return currentVariantIndexes;
     }
 
     /**
@@ -332,8 +330,11 @@ public class BlockState {
      * @param currentVariantIndexes The list of current variants (to prevent duplicates)
      * @return An list of multipart variant indexes from the variantMultiKeys key
      */
-    private Set<Integer> getVariantIndexesFromBlockProps(Object multiPartKey, Map<String, String>  whenProps, HashMap<String, String> blockProps, Set<Integer> currentVariantIndexes){
+    private void getVariantIndexesFromBlockProps(Object multiPartKey, Map<String, String>  whenProps, HashMap<String, String> blockProps, Set<Integer> currentVariantIndexes){
         //Loop through the actual properties of the block
+
+        boolean mathes = false;
+
         for(String property : blockProps.keySet()){
             //Check if block property exists in when
             if(whenProps.containsKey(property)){
@@ -357,18 +358,23 @@ public class BlockState {
 
                     //Add variant indexes if block property value matches at least one orValue
                     if(containsVal)
-                        currentVariantIndexes = getMultiPartVariantIndexes(multiPartKey, currentVariantIndexes);
+                        mathes = true;
+                    else
+                        mathes = false;
 
                 }else if(blockProps.get(property).equals(whenPropValue)){
-                    currentVariantIndexes = getMultiPartVariantIndexes(multiPartKey, currentVariantIndexes);
-                }else
+                    mathes = true;
+                }else {
+                    mathes = false;
                     break;
+                }
 
 
             }
         }
 
-        return currentVariantIndexes;
+        if(mathes)
+            getMultiPartVariantIndexes(multiPartKey, currentVariantIndexes);
     }
 
 

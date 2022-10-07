@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * Represent a Minecraft Block Model, with methods for reading
@@ -212,6 +213,16 @@ public class BlockModel {
 
         model = new BlockModel(modelName, rawModel.parent, rawModel.ambientocclusion, new BlockTextures(particle, textureVariables),cubeElements);
         return model;
+    }
+
+    public BlockModel clone(){
+        BlockTextures cloneTextures = null;
+        ArrayList<CubeElement> cloneElements = new ArrayList<>();
+        if(textures != null)
+            cloneTextures = textures.clone();
+        if(elements != null)
+            cloneElements = new ArrayList<>(elements);
+        return new BlockModel(name, parent, ambientocclusion, cloneTextures, cloneElements);
     }
 
 }

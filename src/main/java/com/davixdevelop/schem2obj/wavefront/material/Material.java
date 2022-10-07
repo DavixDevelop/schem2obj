@@ -7,6 +7,7 @@ import java.io.InputStream;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Locale;
 
 /**Default Material that only uses the defuse texture
  * @author DavixDevelop
@@ -99,12 +100,11 @@ public class Material implements IMaterial {
         matLines.add(String.format("newmtl %s", getName()));
 
         if(getLightValue() > 0.0){
-            matLines.add(String.format("Ke %f %f %f",getLightValue(), getLightValue(), getLightValue()));
+            matLines.add(String.format(Locale.ROOT, "Ke %f %f %f",getLightValue(), getLightValue(), getLightValue()));
         }
         matLines.add(String.format("map_Ka %s/%s.png", diffuseTextureOut.getParent().toFile().getName(), getDiffuseTextureName()));
-        matLines.add("interpolateMode NEAREST_MAGNIFICATION_TRILINEAR_MIPMAP_MINIFICATION");
         matLines.add(String.format("map_Kd %s/%s.png", diffuseTextureOut.getParent().toFile().getName(), getDiffuseTextureName()));
-        if(getName().contains("glass") || getName().contains("leaves"))
+        if(getName().contains("glass") || getName().contains("leaves") || getName().equals("slime"))
             matLines.add(String.format("map_d %s/%s.png", diffuseTextureOut.getParent().toFile().getName(), getDiffuseTextureName()));
         if(getLightValue() > 0.0){
             matLines.add(String.format("map_Ke %s/%s.png", diffuseTextureOut.getParent().toFile().getName(), getDiffuseTextureName()));
