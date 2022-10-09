@@ -30,10 +30,11 @@ public class ArrayVector {
 
         /**
          *
-         * @param rot Rotation in radians
+         * @param rot Rotation in degrees
          * @param axis Axis of rotation
          */
         public MatrixRotation(Double rot, String axis){
+            rot = Math.toRadians(-rot);
             this.rot = rot;
             switch (axis){
                 case "Z":

@@ -3,6 +3,8 @@ package com.davixdevelop.schem2obj.wavefront;
 import com.davixdevelop.schem2obj.namespace.Namespace;
 import com.davixdevelop.schem2obj.utilities.ArrayUtility;
 import com.davixdevelop.schem2obj.utilities.Utility;
+import com.davixdevelop.schem2obj.wavefront.custom.GlassBlockWavefrontObject;
+import com.davixdevelop.schem2obj.wavefront.custom.GlassPaneWavefrontObject;
 import com.davixdevelop.schem2obj.wavefront.material.Material;
 
 import java.util.ArrayList;
@@ -74,6 +76,12 @@ public class WavefrontObject implements IWavefrontObject {
         return facing;
     }
 
+    @Override
+    public boolean checkCollision(IWavefrontObject adjacent) {
+        //If the adjacent block is glass block or glass pane don't check for collision
+        return !(adjacent instanceof GlassPaneWavefrontObject) && !(adjacent instanceof GlassBlockWavefrontObject);
+    }
+
     /**
      * Set the bounding faces of the object
      * @param facing Map<Facing (Orientation):String, Map<MaterialName:String, List<FaceIndex:Integer>>>
@@ -125,6 +133,7 @@ public class WavefrontObject implements IWavefrontObject {
         facing = new HashMap<>(cloneObject.facing.entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey,
                 x -> new HashMap<>(x.getValue().entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey,
                         y -> new ArrayList<>(y.getValue())))))));
+
     }
 
 

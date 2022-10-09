@@ -163,14 +163,23 @@ public class SEUSMaterial extends Material {
 
         matLines.add(String.format("newmtl %s", getName()));
 
-        if(getLightValue() > 0.0){
-            matLines.add(String.format(Locale.ROOT, "Ke %f %f %f",getLightValue(), getLightValue(), getLightValue()));
+        if(getSpecularHighlights() != null)
+            matLines.add(String.format(Locale.ROOT, "Ns %f", getSpecularHighlights()));
+
+        matLines.add("Kd 1 1 1");
+
+        if(getSpecularColor() != null)
+            matLines.add(String.format(Locale.ROOT, "Ks %f %f %f", getSpecularColor(), getSpecularColor(), getSpecularColor()));
+
+
+        if(getEmissionStrength() > 0.0){
+            matLines.add(String.format(Locale.ROOT, "Ke %f %f %f", getEmissionStrength(), getEmissionStrength(), getEmissionStrength()));
         }
         matLines.add(String.format("map_Ka %s/%s.png", textureFolderName, getDiffuseTextureName()));
         matLines.add(String.format("map_Kd %s/%s.png", textureFolderName, getDiffuseTextureName()));
         if(getName().contains("glass") || getName().contains("leaves") || getName().equals("slime"))
             matLines.add(String.format("map_d %s/%s.png", textureFolderName, getDiffuseTextureName()));
-        if(getLightValue() > 0.0){
+        if(getEmissionStrength() > 0.0){
             if(!hasSpec)
                 matLines.add(String.format("map_Ke %s/%s.png", textureFolderName, getDiffuseTextureName()));
             else
@@ -186,6 +195,12 @@ public class SEUSMaterial extends Material {
             matLines.add(String.format("map_Pr %s/%s_r.png", textureFolderName, WavefrontUtility.textureName(specularTexture).replace("_s","")));
             matLines.add(String.format("map_Pm %s/%s_m.png", textureFolderName, WavefrontUtility.textureName(specularTexture).replace("_s","")));
         }
+
+        if(getIlluminationModel() != null)
+            matLines.add(String.format(Locale.ROOT, "illum %d", getIlluminationModel()));
+
+        if(getTransmissionFilter() != null)
+            matLines.add(String.format(Locale.ROOT, "Tf %f %f %f", getTransmissionFilter(), getTransmissionFilter(), getTransmissionFilter()));
 
 
         return matLines;

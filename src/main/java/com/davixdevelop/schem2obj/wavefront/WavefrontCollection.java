@@ -4,6 +4,8 @@ import com.davixdevelop.schem2obj.blockmodels.BlockModelCollection;
 import com.davixdevelop.schem2obj.blockstates.BlockState;
 import com.davixdevelop.schem2obj.blockstates.BlockStateCollection;
 import com.davixdevelop.schem2obj.namespace.Namespace;
+import com.davixdevelop.schem2obj.wavefront.custom.GlassBlockWavefrontObject;
+import com.davixdevelop.schem2obj.wavefront.custom.GlassPaneWavefrontObject;
 import com.davixdevelop.schem2obj.wavefront.custom.GrassBlockWavefrontObject;
 import com.davixdevelop.schem2obj.wavefront.custom.MagmaBlockWavefrontObject;
 import com.davixdevelop.schem2obj.wavefront.material.MaterialCollection;
@@ -22,18 +24,7 @@ public class WavefrontCollection {
         if(wavefrontObjecs.containsKey(blockNamespace))
             return wavefrontObjecs.get(blockNamespace).clone();
         else{
-            IWavefrontObject block = null;
-
-            switch (blockNamespace.getName()){
-                case "grass":
-                    block = new GrassBlockWavefrontObject();
-                    break;
-                case "magma":
-                    block = new MagmaBlockWavefrontObject();
-                    break;
-                default:
-                    block = new BlockWavefrontObject();
-            }
+            IWavefrontObject block = getType(blockNamespace);
 
             //Only store object in memory if to does not have random variants (multiple variants in "variants" field)
             //If it does recreate it every time
@@ -42,6 +33,24 @@ public class WavefrontCollection {
 
             return block.clone();
 
+        }
+    }
+
+    public static IWavefrontObject getType(Namespace blockNamespace){
+
+        if(blockNamespace.getName().contains("glass_pane"))
+            return new GlassPaneWavefrontObject();
+
+        if(blockNamespace.getName().contains("glass"))
+            return new GlassBlockWavefrontObject();
+
+        switch (blockNamespace.getName()){
+            case "grass":
+                return new GrassBlockWavefrontObject();
+            case "magma":
+                return  new MagmaBlockWavefrontObject();
+            default:
+                return new BlockWavefrontObject();
         }
     }
 }

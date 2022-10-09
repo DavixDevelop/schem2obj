@@ -1,9 +1,7 @@
 package com.davixdevelop.schem2obj.blockmodels;
 
 import com.davixdevelop.schem2obj.blockstates.BlockState;
-import com.davixdevelop.schem2obj.blockstates.BlockStateCollection;
 import com.davixdevelop.schem2obj.namespace.Namespace;
-import com.davixdevelop.schem2obj.utilities.ArrayVector;
 
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -28,17 +26,14 @@ public class BlockModelCollection {
      * The last two parameters are constants, and should not be changed outside the method call
      * @param models An list to populate with the block's models
      * @param block The namespace of the block
-     * @param variant The single variant from block state
      * @return List of BlockModels
      */
     private void getBlockModelInternal(ArrayList<BlockModel> models, Namespace block, BlockState.Variant variant){
 
         String modelName = block.getName();
 
-        if(!block.getDomain().equals("internal")){
-            //Get the model name from the variant;
-            modelName =  variant.getModel();
-        }
+        if(!block.getDomain().equals("internal"))
+            modelName = variant.getModel();
 
         //Check if block was already read from assets
         if (blocksModels.containsKey(modelName)) {
@@ -46,7 +41,7 @@ public class BlockModelCollection {
             //Add model item as first element in array, so that the requested block is the first element
             models.add(item);
 
-            item.setRootParent(variant.getModel());
+            //item.setRootVariant(variant);
 
             //Check if model has parent
             if (item.getParent() != null) {
@@ -62,7 +57,7 @@ public class BlockModelCollection {
             //Store model in memory for later
             blocksModels.put(modelName, model.clone());
 
-            model.setRootParent(variant.getModel());
+            //model.setRootVariant(variant);
 
             models.add(model);
 
@@ -78,7 +73,6 @@ public class BlockModelCollection {
      * Method to get the block's models
      * and the block parents model
      * @param block The namespace of the block
-     * @param variant A single variant of the BlockState
      * @return List of BlockModels
      */
     public ArrayList<BlockModel> getBlockModel(Namespace block, BlockState.Variant variant){

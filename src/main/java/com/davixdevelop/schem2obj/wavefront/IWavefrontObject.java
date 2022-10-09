@@ -31,6 +31,13 @@ public interface IWavefrontObject {
     HashMap<String, HashMap<String, ArrayList<Integer>>> getBoundingFaces();
 
     /**
+     * Return true if object should check for collision (facing) with the parent object
+     * @param adjacent The Adjacent block
+     * @return true if it should check, else false
+     */
+    boolean checkCollision(IWavefrontObject adjacent);
+
+    /**
      * Nullify all object faces that face the specified orientation and remove material if it all It's face are null
      * @param orientation The orientation (ex. top, up, north...)
      */

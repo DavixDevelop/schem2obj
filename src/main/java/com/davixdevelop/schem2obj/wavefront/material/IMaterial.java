@@ -5,8 +5,76 @@ import java.io.InputStream;
 import java.util.ArrayList;
 
 public interface IMaterial {
-    double getLightValue();
-    void setLightValue(double value);
+
+
+    /**
+     * Get Ke value (Emission Strength)
+     * @return
+     */
+    double getEmissionStrength();
+    void seEmissionStrength(double value);
+
+    /**
+     * Get Ka value (Ambient Color)
+     * @return 3 length double array
+     */
+    Double getAmbientColor();
+
+    /**
+     * Set Ka value
+     * @param value Ka exponent
+     */
+    void setAmbientColor(double value);
+
+    /**
+     * Get Ks value (Specular Color)
+     */
+    Double getSpecularColor();
+
+    /**
+     * Set Ks exponent
+     * @param value Ks exponent
+     */
+    void setSpecularColor(double value);
+
+    /**
+     * Get Ns value (Specular Highlight)
+     * @return double value
+     */
+    Double getSpecularHighlights();
+
+    /**
+     * Set Ns exponent
+     * @param value Ns exponent
+     */
+    void setSpecularHighlights(double value);
+
+    /**
+     * Get illum value (Illumination Model)
+     * @return
+     */
+    Integer getIlluminationModel();
+
+    /**
+     * Set illum value
+     * @param value illumination model index
+     */
+    void setIlluminationModel(int value);
+
+    /**
+     * Get Tf value (Transmission filter)
+     * @return Tf exponent
+     */
+    Double getTransmissionFilter();
+
+    /**
+     * Set Tf exponent
+     * @param value Tf exponent
+     */
+    void setTransmissionFilter(double value);
+
+
+
     String getName();
     void setName(String name);
     String getDiffuseTexturePath();

@@ -1,6 +1,5 @@
 package com.davixdevelop.schem2obj;
 
-import com.davixdevelop.schem2obj.namespace.BlockMapping;
 import com.davixdevelop.schem2obj.namespace.Namespace;
 import com.davixdevelop.schem2obj.schematic.Schematic;
 import com.davixdevelop.schem2obj.utilities.Utility;
@@ -176,6 +175,9 @@ public class SchemeToObj {
                 for(int z = 0; z < length; z++) {
                     final int index = x + (y * length + z) * width;
 
+                    //Set the current position of the read block, so other WavefrontObject can check the adjacent blocks
+                    Constants.LOADED_SCHEMATIC.setCurrentBlockPosition(x, y, z);
+
                     Namespace blockNamespace = Constants.LOADED_SCHEMATIC.getNamespace(x, y, z);
 
                     //ToDo: Write custom blocks (ex, Water, Chest, Sign, Wall Sign...). Until then, ignore these blocks
@@ -208,43 +210,51 @@ public class SchemeToObj {
                 for (int x = 0; x < width; x++){
                     for(int z = 0; z < length; z++) {
                         final int index = x + (y * length + z) * width;
+
+                        Constants.LOADED_SCHEMATIC.setCurrentBlockPosition(x, y, z);
+
                         IWavefrontObject object = allBlocks.get(index);
                         if(object != null){
                             final Set<String> objectBoundingFaces = object.getBoundingFaces().keySet();
 
+                            if(objectBoundingFaces.isEmpty()) {
+                                blocks.add(object);
+                                continue;
+                            }
+
                             //West block check
                             if(x > 0)
-                                if(WavefrontUtility.checkFaceing(objectBoundingFaces, allBlocks.get((x - 1) + (y * length + z) * width), "west", "east"))
+                                if(WavefrontUtility.checkFacing(objectBoundingFaces, object, allBlocks.get((x - 1) + (y * length + z) * width), "west", "east"))
                                     object.deleteFaces("west");
 
 
                             //East block check
                             if(x + 1 < width)
-                                if(WavefrontUtility.checkFaceing(objectBoundingFaces, allBlocks.get((x + 1) + (y* length + z) * width), "east", "west"))
+                                if(WavefrontUtility.checkFacing(objectBoundingFaces, object, allBlocks.get((x + 1) + (y* length + z) * width), "east", "west"))
                                     object.deleteFaces("east");
 
 
                             //North block check
                             if(z > 0)
-                                if(WavefrontUtility.checkFaceing(objectBoundingFaces, allBlocks.get(x + (y * length + (z - 1)) * width), "north", "south"))
+                                if(WavefrontUtility.checkFacing(objectBoundingFaces, object, allBlocks.get(x + (y * length + (z - 1)) * width), "north", "south"))
                                     object.deleteFaces("north");
 
 
                             //South block check
                             if(z + 1 < length)
-                                if(WavefrontUtility.checkFaceing(objectBoundingFaces, allBlocks.get(x + (y * length + (z + 1)) * width), "south", "north"))
+                                if(WavefrontUtility.checkFacing(objectBoundingFaces, object, allBlocks.get(x + (y * length + (z + 1)) * width), "south", "north"))
                                     object.deleteFaces("south");
 
 
                             //Up block check
                             if(y + 1 < height)
-                                if(WavefrontUtility.checkFaceing(objectBoundingFaces, allBlocks.get(x + ((y + 1) * length + z) * width), "up", "down"))
+                                if(WavefrontUtility.checkFacing(objectBoundingFaces, object, allBlocks.get(x + ((y + 1) * length + z) * width), "up", "down"))
                                     object.deleteFaces("up");
 
 
                             //Down block check
                             if(y > 0)
-                                if(WavefrontUtility.checkFaceing(objectBoundingFaces, allBlocks.get(x + ((y - 1) * length + z) * width), "down", "up"))
+                                if(WavefrontUtility.checkFacing(objectBoundingFaces, object, allBlocks.get(x + ((y - 1) * length + z) * width), "down", "up"))
                                     object.deleteFaces("down");
 
                             blocks.add(object);

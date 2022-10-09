@@ -26,7 +26,7 @@ public class SchematicHolder {
         return schematic.getLength();
     }
 
-    private void setCurrentBlockPosition(int x, int y, int z){
+    public void setCurrentBlockPosition(int x, int y, int z){
         posX = x;
         posY = y;
         posZ = z;
@@ -49,11 +49,7 @@ public class SchematicHolder {
     }
 
     public Namespace getNamespace(int x, int y, int z){
-        if(x < schematic.getWidth() && y < schematic.getHeight() && z < schematic.getLength()){
-
-            //Set the current x y z pos so that other classes can access the current position of the block
-            setCurrentBlockPosition(x, y, z);
-
+        if(x < schematic.getWidth() && x >= 0 && y < schematic.getHeight() && y >= 0 && z < schematic.getLength() && z >= 0){
 
             final int index = x + (y * schematic.getLength() + z) * schematic.getWidth();
 

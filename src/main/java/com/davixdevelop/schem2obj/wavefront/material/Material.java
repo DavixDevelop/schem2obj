@@ -15,7 +15,15 @@ import java.util.Locale;
 public class Material implements IMaterial {
     private String diffuseTextureName;
     private String diffuseTexturePath;
-    private double lightValue;
+
+    private Double Ke;
+    private Double Ka;
+    private Double Ks;
+    private Double Ns;
+    private Integer illum;
+    private Double Tf;
+
+
     private String name;
 
     private BufferedImage customDiffuse;
@@ -23,7 +31,7 @@ public class Material implements IMaterial {
     public Material() {
         this.diffuseTextureName = null;
         this.diffuseTexturePath = null;
-        this.lightValue = 0.0;
+        this.Ke = 0.0;
     }
 
     @Override
@@ -76,13 +84,63 @@ public class Material implements IMaterial {
     }
 
     @Override
-    public double getLightValue() {
-        return lightValue;
+    public double getEmissionStrength() {
+        return Ke;
     }
 
     @Override
-    public void setLightValue(double lightValue) {
-        this.lightValue = lightValue;
+    public void seEmissionStrength(double lightValue) {
+        this.Ke = lightValue;
+    }
+
+    @Override
+    public Double getAmbientColor() {
+        return Ka;
+    }
+
+    @Override
+    public void setAmbientColor(double value) {
+        Ka = value;
+    }
+
+    @Override
+    public Double getSpecularColor() {
+        return Ks;
+    }
+
+    @Override
+    public void setSpecularColor(double value) {
+        Ks = value;
+    }
+
+    @Override
+    public Double getSpecularHighlights() {
+        return Ns;
+    }
+
+    @Override
+    public void setSpecularHighlights(double value) {
+        Ns = value;
+    }
+
+    @Override
+    public Integer getIlluminationModel() {
+        return illum;
+    }
+
+    @Override
+    public void setIlluminationModel(int value) {
+        illum = value;
+    }
+
+    @Override
+    public Double getTransmissionFilter() {
+        return Tf;
+    }
+
+    @Override
+    public void setTransmissionFilter(double value) {
+        Tf = value;
     }
 
     @Override
@@ -99,16 +157,34 @@ public class Material implements IMaterial {
 
         matLines.add(String.format("newmtl %s", getName()));
 
-        if(getLightValue() > 0.0){
-            matLines.add(String.format(Locale.ROOT, "Ke %f %f %f",getLightValue(), getLightValue(), getLightValue()));
+        if(Ns != null)
+            matLines.add(String.format(Locale.ROOT, "Ns %f", Ns));
+
+        if(Ka != null)
+            matLines.add(String.format(Locale.ROOT, "Ka %f %f %f", Ka, Ka, Ka));
+
+        matLines.add("Kd 1 1 1");
+
+        if(Ks != null)
+            matLines.add(String.format(Locale.ROOT, "Ks %f %f %f", Ks, Ks, Ks));
+
+        if(getEmissionStrength() > 0.0){
+            matLines.add(String.format(Locale.ROOT, "Ke %f %f %f", getEmissionStrength(), getEmissionStrength(), getEmissionStrength()));
         }
         matLines.add(String.format("map_Ka %s/%s.png", diffuseTextureOut.getParent().toFile().getName(), getDiffuseTextureName()));
         matLines.add(String.format("map_Kd %s/%s.png", diffuseTextureOut.getParent().toFile().getName(), getDiffuseTextureName()));
         if(getName().contains("glass") || getName().contains("leaves") || getName().equals("slime"))
             matLines.add(String.format("map_d %s/%s.png", diffuseTextureOut.getParent().toFile().getName(), getDiffuseTextureName()));
-        if(getLightValue() > 0.0){
+        if(getEmissionStrength() > 0.0){
             matLines.add(String.format("map_Ke %s/%s.png", diffuseTextureOut.getParent().toFile().getName(), getDiffuseTextureName()));
         }
+
+        if(illum != null)
+            matLines.add(String.format(Locale.ROOT, "illum %d", illum));
+
+        if(Tf != null)
+            matLines.add(String.format(Locale.ROOT, "Tf %f %f %f", Tf, Tf, Tf));
+
 
 
         return matLines;
@@ -128,8 +204,14 @@ public class Material implements IMaterial {
         customDiffuse = cloneMaterial.customDiffuse;
         diffuseTextureName = cloneMaterial.diffuseTextureName;
         diffuseTexturePath = cloneMaterial.diffuseTexturePath;
-        lightValue = cloneMaterial.lightValue;
         name = cloneMaterial.name;
+
+        Ke = cloneMaterial.Ke;
+        Ka = cloneMaterial.Ka;
+        Ks = cloneMaterial.Ks;
+        Ns = cloneMaterial.Ns;
+        illum = cloneMaterial.illum;
+        Tf = cloneMaterial.Tf;
     }
 
 

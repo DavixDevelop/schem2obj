@@ -1,6 +1,7 @@
 package com.davixdevelop.schem2obj.blockmodels;
 
 import com.davixdevelop.schem2obj.blockmodels.json.BlockModelTemplate;
+import com.davixdevelop.schem2obj.blockstates.BlockState;
 import com.davixdevelop.schem2obj.utilities.ArrayUtility;
 import com.google.gson.Gson;
 
@@ -11,7 +12,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 /**
  * Represent a Minecraft Block Model, with methods for reading
@@ -22,7 +22,6 @@ import java.util.stream.Collectors;
 public class BlockModel {
     private String name;
     private String parent;
-    private String rootParent;
     private Boolean ambientocclusion;
     private BlockTextures textures;
     private ArrayList<CubeElement> elements;
@@ -41,10 +40,6 @@ public class BlockModel {
         return parent;
     }
 
-    public String getRootParent() {
-        return rootParent;
-    }
-
     public Boolean getAmbientOcclusion() {
         return ambientocclusion;
     }
@@ -59,10 +54,6 @@ public class BlockModel {
 
     public void setElements(ArrayList<CubeElement> elements) {
         this.elements = elements;
-    }
-
-    public void setRootParent(String rootParent) {
-        this.rootParent = rootParent;
     }
 
     /**
@@ -102,21 +93,30 @@ public class BlockModel {
                 HashMap<String, CubeElement.CubeFace> cubeFaces = new HashMap<>();
                 CubeElement.CubeRotation cubeRotation = null;
 
-                //Get cube corner start position
-                //As MC uses the y axis as the z axis, swap them
-                for(int c = 0; c < element.from.size(); c++)
+                //Get cube corner start and end position
+                //As MC uses the y axis as the z axis, swap them, and the +z axis is the -y axis,
+                //"move" the cube
+                List<Number> MC_From = element.from;
+                List<Number> MC_To = element.to;
+
+                from[0] = MC_From.get(0).doubleValue();
+                from[1] = 16.0 - MC_To.get(2).doubleValue();
+                from[2] = MC_From.get(1).doubleValue();
+
+                to[0] = MC_To.get(0).doubleValue();
+                to[1] = 16.0 - MC_From.get(2).doubleValue();
+                to[2] = MC_To.get(1).doubleValue();
+
+                /*for(int c = 0; c < element.from.size(); c++)
                     from[(c == 1) ? 2 : (c == 2) ? 1 : c] = element.from.get(c).doubleValue();
+
+                for(int c = 0; c < element.to.size(); c++)
+                    to[(c == 1) ? 2 : (c == 2) ? 1 : c] = element.to.get(c).doubleValue();*/
 
                 //The reason why we call flattenArray here, is to cap the values of the cube vertices to 1.0 instead of 16.0,
                 //So that the cube's are the size of 1 meter or less, rather then 16 meters
                 //ToDo: Modify the asset's to skip this part
                 from = ArrayUtility.flattenArray(from, 16);
-
-                //Get cube corner end position
-                //As MC uses the y axis as the z axis, swap them
-                for(int c = 0; c < element.to.size(); c++)
-                    to[(c == 1) ? 2 : (c == 2) ? 1 : c] = element.to.get(c).doubleValue();
-
                 to = ArrayUtility.flattenArray(to, 16);
 
                 if(element.rotation != null){
@@ -146,7 +146,7 @@ public class BlockModel {
 
                 if(element.faces != null){
 
-                    Double MaxUVValue = 16.0;
+                    //Double MaxUVValue = 16.0;
 
                     for(Object face : element.faces.keySet()){
                         Double[] uv = null;
@@ -163,9 +163,13 @@ public class BlockModel {
                                 uv[c] = rawUv.get(c).doubleValue();
 
                                 //Find max UV Value
-                                if(uv[c] > MaxUVValue)
-                                    MaxUVValue = uv[c];
+                                //if(uv[c] > MaxUVValue)
+                                //    MaxUVValue = uv[c];
                             }
+
+                            //The reason why we call flattenArrayHere, is to cap the values of the cube texture coords to 1.0 instead of 16.0,
+                            //So that the cube face's uv's aren't bigger than the texture bounds
+                            uv = ArrayUtility.flattenArray(uv, 16);
                         }
 
                         if(faceValue.containsKey("texture"))
@@ -183,11 +187,12 @@ public class BlockModel {
                         cubeFaces.put((String) face, new CubeElement.CubeFace(uv, texture, cullface, rotation, tintindex));
                     }
 
-                    if(MaxUVValue / 16 > 1.0){
+                    /*if(MaxUVValue / 16 > 1.0){
                         Integer maxVal = ((Double)(MaxUVValue / 16.0)).intValue();
                         MaxUVValue = maxVal.doubleValue() * 16.0;
-                    }
+                    }*/
 
+                    /*
                     //Convert faces uv's from top left, bottom right to bottom left, top right that obj uses
                     for(String face : cubeFaces.keySet()){
                         CubeElement.CubeFace cubeFace = cubeFaces.get(face);
@@ -198,12 +203,10 @@ public class BlockModel {
                             uv[1] = MaxUVValue - bottom;
                             uv[3] = MaxUVValue - top;
 
-                            //The reason why we call flattenArrayHere, is to cap the values of the cube texture coords to 1.0 instead of 16.0,
-                            //So that the cube face's uv's aren't bigger than the texture bounds
-                            uv = ArrayUtility.flattenArray(uv, MaxUVValue.intValue());
+
                             cubeFace.setUv(uv);
                         }
-                    }
+                    }*/
                 }
 
                 cubeElements.add(new CubeElement(from, to, shade, cubeRotation, cubeFaces));

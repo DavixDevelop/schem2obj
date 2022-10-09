@@ -95,7 +95,7 @@ public class GrassBlockWavefrontObject extends BlockWavefrontObject {
     public void createNormalVariant(Namespace blockNamespace, BlockState.Variant randomVariant){
         ArrayVector.MatrixRotation rotationY = null;
         if(randomVariant.getY() != null)
-            rotationY = new ArrayVector.MatrixRotation(Math.toRadians(-randomVariant.getY()), "Z");
+            rotationY = new ArrayVector.MatrixRotation(randomVariant.getY(), "Z");
 
         createGrassBlock("grass", "blocks/grass_top", "blocks/grass_side", blockNamespace, rotationY);
     }
@@ -105,9 +105,10 @@ public class GrassBlockWavefrontObject extends BlockWavefrontObject {
     public void createGrassBlock(String name, String top_texture, String side_texture, Namespace blockNamespace, ArrayVector.MatrixRotation rotationY){
         setName(name);
 
-        //Each item is an array with the following values [vx, vy, vz, vnx, vny, vnz]
-        HashedDoubleList verticesAndNormals = new HashedDoubleList(3);
-        HashedDoubleList textureCoordinates = new HashedDoubleList(2);
+        //Each item is an array with the following values [vx, vy, vz]
+        HashedDoubleList vertices = new HashedDoubleList();
+        HashedDoubleList textureCoordinates = new HashedDoubleList();
+        ArrayList<Double[]> normalsArray = new ArrayList<>();
         //Map of materialName and It's faces, where each face consists of an list of array indices
         //Each indice consists of the vertex index, texture coordinate index and vertex normal index
         HashMap<String, ArrayList<ArrayList<Integer[]>>> faces = new HashMap<>();
@@ -142,16 +143,13 @@ public class GrassBlockWavefrontObject extends BlockWavefrontObject {
                 cubeFaces);
 
         //Convert cube to obj
-        WavefrontUtility.convertCubeToWavefront(cube, false, null, rotationY, verticesAndNormals, textureCoordinates, faces, boundingFaces, modelsMaterials);
+        WavefrontUtility.convertCubeToWavefront(cube, false, null, rotationY, vertices, textureCoordinates, faces, boundingFaces, modelsMaterials);
 
-        //Split verticesAndNormals to two list's
-        Object[] vertex_and_normals = ArrayUtility.splitArrayPairsToLists(verticesAndNormals.toList(), 3);
+        //Create normals for the object
+        WavefrontUtility.createNormals(normalsArray, vertices, faces);
 
-        //Get vertex list form vertex_and_normals
-        ArrayList<Double[]> verticesArray = (ArrayList<Double[]>) vertex_and_normals[0];
-
-        //Get normals list from vertex_and_normals
-        ArrayList<Double[]> normalsArray = (ArrayList<Double[]>) vertex_and_normals[1];
+        //Get vertex list
+        ArrayList<Double[]> verticesArray = vertices.toList();
 
         //Normalize vertex normals
         WavefrontUtility.normalizeNormals(normalsArray);
