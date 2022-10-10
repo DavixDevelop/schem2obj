@@ -9,9 +9,10 @@ Optional parameters:<br>
 - `-t` The absolute or relative path to the resource pack (folder with `pack.mcdata`)
 - `-allBlocks` If set, all blocks (including hidden) are exported
 
-All basic blocks (that are only basic cubes) are supported. The ones that do use only a basic cube and are not working properly or rely on parent blocks to work properly (ex. glass panes) are currently being implemented. 
-<br>List of custom block implemented:
+All basic blocks (that are only basic cubes) are supported. The ones that do use only a basic cube and are not working properly or rely on parent blocks to work properly (ex, fences, stairs...) are currently being implemented. 
+<br>List of custom blocks implemented:
 - Grass Block (non-snowy and snowy)
 - Magma Block (fixed compressed texture)
+- Glass Pane & Block (regular and stained)
 
 Currently in development.
