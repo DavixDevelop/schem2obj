@@ -8,11 +8,31 @@ Usage:`schem2obj -i <input schematic> (-t <resource pack path>) -o <output obj> 
 Optional parameters:<br>
 - `-t` The absolute or relative path to the resource pack (folder with `pack.mcdata`)
 - `-allBlocks` If set, all blocks (including hidden) are exported
+- `-snowy` If set, only the snowy grass is generated for now
 
-All basic blocks (that are only basic cubes) are supported. The ones that do use only a basic cube and are not working properly or rely on parent blocks to work properly (ex, fences, stairs...) are currently being implemented. 
+To import the generated OBJ into Blender 3.4 for example, create a new collection and import the obj into the newly created collection.
+Once It's imported, to properly set up the import, use the companion `MCImportCleanUp_Blender.py` script
+
+All basic blocks (that are only basic cubes), and some built blocks (ex, water and lava) are supported. Other built in blocks (ex, bed, player head...) or blocks that don't work are currently being implemented. 
 <br>List of custom blocks implemented:
 - Grass Block (non-snowy and snowy)
-- Magma Block (fixed compressed texture)
 - Glass Pane & Block (regular and stained)
+- Stairs
+- Doors
+- Fences
+- Redstone Dust
+- Slabs
+- Iron Bars
+- Water
+- Lava
+- Fire
+- Leaves
+- Cauldron
+- Command Block
+- Lit Furnace
+- Lit Pumpkin
+- Rough Prismarine Block
+- Sea Lantern
+- Magma Block (fixed compressed texture)
 
 Currently in development.

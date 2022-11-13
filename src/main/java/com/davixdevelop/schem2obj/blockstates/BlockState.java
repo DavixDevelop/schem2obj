@@ -155,7 +155,7 @@ public class BlockState {
                             HashMap<String, String> whens = new HashMap<>();
                             //Copy orWhen to whens
                             for(String key : orWhen.keySet())
-                                whens.put(key, whens.get(key));
+                                whens.put(key, orWhen.get(key));
 
                             //Add whens to list key
                             listOfWhens.add(whens);
@@ -333,8 +333,34 @@ public class BlockState {
     private void getVariantIndexesFromBlockProps(Object multiPartKey, Map<String, String>  whenProps, HashMap<String, String> blockProps, Set<Integer> currentVariantIndexes){
         //Loop through the actual properties of the block
 
-        boolean mathes = false;
+        boolean matches = false;
 
+        for(String property : whenProps.keySet()){
+            //Check if the when property is in the block property
+            if(blockProps.containsKey(property)){
+                String state = whenProps.get(property);
+                String blockState = blockProps.get(property);
+
+                //Check if the state contains | (state consists of multiple states)
+                if(state.contains("|")){
+                    //Split the state into multiple states, and check if the block state is in the states
+                    String[] states = state.split("\\|");
+                    for(String s : states) {
+                        matches = s.equals(blockState);
+                        if(matches)
+                            break;
+                    }
+
+                }else {
+                    matches = state.equals(blockState);
+                    if(!matches)
+                        break;
+                }
+                if(!matches)
+                    break;
+            }
+        }
+        /*
         for(String property : blockProps.keySet()){
             //Check if block property exists in when
             if(whenProps.containsKey(property)){
@@ -358,22 +384,22 @@ public class BlockState {
 
                     //Add variant indexes if block property value matches at least one orValue
                     if(containsVal)
-                        mathes = true;
+                        matches = true;
                     else
-                        mathes = false;
+                        matches = false;
 
                 }else if(blockProps.get(property).equals(whenPropValue)){
-                    mathes = true;
+                    matches = true;
                 }else {
-                    mathes = false;
+                    matches = false;
                     break;
                 }
 
 
             }
-        }
+        }*/
 
-        if(mathes)
+        if(matches)
             getMultiPartVariantIndexes(multiPartKey, currentVariantIndexes);
     }
 

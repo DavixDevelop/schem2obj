@@ -57,6 +57,11 @@ public class SchematicHolder {
 
             int meta = schematic.getData()[index];
 
+            if(meta == 2)
+            {
+                String w = "2";
+            }
+
             return getNamespace(blockID + ":" + meta);
         }
 

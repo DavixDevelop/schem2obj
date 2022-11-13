@@ -7,7 +7,29 @@ import com.davixdevelop.schem2obj.schematic.SchematicHolder;
 import com.davixdevelop.schem2obj.wavefront.WavefrontCollection;
 import com.davixdevelop.schem2obj.wavefront.material.MaterialCollection;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class Constants {
+
+    public static void setConstants(){
+        REDSTONE_COLORS.put(0, 4915200);
+        REDSTONE_COLORS.put(1,7274496);
+        REDSTONE_COLORS.put(2,7929856);
+        REDSTONE_COLORS.put(3,8519680);
+        REDSTONE_COLORS.put(4,9175040);
+        REDSTONE_COLORS.put(5,9895936);
+        REDSTONE_COLORS.put(6,10551296);
+        REDSTONE_COLORS.put(7,11206656);
+        REDSTONE_COLORS.put(8,11862016);
+        REDSTONE_COLORS.put(9,12517376);
+        REDSTONE_COLORS.put(10,13238272);
+        REDSTONE_COLORS.put(11,13828096);
+        REDSTONE_COLORS.put(12,14483456);
+        REDSTONE_COLORS.put(13,15140352);
+        REDSTONE_COLORS.put(14,15801088);
+        REDSTONE_COLORS.put(15,16527616);
+    }
 
     public static final SchematicHolder LOADED_SCHEMATIC = new SchematicHolder();
 
@@ -24,5 +46,11 @@ public class Constants {
 
     public static int SNOW_COLOR = 16316922;
 
+    public static Map<Integer, Integer> REDSTONE_COLORS = new HashMap<>();
+
+    public static boolean IS_SNOWY = false;
+
     public static final Double[] BLOCK_ORIGIN = new Double[] {0.5,0.5,0.5};
+
+
 }

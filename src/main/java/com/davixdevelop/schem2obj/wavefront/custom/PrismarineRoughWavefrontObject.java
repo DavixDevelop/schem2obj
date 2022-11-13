@@ -1,27 +1,23 @@
 package com.davixdevelop.schem2obj.wavefront.custom;
 
-import com.davixdevelop.schem2obj.Constants;
 import com.davixdevelop.schem2obj.blockmodels.CubeElement;
 import com.davixdevelop.schem2obj.models.HashedDoubleList;
 import com.davixdevelop.schem2obj.namespace.Namespace;
 import com.davixdevelop.schem2obj.wavefront.WavefrontObject;
 import com.davixdevelop.schem2obj.wavefront.WavefrontUtility;
-import com.davixdevelop.schem2obj.wavefront.material.IMaterial;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 
-public class MagmaBlockWavefrontObject extends WavefrontObject {
-
+public class PrismarineRoughWavefrontObject extends WavefrontObject {
     @Override
     public boolean fromNamespace(Namespace blockNamespace) {
         toObj(blockNamespace);
-        modifyMagmaMaterial(blockNamespace);
         return true;
     }
 
     public void toObj(Namespace blockNamespace){
-        setName("magma");
+        setName("prismarine");
 
         //Each item is an array with the following values [vx, vy, vz]
         HashedDoubleList vertices = new HashedDoubleList();
@@ -36,13 +32,13 @@ public class MagmaBlockWavefrontObject extends WavefrontObject {
         HashMap<String, HashMap<String, ArrayList<Integer>>> boundingFaces = new HashMap<>();
 
         HashMap<String,String> modelsMaterials = new HashMap<>();
-        WavefrontUtility.generateOrGetMaterial("blocks/magma", blockNamespace);
-        modelsMaterials.put("all", "blocks/magma");
+        WavefrontUtility.generateOrGetMaterial("blocks/prismarine_rough", blockNamespace);
+        modelsMaterials.put("all", "blocks/prismarine_rough");
 
         HashMap<String, CubeElement.CubeFace> cubeFaces = new HashMap<>();
 
-        //Get random portion of the magma block texture, that has 3 textures on it
-        Double[] uv = WavefrontUtility.getRandomUV(3);
+        //Get random portion of the prismarine_rough texture, that has 4 textures on it
+        Double[] uv = WavefrontUtility.getRandomUV(4);
 
         cubeFaces.put("down", new CubeElement.CubeFace(uv, "#all", "down", null, null));
         cubeFaces.put("up", new CubeElement.CubeFace(uv, "#all", "up", null, null));
@@ -62,7 +58,7 @@ public class MagmaBlockWavefrontObject extends WavefrontObject {
         WavefrontUtility.convertCubeToWavefront(cube, false, null, null, vertices, textureCoordinates, faces, boundingFaces, modelsMaterials);
 
         //Create normals for the object
-        WavefrontUtility.createNormals(normalsArray,vertices, faces);
+        WavefrontUtility.createNormals(normalsArray, vertices, faces);
 
         //Get vertex list
         ArrayList<Double[]> verticesArray = vertices.toList();
@@ -76,15 +72,4 @@ public class MagmaBlockWavefrontObject extends WavefrontObject {
         setMaterialFaces(faces);
         setBoundingFaces(boundingFaces);
     }
-
-    public void modifyMagmaMaterial(Namespace blockNamespace){
-        WavefrontUtility.generateOrGetMaterial("blocks/magma", blockNamespace);
-        IMaterial magma = Constants.BLOCK_MATERIALS.getMaterial("blocks/magma");
-
-        magma.setSpecularHighlights(0.0);
-        magma.setSpecularColor(0.0);
-        magma.setEmissionStrength(0.0894427);
-        magma.setIlluminationModel(2);
-    }
-
 }

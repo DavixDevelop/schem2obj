@@ -1,8 +1,10 @@
 package com.davixdevelop.schem2obj.wavefront.material;
 
-import com.davixdevelop.schem2obj.utilities.ImageUtility;
+import com.davixdevelop.schem2obj.util.ImageUtility;
+import com.davixdevelop.schem2obj.util.Utility;
 
 import java.awt.image.BufferedImage;
+import java.io.FileInputStream;
 import java.io.InputStream;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -23,15 +25,17 @@ public class Material implements IMaterial {
     private Integer illum;
     private Double Tf;
 
-
     private String name;
 
     private BufferedImage customDiffuse;
+
+    private boolean transparency = false;
 
     public Material() {
         this.diffuseTextureName = null;
         this.diffuseTexturePath = null;
         this.Ke = 0.0;
+        this.Ka = 0.2;
     }
 
     @Override
@@ -89,7 +93,7 @@ public class Material implements IMaterial {
     }
 
     @Override
-    public void seEmissionStrength(double lightValue) {
+    public void setEmissionStrength(double lightValue) {
         this.Ke = lightValue;
     }
 
@@ -148,9 +152,20 @@ public class Material implements IMaterial {
 
         Path diffuseTextureOut = Paths.get(textureFolder, getDiffuseTextureName() + ".png");
 
+
         InputStream assetStream = getDiffuseImage();
 
         ImageUtility.copyImageToFile(assetStream, diffuseTextureOut.toFile().toString());
+
+        //boolean hasAlpha = false;
+
+        /*try{
+            InputStream diffuseStream = new FileInputStream(diffuseTextureOut.toFile().toString());
+            hasAlpha = ImageUtility.hasAlpha(diffuseStream);
+        }catch (Exception ex){
+            Utility.Log(ex.getMessage());
+        }*/
+
 
         //To store each line that defines a new material
         ArrayList<String> matLines = new ArrayList<>();
@@ -173,7 +188,7 @@ public class Material implements IMaterial {
         }
         matLines.add(String.format("map_Ka %s/%s.png", diffuseTextureOut.getParent().toFile().getName(), getDiffuseTextureName()));
         matLines.add(String.format("map_Kd %s/%s.png", diffuseTextureOut.getParent().toFile().getName(), getDiffuseTextureName()));
-        if(getName().contains("glass") || getName().contains("leaves") || getName().equals("slime"))
+        if(transparency)
             matLines.add(String.format("map_d %s/%s.png", diffuseTextureOut.getParent().toFile().getName(), getDiffuseTextureName()));
         if(getEmissionStrength() > 0.0){
             matLines.add(String.format("map_Ke %s/%s.png", diffuseTextureOut.getParent().toFile().getName(), getDiffuseTextureName()));
@@ -188,6 +203,16 @@ public class Material implements IMaterial {
 
 
         return matLines;
+    }
+
+    @Override
+    public void setTransparency(boolean transparency) {
+        this.transparency = transparency;
+    }
+
+    @Override
+    public boolean hasTransparency() {
+        return transparency;
     }
 
     @Override

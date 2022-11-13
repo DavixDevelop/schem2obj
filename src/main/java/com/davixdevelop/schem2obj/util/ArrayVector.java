@@ -1,4 +1,4 @@
-package com.davixdevelop.schem2obj.utilities;
+package com.davixdevelop.schem2obj.util;
 
 public class ArrayVector {
     public static Double[] subtract(Double[] minuend, Double[] subtrahend){

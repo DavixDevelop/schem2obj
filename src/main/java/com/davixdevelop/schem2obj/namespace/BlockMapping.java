@@ -37,6 +37,7 @@ public class BlockMapping {
 
             //Read the block domain
             String blockDomain = block.substring(0, block.indexOf(":"));
+            String blockType = block.substring(block.indexOf(":") + 1);
 
             for(String meta : variants.keySet()){
                 JsonBlock.JsonBlockState blockState = variants.get(meta);
@@ -54,7 +55,7 @@ public class BlockMapping {
                         continue;
                     props.put(propName, blockProps.get(propName));
                 }
-                blockMapping.put(MetaID, new Namespace(MetaID, blockDomain,blockState.getVariantName(),props,blockState.getLightValue().doubleValue()));
+                blockMapping.put(MetaID, new Namespace(MetaID, blockDomain, blockState.getVariantName(), blockType,props,blockState.getLightValue().doubleValue()));
             }
         }
     }

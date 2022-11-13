@@ -7,10 +7,7 @@ import com.davixdevelop.schem2obj.blockstates.BlockState;
 import com.davixdevelop.schem2obj.models.HashedDoubleList;
 import com.davixdevelop.schem2obj.models.VariantModels;
 import com.davixdevelop.schem2obj.namespace.Namespace;
-import com.davixdevelop.schem2obj.utilities.ArrayUtility;
-import com.davixdevelop.schem2obj.utilities.ArrayVector;
-import com.davixdevelop.schem2obj.wavefront.custom.GlassBlockWavefrontObject;
-import com.davixdevelop.schem2obj.wavefront.custom.GlassPaneWavefrontObject;
+import com.davixdevelop.schem2obj.util.ArrayVector;
 
 import java.util.*;
 
@@ -55,6 +52,27 @@ public class BlockWavefrontObject extends WavefrontObject {
     }
 
     /**
+     * Generate OBJ for block namespace without checking for random variants
+     * @param blockNamespace The block namespace for which to generate the OBJ
+     */
+    public void baseConvert(Namespace blockNamespace){
+        //Get the BlockState for the block
+        BlockState blockState = Constants.BLOCKS_STATES.getBlockState(blockNamespace);
+
+        //Get the variant/variants of the block
+        ArrayList<BlockState.Variant> variants = blockState.getVariants(blockNamespace);
+
+
+        ArrayList<VariantModels> blockModels = new ArrayList<>();
+
+        //Get the model/models the block uses based on the BlockState
+        for(BlockState.Variant variant : variants)
+            blockModels.add(new VariantModels(variant, Constants.BLOCK_MODELS.getBlockModel(blockNamespace, variant)));
+
+        toObj(blockModels, variants,blockNamespace);
+    }
+
+    /**
      * Convert a block models to wavefront object.
      * The indexes in the object are treated as if the object is the first one in the file
      * @param blockModels The block models to convert
@@ -79,7 +97,7 @@ public class BlockWavefrontObject extends WavefrontObject {
         HashMap<String, HashMap<String, ArrayList<Integer>>> boundingFaces = new HashMap<>();
 
         //Extract the default materials from the textures that the models use
-        HashMap<String, String> modelsMaterials = WavefrontUtility.texturesToMaterials(blockModels, blockNamespace);
+        HashMap<String, HashMap<String, String>> modelsMaterials = WavefrontUtility.texturesToMaterials(blockModels, blockNamespace);
 
         for(VariantModels variantModels : blockModels) {
 
@@ -122,7 +140,7 @@ public class BlockWavefrontObject extends WavefrontObject {
 
 
                         //Convert the cube to obj
-                        WavefrontUtility.convertCubeToWavefront(element, uvLock, rotationX, rotationY, vertices, textureCoordinates, faces, boundingFaces, modelsMaterials);
+                        WavefrontUtility.convertCubeToWavefront(element, uvLock, rotationX, rotationY, vertices, textureCoordinates, faces, boundingFaces, modelsMaterials.get(variant.getModel()));
                     }
 
                     //Mark that the variant has generated elements

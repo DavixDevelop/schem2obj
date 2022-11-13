@@ -1,21 +1,17 @@
 package com.davixdevelop.schem2obj.wavefront.custom;
 
 import com.davixdevelop.schem2obj.Constants;
-import com.davixdevelop.schem2obj.blockmodels.BlockModel;
 import com.davixdevelop.schem2obj.blockmodels.CubeElement;
 import com.davixdevelop.schem2obj.blockstates.BlockState;
 import com.davixdevelop.schem2obj.models.HashedDoubleList;
 import com.davixdevelop.schem2obj.namespace.Namespace;
-import com.davixdevelop.schem2obj.utilities.ArrayUtility;
-import com.davixdevelop.schem2obj.utilities.ArrayVector;
-import com.davixdevelop.schem2obj.utilities.ImageUtility;
-import com.davixdevelop.schem2obj.utilities.Utility;
+import com.davixdevelop.schem2obj.util.ArrayVector;
+import com.davixdevelop.schem2obj.util.ImageUtility;
+import com.davixdevelop.schem2obj.util.Utility;
 import com.davixdevelop.schem2obj.wavefront.BlockWavefrontObject;
 import com.davixdevelop.schem2obj.wavefront.IWavefrontObject;
-import com.davixdevelop.schem2obj.wavefront.WavefrontCollection;
 import com.davixdevelop.schem2obj.wavefront.WavefrontUtility;
 import com.davixdevelop.schem2obj.wavefront.material.IMaterial;
-import com.davixdevelop.schem2obj.wavefront.material.Material;
 
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
@@ -33,59 +29,47 @@ public class GrassBlockWavefrontObject extends BlockWavefrontObject {
     @Override
     public boolean fromNamespace(Namespace blockNamespace) {
 
-        BlockState blockState = Constants.BLOCKS_STATES.getBlockState(blockNamespace);
+        Namespace grassNamespace = blockNamespace.clone();
 
-        ArrayList<BlockState.Variant> variants = blockState.getVariants(blockNamespace);
-
-        //Color the grass top with biome snow color and create new copy of it
-        if(!SNOWY_MATERIAL_GENERATED){
-            IMaterial grass_top = Constants.BLOCK_MATERIALS.getMaterial("blocks/grass_top");
-
-
-            Constants.BLOCK_MATERIALS.setMaterial("blocks/snowy_grass_top", grass_top.clone());
-
-            IMaterial snowy_grass_top = Constants.BLOCK_MATERIALS.getMaterial("blocks/snowy_grass_top");
-            snowy_grass_top.setName("snowy_grass_top");
-            snowy_grass_top.setDiffuseTextureName("snowy_grass_top");
-            snowy_grass_top.setDiffuseImage(ImageUtility.colorImage(grass_top.getDiffuseImage(), Constants.SNOW_COLOR));
+        //Check if the above block is a snow layer
+        Namespace aboveBlock = Constants.LOADED_SCHEMATIC.getNamespace(Constants.LOADED_SCHEMATIC.getPosX(), Constants.LOADED_SCHEMATIC.getPosY() + 1, Constants.LOADED_SCHEMATIC.getPosZ());
+        if(aboveBlock != null){
+            if(aboveBlock.getName().equals("snow_layer"))
+                grassNamespace.data.put("snowy", "true");
         }
 
-        //Color the grass top and sides with biome grass color
-        if(!NORMAL_MATERIAL_COLORED){
-            IMaterial grass_top = Constants.BLOCK_MATERIALS.getMaterial("blocks/grass_top");
-            IMaterial grass_side = Constants.BLOCK_MATERIALS.getMaterial("blocks/grass_side");
-            IMaterial grass_side_overlay = Constants.BLOCK_MATERIALS.getMaterial("blocks/grass_side_overlay");
+        BlockState blockState = Constants.BLOCKS_STATES.getBlockState(grassNamespace);
 
-            //Color the gray grass top with the biome grass color
-            BufferedImage coloredTop = ImageUtility.colorImage(grass_top.getDiffuseImage(), Constants.BIOME_GRASS_COLOR);
+        ArrayList<BlockState.Variant> variants = blockState.getVariants(grassNamespace);
 
-            //Set grass top diffuse image to colored top
-            grass_top.setDiffuseImage(coloredTop);
 
-            //Color the gray grass side overlay with the biome grass color
-            BufferedImage colored_side_overlay = ImageUtility.colorImage(grass_side_overlay.getDiffuseImage(), Constants.BIOME_GRASS_COLOR);
 
-            //Combine the grass side and colored overlay
-            BufferedImage combinedOverlay = ImageUtility.colorAndCombineImages(grass_side.getDiffuseImage(),colored_side_overlay);
-            grass_side.setDiffuseImage(combinedOverlay);
-        }
+        if(grassNamespace.getData().get("snowy").equals("false") && blockState.isRandomVariants()){
+            //Color the regular grass material
+            modifyRegularGrassMaterial(grassNamespace);
 
-        if(blockNamespace.getData().get("snowy").equals("false") && blockState.isRandomVariants()){
             if(!RANDOM_VARIANTS.containsKey(variants.get(0)))
             {
-                createNormalVariant(blockNamespace, variants.get(0));
+                createNormalVariant(grassNamespace, variants.get(0));
                 RANDOM_VARIANTS.put(variants.get(0), this);
             }else{
                 IWavefrontObject variantObject = RANDOM_VARIANTS.get(variants.get(0));
                 super.copy(variantObject);
             }
+        }else{
+            //Color the snowy grass material
+            modifySnowyGrassMaterial(grassNamespace);
 
-            return false;
+            if(!RANDOM_VARIANTS.containsKey(variants.get(0))){
+                createSnowyVariant(grassNamespace);
+                RANDOM_VARIANTS.put(variants.get(0), this);
+            }else{
+                IWavefrontObject snowyVariant = RANDOM_VARIANTS.get(variants.get(0));
+                super.copy(snowyVariant);
+            }
         }
 
-        createSnowyVariant(blockNamespace);
-
-        return true;
+        return false;
     }
 
     public void createSnowyVariant(Namespace blockNamespace){
@@ -99,8 +83,6 @@ public class GrassBlockWavefrontObject extends BlockWavefrontObject {
 
         createGrassBlock("grass", "blocks/grass_top", "blocks/grass_side", blockNamespace, rotationY);
     }
-
-
 
     public void createGrassBlock(String name, String top_texture, String side_texture, Namespace blockNamespace, ArrayVector.MatrixRotation rotationY){
         setName(name);
@@ -147,7 +129,6 @@ public class GrassBlockWavefrontObject extends BlockWavefrontObject {
 
         //Create normals for the object
         WavefrontUtility.createNormals(normalsArray, vertices, faces);
-
         //Get vertex list
         ArrayList<Double[]> verticesArray = vertices.toList();
 
@@ -159,5 +140,78 @@ public class GrassBlockWavefrontObject extends BlockWavefrontObject {
         setTextureCoordinates(textureCoordinates.toList());
         setMaterialFaces(faces);
         setBoundingFaces(boundingFaces);
+    }
+
+    public void modifyRegularGrassMaterial(Namespace blockNamespace){
+        //Color the grass top and sides with biome grass color
+        if(!NORMAL_MATERIAL_COLORED){
+            WavefrontUtility.generateOrGetMaterial("blocks/grass_top", blockNamespace);
+            WavefrontUtility.generateOrGetMaterial("blocks/grass_side", blockNamespace);
+            WavefrontUtility.generateOrGetMaterial("blocks/grass_side_overlay", blockNamespace);
+
+            IMaterial grass_top = Constants.BLOCK_MATERIALS.getMaterial("blocks/grass_top");
+            IMaterial grass_side = Constants.BLOCK_MATERIALS.getMaterial("blocks/grass_side");
+            IMaterial grass_side_overlay = Constants.BLOCK_MATERIALS.getMaterial("blocks/grass_side_overlay");
+
+            //Color the gray grass top with the biome grass color
+            BufferedImage coloredTop = ImageUtility.colorImage(grass_top.getDiffuseImage(), Constants.BIOME_GRASS_COLOR);
+
+            //Set grass top diffuse image to colored top
+            grass_top.setDiffuseImage(coloredTop);
+
+            //Color the gray grass side overlay with the biome grass color
+            BufferedImage colored_side_overlay = ImageUtility.colorImage(grass_side_overlay.getDiffuseImage(), Constants.BIOME_GRASS_COLOR);
+
+            //Combine the grass side and colored overlay
+            BufferedImage combinedOverlay = ImageUtility.overlayImages(grass_side.getDiffuseImage(),colored_side_overlay);
+            grass_side.setDiffuseImage(combinedOverlay);
+
+            grass_side.setSpecularHighlights(0.0);
+            grass_side.setSpecularColor(0.0);
+            grass_side.setIlluminationModel(2);
+
+            grass_top.setSpecularHighlights(0.0);
+            grass_top.setSpecularColor(0.0);
+            grass_top.setIlluminationModel(2);
+
+            Constants.BLOCK_MATERIALS.unsetMaterial("blocks/grass_side_overlay");
+
+            NORMAL_MATERIAL_COLORED = true;
+        }
+    }
+
+    public void modifySnowyGrassMaterial(Namespace blockNamespace){
+        //Color the grass top with biome snow color and create new copy of it
+        if(!SNOWY_MATERIAL_GENERATED){
+            WavefrontUtility.generateOrGetMaterial("blocks/grass_top", blockNamespace);
+            IMaterial grass_top = Constants.BLOCK_MATERIALS.getMaterial("blocks/grass_top");
+
+
+            Constants.BLOCK_MATERIALS.setMaterial("blocks/snowy_grass_top", grass_top.clone());
+
+            WavefrontUtility.generateOrGetMaterial("blocks/grass_side_snowed", blockNamespace);
+            IMaterial snowy_grass_side = Constants.BLOCK_MATERIALS.getMaterial("blocks/grass_side_snowed");
+
+            IMaterial snowy_grass_top = Constants.BLOCK_MATERIALS.getMaterial("blocks/snowy_grass_top");
+            snowy_grass_top.setName("snowy_grass_top");
+            snowy_grass_top.setDiffuseTextureName("snowy_grass_top");
+
+            try {
+                snowy_grass_top.setDiffuseImage(ImageUtility.colorImage(grass_top.getDiffuseImage(), Constants.SNOW_COLOR));
+            }catch (Exception ex){
+                Utility.Log("Could not create snowy grass texture");
+                Utility.Log(ex.getMessage());
+            }
+
+            snowy_grass_top.setSpecularHighlights(0.0);
+            snowy_grass_top.setSpecularColor(0.0);
+            snowy_grass_top.setIlluminationModel(2);
+
+            snowy_grass_side.setSpecularHighlights(0.0);
+            snowy_grass_side.setSpecularColor(0.0);
+            snowy_grass_side.setIlluminationModel(2);
+
+            SNOWY_MATERIAL_GENERATED = true;
+        }
     }
 }

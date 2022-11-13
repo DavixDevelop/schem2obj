@@ -1,4 +1,4 @@
-package com.davixdevelop.schem2obj.utilities;
+package com.davixdevelop.schem2obj.util;
 
 import java.util.ArrayList;
 

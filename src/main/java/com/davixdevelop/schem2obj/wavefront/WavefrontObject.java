@@ -1,11 +1,9 @@
 package com.davixdevelop.schem2obj.wavefront;
 
 import com.davixdevelop.schem2obj.namespace.Namespace;
-import com.davixdevelop.schem2obj.utilities.ArrayUtility;
-import com.davixdevelop.schem2obj.utilities.Utility;
+import com.davixdevelop.schem2obj.util.ArrayUtility;
 import com.davixdevelop.schem2obj.wavefront.custom.GlassBlockWavefrontObject;
 import com.davixdevelop.schem2obj.wavefront.custom.GlassPaneWavefrontObject;
-import com.davixdevelop.schem2obj.wavefront.material.Material;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -79,7 +77,7 @@ public class WavefrontObject implements IWavefrontObject {
     @Override
     public boolean checkCollision(IWavefrontObject adjacent) {
         //If the adjacent block is glass block or glass pane don't check for collision
-        return !(adjacent instanceof GlassPaneWavefrontObject) && !(adjacent instanceof GlassBlockWavefrontObject);
+        return !WavefrontCollection.isTranslucentOrNotFull(adjacent);
     }
 
     /**
@@ -108,8 +106,9 @@ public class WavefrontObject implements IWavefrontObject {
                     faces.set(faceIndex, null);
                 }
 
-                if (ArrayUtility.arrayContainsOnlyNullElement(faces))
+                if (ArrayUtility.arrayContainsOnlyNullElement(faces)) {
                     f.remove(material);
+                }
             }
         }
     }

@@ -1,0 +1,62 @@
+{
+  "north+1" : {
+    "apply" : {
+      "north" : "up"
+    }
+  },
+  "west+1" : {
+    "apply" : {
+      "west" : "up"
+    }
+  },
+  "south+1" : {
+    "apply" : {
+      "south" : "up"
+    }
+  },
+  "east+1" : {
+    "apply" : {
+      "east" : "up"
+    }
+  },
+  "north" : {
+    "apply" : {
+      "north" : "side"
+    }
+  },
+  "west" : {
+    "apply" : {
+      "west" : "side"
+    }
+  },
+  "south" : {
+    "apply" : {
+      "south" : "side"
+    }
+  },
+  "east" : {
+    "apply" : {
+      "east" : "side"
+    }
+  },
+  "north-1" : {
+    "apply" : {
+      "north" : "side"
+    }
+  },
+  "west-1" : {
+    "apply" : {
+      "west" : "side"
+    }
+  },
+  "south-1" : {
+    "apply" : {
+      "south" : "side"
+    }
+  },
+  "east-1" : {
+    "apply" : {
+      "east" : "side"
+    }
+  }
+}

@@ -12,14 +12,16 @@ public class Namespace {
     private String id;
     private String domain;
     private String name;
+    private String type;
     public HashMap<String, String> data;
 
     private Double lightValue;
 
-    public Namespace(String id, String domain, String name, HashMap<String, String> data,Double lightValue){
+    public Namespace(String id, String domain, String name, String type, HashMap<String, String> data,Double lightValue){
         this.id = id;
         this.domain = domain;
         this.name = name;
+        this.type = type;
         this.data = data;
         this.lightValue = lightValue;
     }
@@ -44,6 +46,10 @@ public class Namespace {
         return name;
     }
 
+    public String getType() {
+        return type;
+    }
+
     public HashMap<String, String> getData() {
         return data;
     }
@@ -61,6 +67,16 @@ public class Namespace {
         if(data != null || !data.isEmpty())
             cloneData = new HashMap<>(data.entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey,Map.Entry::getValue)));
 
-        return new Namespace(id, domain, name,cloneData, lightValue);
+        return new Namespace(id, domain, name, type, cloneData, lightValue);
+    }
+
+    /**
+     * Copy the a map of state to the namespace data
+     * @param namespace The namespace to copy to
+     * @param states A map of state to copy from
+     */
+    public static void copyStatesToNamespace(Namespace namespace, Map<String, String> states){
+        for(String prop : states.keySet())
+            namespace.getData().put(prop, states.get(prop));
     }
 }

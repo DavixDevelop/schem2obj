@@ -2,8 +2,10 @@ package com.davixdevelop.schem2obj;
 
 import com.davixdevelop.schem2obj.namespace.Namespace;
 import com.davixdevelop.schem2obj.schematic.Schematic;
-import com.davixdevelop.schem2obj.utilities.Utility;
+import com.davixdevelop.schem2obj.util.Utility;
 import com.davixdevelop.schem2obj.wavefront.*;
+import com.davixdevelop.schem2obj.wavefront.custom.LavaWavefrontObject;
+import com.davixdevelop.schem2obj.wavefront.custom.WaterWavefrontObject;
 import com.davixdevelop.schem2obj.wavefront.material.IMaterial;
 import com.davixdevelop.schem2obj.wavefront.material.json.PackTemplate;
 import com.google.gson.Gson;
@@ -23,6 +25,8 @@ public class SchemeToObj {
         boolean exportAllBlock = false;
 
         String rootFolder = Paths.get(".").toAbsolutePath().normalize().toString();
+
+        Constants.setConstants();
 
         if(arg.length >= 4) {
             //Get scheme file from arguments
@@ -112,6 +116,8 @@ public class SchemeToObj {
                 while (nextArgIndex < arg.length){
                     if(arg[nextArgIndex].equals("-allBlocks"))
                         exportAllBlock = true;
+                    else if(arg[nextArgIndex].equals("-snowy"))
+                        Constants.IS_SNOWY = true;
                     nextArgIndex += 1;
                 }
             }
@@ -122,7 +128,7 @@ public class SchemeToObj {
 
         ArrayList<IWavefrontObject> objects = s.schemToObj(schem_path, exportAllBlock);
 
-        if(objects.isEmpty()){
+        if(objects == null || objects.isEmpty()){
             Utility.Log("Failed to convert schematic to OBJ");
             return;
         }
@@ -170,6 +176,9 @@ public class SchemeToObj {
         Integer length = (int) Constants.LOADED_SCHEMATIC.getLength();
         Integer height = (int) Constants.LOADED_SCHEMATIC.getHeight();
 
+        WaterWavefrontObject waterObject = null;
+        LavaWavefrontObject lavaObject = null;
+
         for (int x = 0; x < width; x++)  {
             for (int y = 0; y < height; y++) {
                 for(int z = 0; z < length; z++) {
@@ -180,14 +189,31 @@ public class SchemeToObj {
 
                     Namespace blockNamespace = Constants.LOADED_SCHEMATIC.getNamespace(x, y, z);
 
-                    //ToDo: Write custom blocks (ex, Water, Chest, Sign, Wall Sign...). Until then, ignore these blocks
-                    if (blockNamespace == null || blockNamespace.getDomain().equals("builtin"))
+                    //ToDo: Write custom blocks (ex, Chest, Sign, Wall Sign...). Until then, ignore these blocks
+                    if (blockNamespace == null || blockNamespace.getDomain().equals("builtin")){
+                        if(blockNamespace != null) {
+                            if (blockNamespace.getType().equals("flowing_water") || blockNamespace.getType().equals("water")) {
+                                if (waterObject == null)
+                                    waterObject = new WaterWavefrontObject();
+
+                                waterObject.addBlock(blockNamespace);
+                            }
+
+                            if (blockNamespace.getType().equals("flowing_lava") || blockNamespace.getType().equals("lava")) {
+                                if(lavaObject == null)
+                                    lavaObject = new LavaWavefrontObject();
+
+                                lavaObject.addBlock(blockNamespace);
+                            }
+                        }
+
                         if (exportAllBlocks)
                             continue;
                         else {
                             allBlocks.put(index, null);
                             continue;
                         }
+                    }
 
                     //Get  singleton wavefrontBlock from memory
                     IWavefrontObject wavefrontObject = Constants.WAVEFRONT_COLLECTION.fromNamespace(blockNamespace);
@@ -205,6 +231,8 @@ public class SchemeToObj {
         }
 
         if(!exportAllBlocks){
+            HashMap<Double[], Double[]> allNormals = new HashMap<>();
+
             //If exportAllBlocks all blocks is false, loop through allBlocks from bottom to top and delete hidden faces
             for (int y = 0; y < height; y++){
                 for (int x = 0; x < width; x++){
@@ -257,11 +285,38 @@ public class SchemeToObj {
                                 if(WavefrontUtility.checkFacing(objectBoundingFaces, object, allBlocks.get(x + ((y - 1) * length + z) * width), "down", "up"))
                                     object.deleteFaces("down");
 
+                            if(!object.getMaterialFaces().isEmpty()) {
+                                //Reset the normals for the object to reflect the deleted faces and add them to all normals
+                                WavefrontUtility.resetNormals(allNormals, object);
+                            }
+
                             blocks.add(object);
                         }
                     }
                 }
             }
+            /*
+            //Normalize allNormals
+            WavefrontUtility.normalizeNormals(allNormals);
+
+            //Copy allNormals back to each object
+            for(int c = 0; c < blocks.size(); c++){
+                IWavefrontObject object = blocks.get(c);
+                WavefrontUtility.copyAllNormalsToObject(allNormals, object);
+                blocks.set(c, object);
+            }*/
+
+
+        }
+
+        if(waterObject != null){
+            waterObject.finalizeObject();
+            blocks.add(waterObject);
+        }
+
+        if(lavaObject != null){
+            lavaObject.finalizeObject();
+            blocks.add(lavaObject);
         }
 
 

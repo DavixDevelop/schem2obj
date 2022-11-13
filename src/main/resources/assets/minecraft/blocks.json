@@ -1304,84 +1304,96 @@
         "variantName": "golden_rail",
         "lightValue": 0,
         "properties": {
-          "powered": "false"
+          "powered": "false",
+          "shape": "north_south"
         }
       },
       "1": {
         "variantName": "golden_rail",
         "lightValue": 0,
         "properties": {
-          "powered": "false"
+          "powered": "false",
+          "shape": "east_west"
         }
       },
       "2": {
         "variantName": "golden_rail",
         "lightValue": 0,
         "properties": {
-          "powered": "false"
+          "powered": "false",
+          "shape": "ascending_east"
         }
       },
       "3": {
         "variantName": "golden_rail",
         "lightValue": 0,
         "properties": {
-          "powered": "false"
+          "powered": "false",
+          "shape": "ascending_west"
         }
       },
       "4": {
         "variantName": "golden_rail",
         "lightValue": 0,
         "properties": {
-          "powered": "false"
+          "powered": "false",
+          "shape": "ascending_north"
         }
       },
       "5": {
         "variantName": "golden_rail",
         "lightValue": 0,
         "properties": {
-          "powered": "false"
+          "powered": "false",
+          "shape": "ascending_south"
         }
       },
       "8": {
         "variantName": "golden_rail",
         "lightValue": 0,
         "properties": {
-          "powered": "true"
+          "powered": "true",
+          "shape": "north_south"
         }
       },
       "9": {
         "variantName": "golden_rail",
         "lightValue": 0,
         "properties": {
-          "powered": "true"
+          "powered": "true",
+          "shape": "east_west"
         }
       },
       "10": {
         "variantName": "golden_rail",
         "lightValue": 0,
         "properties": {
-          "powered": "true"
+          "powered": "true",
+          "shape": "ascending_east"
         }
       },
       "11": {
         "variantName": "golden_rail",
         "lightValue": 0,
         "properties": {
-          "powered": "true"
+          "powered": "true",
+          "shape": "ascending_west"
         }
       },
       "12": {
         "variantName": "golden_rail",
         "lightValue": 0,
         "properties": {
-          "powered": "true"
+          "powered": "true",
+          "shape": "ascending_north"
         }
       },
       "13": {
         "variantName": "golden_rail",
         "lightValue": 0,
         "properties": {
-          "powered": "true"
+          "powered": "true",
+          "shape": "ascending_south"
         }
       }
     }
@@ -1393,84 +1405,96 @@
         "variantName": "detector_rail",
         "lightValue": 0,
         "properties": {
-          "powered": "false"
+          "powered": "false",
+          "shape": "north_south"
         }
       },
       "1": {
         "variantName": "detector_rail",
         "lightValue": 0,
         "properties": {
-          "powered": "false"
+          "powered": "false",
+          "shape": "east_west"
         }
       },
       "2": {
         "variantName": "detector_rail",
         "lightValue": 0,
         "properties": {
-          "powered": "false"
+          "powered": "false",
+          "shape": "ascending_east"
         }
       },
       "3": {
         "variantName": "detector_rail",
         "lightValue": 0,
         "properties": {
-          "powered": "false"
+          "powered": "false",
+          "shape": "ascending_west"
         }
       },
       "4": {
         "variantName": "detector_rail",
         "lightValue": 0,
         "properties": {
-          "powered": "false"
+          "powered": "false",
+          "shape": "ascending_north"
         }
       },
       "5": {
         "variantName": "detector_rail",
         "lightValue": 0,
         "properties": {
-          "powered": "false"
+          "powered": "false",
+          "shape": "ascending_south"
         }
       },
       "8": {
         "variantName": "detector_rail",
         "lightValue": 0,
         "properties": {
-          "powered": "true"
+          "powered": "true",
+          "shape": "north_south"
         }
       },
       "9": {
         "variantName": "detector_rail",
         "lightValue": 0,
         "properties": {
-          "powered": "true"
+          "powered": "true",
+          "shape": "east_west"
         }
       },
       "10": {
         "variantName": "detector_rail",
         "lightValue": 0,
         "properties": {
-          "powered": "true"
+          "powered": "true",
+          "shape": "ascending_east"
         }
       },
       "11": {
         "variantName": "detector_rail",
         "lightValue": 0,
         "properties": {
-          "powered": "true"
+          "powered": "true",
+          "shape": "ascending_west"
         }
       },
       "12": {
         "variantName": "detector_rail",
         "lightValue": 0,
         "properties": {
-          "powered": "true"
+          "powered": "true",
+          "shape": "ascending_north"
         }
       },
       "13": {
         "variantName": "detector_rail",
         "lightValue": 0,
         "properties": {
-          "powered": "true"
+          "powered": "true",
+          "shape": "ascending_south"
         }
       }
     }
@@ -3458,52 +3482,72 @@
       "0": {
         "variantName": "rail",
         "lightValue": 0,
-        "properties": {}
+        "properties": {
+          "shape": "north_south"
+        }
       },
       "1": {
         "variantName": "rail",
         "lightValue": 0,
-        "properties": {}
+        "properties": {
+          "shape": "east_west"
+        }
       },
       "2": {
         "variantName": "rail",
         "lightValue": 0,
-        "properties": {}
+        "properties": {
+          "shape": "ascending_east"
+        }
       },
       "3": {
         "variantName": "rail",
         "lightValue": 0,
-        "properties": {}
+        "properties": {
+          "shape": "ascending_west"
+        }
       },
       "4": {
         "variantName": "rail",
         "lightValue": 0,
-        "properties": {}
+        "properties": {
+          "shape": "ascending_north"
+        }
       },
       "5": {
         "variantName": "rail",
         "lightValue": 0,
-        "properties": {}
+        "properties": {
+          "shape": "ascending_south"
+        }
       },
       "6": {
         "variantName": "rail",
         "lightValue": 0,
-        "properties": {}
+        "properties": {
+          "shape": "south_east"
+        }
       },
       "7": {
         "variantName": "rail",
         "lightValue": 0,
-        "properties": {}
+        "properties": {
+          "shape": "south_west"
+        }
       },
       "8": {
         "variantName": "rail",
         "lightValue": 0,
-        "properties": {}
+        "properties": {
+          "shape": "north_west"
+        }
       },
       "9": {
         "variantName": "rail",
         "lightValue": 0,
-        "properties": {}
+        "properties": {
+          "shape": "north_east"
+        }
       }
     }
   },
@@ -8959,84 +9003,96 @@
         "variantName": "activator_rail",
         "lightValue": 0,
         "properties": {
-          "powered": "false"
+          "powered": "false",
+          "shape": "north_south"
         }
       },
       "1": {
         "variantName": "activator_rail",
         "lightValue": 0,
         "properties": {
-          "powered": "false"
+          "powered": "false",
+          "shape": "east_west"
         }
       },
       "2": {
         "variantName": "activator_rail",
         "lightValue": 0,
         "properties": {
-          "powered": "false"
+          "powered": "false",
+          "shape": "ascending_east"
         }
       },
       "3": {
         "variantName": "activator_rail",
         "lightValue": 0,
         "properties": {
-          "powered": "false"
+          "powered": "false",
+          "shape": "ascending_west"
         }
       },
       "4": {
         "variantName": "activator_rail",
         "lightValue": 0,
         "properties": {
-          "powered": "false"
+          "powered": "false",
+          "shape": "ascending_north"
         }
       },
       "5": {
         "variantName": "activator_rail",
         "lightValue": 0,
         "properties": {
-          "powered": "false"
+          "powered": "false",
+          "shape": "ascending_south"
         }
       },
       "8": {
         "variantName": "activator_rail",
         "lightValue": 0,
         "properties": {
-          "powered": "true"
+          "powered": "true",
+          "shape": "north_south"
         }
       },
       "9": {
         "variantName": "activator_rail",
         "lightValue": 0,
         "properties": {
-          "powered": "true"
+          "powered": "true",
+          "shape": "east_west"
         }
       },
       "10": {
         "variantName": "activator_rail",
         "lightValue": 0,
         "properties": {
-          "powered": "true"
+          "powered": "true",
+          "shape": "ascending_east"
         }
       },
       "11": {
         "variantName": "activator_rail",
         "lightValue": 0,
         "properties": {
-          "powered": "true"
+          "powered": "true",
+          "shape": "ascending_west"
         }
       },
       "12": {
         "variantName": "activator_rail",
         "lightValue": 0,
         "properties": {
-          "powered": "true"
+          "powered": "true",
+          "shape": "ascending_north"
         }
       },
       "13": {
         "variantName": "activator_rail",
         "lightValue": 0,
         "properties": {
-          "powered": "true"
+          "powered": "true",
+          "shape": "ascending_south"
         }
       }
     }

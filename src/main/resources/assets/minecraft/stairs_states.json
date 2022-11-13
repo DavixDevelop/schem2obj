@@ -1,0 +1,186 @@
+{
+  "south" : [
+    {
+      "when": {
+        "facing" : "north",
+        "half" : "bottom|top"
+      },
+      "apply" : [
+        {
+          "when" : {
+            "facing" : "east",
+            "half" : "bottom|top"
+          },
+          "apply" : { "shape" : "inner_right"}
+        },
+        {
+          "when" : {
+            "facing" : "west",
+            "half" : "bottom|top"
+          },
+          "apply" : { "shape" : "inner_left"}
+        }
+      ]
+    },
+    {
+      "when": {
+        "facing" : "south",
+        "half" : "bottom|top"
+      },
+      "apply" : [
+        {
+          "when" : {
+            "facing" : "east",
+            "half" : "bottom|top"
+          },
+          "apply" : { "shape" : "outer_left"}
+        },
+        {
+          "when" : {
+            "facing" : "west",
+            "half" : "bottom|top"
+          },
+          "apply" : { "shape" : "outer_right"}
+        }
+      ]
+    }
+  ],
+  "east" : [
+    {
+      "when" : {
+        "facing" : "east",
+        "half" : "bottom|top"
+      },
+      "apply" : [
+        {
+          "when" : {
+            "facing" : "north",
+            "half" : "bottom|top"
+          },
+          "apply" : { "shape" : "outer_left"}
+        },
+        {
+          "when" : {
+            "facing" : "south",
+            "half" : "bottom|top"
+          },
+          "apply" : { "shape" : "outer_right"}
+        }
+      ]
+    },
+    {
+      "when" : {
+        "facing" : "west",
+        "half" : "bottom|top"
+      },
+      "apply" : [
+        {
+          "when" : {
+            "facing" : "north",
+            "half" : "bottom|top"
+          },
+          "apply": { "shape" : "inner_right" }
+        },
+        {
+          "when" : {
+            "facing" : "south",
+            "half" : "bottom|top"
+          },
+          "apply" : { "shape" : "inner_left"}
+        }
+      ]
+    }
+  ],
+  "north" : [
+    {
+      "when" : {
+        "facing" : "north",
+        "half" : "bottom|top"
+      },
+      "apply" : [
+        {
+          "when" : {
+            "facing" : "east",
+            "half" : "bottom|top"
+          },
+          "apply" : { "shape" : "outer_right" }
+        },
+        {
+          "when" : {
+            "facing" : "west",
+            "half" : "bottom|top"
+          },
+          "apply" : { "shape" : "outer_left" }
+        }
+      ]
+    },
+    {
+      "when" : {
+        "facing" : "south",
+        "half" : "bottom|top"
+      },
+      "apply" : [
+        {
+          "when" : {
+            "facing" : "east",
+            "half" : "bottom|top"
+          },
+          "apply" : { "shape" : "inner_left" }
+        },
+        {
+          "when" : {
+            "facing" : "west",
+            "half" : "bottom|top"
+          },
+          "apply" : { "shape" : "inner_right" }
+        }
+      ]
+    }
+  ],
+  "west" : [
+    {
+      "when" : {
+        "facing" : "east",
+        "half" : "bottom|top"
+      },
+      "apply" : [
+        {
+          "when" : {
+            "facing" : "north",
+            "half" : "bottom|top"
+          },
+          "apply" : { "shape" : "inner_left"}
+        },
+        {
+          "when": {
+            "facing": "south",
+            "half": "bottom|top"
+          },
+          "apply": { "shape": "inner_right" }
+        }
+      ]
+    },
+    {
+      "when" : {
+        "facing" : "west",
+        "half" : "bottom|top"
+      },
+      "apply" : [
+        {
+          "when" : {
+            "facing" : "north",
+            "half" : "bottom|top"
+          },
+          "apply" : { "shape" : "outer_right"}
+        },
+        {
+          "when" : {
+            "facing" : "south",
+            "half" : "bottom|top"
+          },
+          "apply" : { "shape" : "outer_left"}
+        }
+      ]
+    }
+  ]
+}

@@ -1,8 +1,7 @@
 package com.davixdevelop.schem2obj.blockmodels;
 
 import com.davixdevelop.schem2obj.blockmodels.json.BlockModelTemplate;
-import com.davixdevelop.schem2obj.blockstates.BlockState;
-import com.davixdevelop.schem2obj.utilities.ArrayUtility;
+import com.davixdevelop.schem2obj.util.ArrayUtility;
 import com.google.gson.Gson;
 
 import java.io.InputStream;
@@ -123,20 +122,29 @@ public class BlockModel {
                     Double[] origin = null;
                     String axis = null;
                     Double angle = null;
-                    Boolean rescale = null;
+                    Boolean rescale = false;
 
                     if(element.rotation.containsKey("origin")){
                         origin = new Double[3];
                         List<Number> rawOrigin = (List<Number>) element.rotation.get("origin");
-                        for(int c = 0; c < rawOrigin.size(); c++)
-                            origin[c] = rawOrigin.get(c).doubleValue();
+                        origin[0] = rawOrigin.get(0).doubleValue();
+                        origin[1] = 16.0 - rawOrigin.get(2).doubleValue();
+                        origin[2] = rawOrigin.get(1).doubleValue();
+                        origin = ArrayUtility.flattenArray(origin, 16);
                     }
-
-                    if(element.rotation.containsKey("axis"))
-                        axis = (String) element.rotation.get("axis");
 
                     if(element.rotation.containsKey("angle"))
                         angle = (Double) element.rotation.get("angle");
+
+                    if(element.rotation.containsKey("axis")) {
+                        axis = element.rotation.get("axis").toString().toUpperCase();
+                        if(axis.equals("Z")) {
+                            axis = "Y";
+                            angle *= -1;
+                        }
+                        else if(axis.equals("Y"))
+                            axis = "Z";
+                    }
 
                     if(element.rotation.containsKey("rescale"))
                         rescale = (Boolean) element.rotation.get("rescale");
@@ -159,13 +167,21 @@ public class BlockModel {
                         if(faceValue.containsKey("uv")){
                             uv = new Double[4];
                             List<Number> rawUv = (List<Number>) faceValue.get("uv");
-                            for(int c = 0; c < rawUv.size(); c++){
+
+                            //As Minecraft UV axis is top-left (0,0) to bottom-right (16,16),
+                            //convert it to bottom-left to top-right
+                            uv[0] = rawUv.get(0).doubleValue(); //x1
+                            uv[1] = 16.0 - rawUv.get(3).doubleValue(); //16 - y2
+                            uv[2] = rawUv.get(2).doubleValue(); //x2
+                            uv[3] = 16.0 - rawUv.get(1).doubleValue(); //16 - y2
+
+                            /*for(int c = 0; c < rawUv.size(); c++){
                                 uv[c] = rawUv.get(c).doubleValue();
 
                                 //Find max UV Value
                                 //if(uv[c] > MaxUVValue)
                                 //    MaxUVValue = uv[c];
-                            }
+                            }*/
 
                             //The reason why we call flattenArrayHere, is to cap the values of the cube texture coords to 1.0 instead of 16.0,
                             //So that the cube face's uv's aren't bigger than the texture bounds

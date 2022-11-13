@@ -46,7 +46,7 @@ public class BlockModelCollection {
             //Check if model has parent
             if (item.getParent() != null) {
                 //Recursive call to get model parent/parents
-                getBlockModelInternal(models, new Namespace(null, "internal", item.getParent().substring(6), null, 0.0), variant);
+                getBlockModelInternal(models, new Namespace(null, "internal", item.getParent().substring(6), null, null, 0.0), variant);
             }
 
         } else {
@@ -63,7 +63,7 @@ public class BlockModelCollection {
 
             if (model.getParent() != null) {
                 //Recursive call to get model parent/parents
-                getBlockModelInternal(models, new Namespace(modelName, "internal", model.getParent().substring(6), null, 0.0), variant);
+                getBlockModelInternal(models, new Namespace(modelName, "internal", model.getParent().substring(6), null, null, 0.0), variant);
             }
 
         }

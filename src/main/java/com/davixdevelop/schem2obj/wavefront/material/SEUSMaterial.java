@@ -1,7 +1,7 @@
 package com.davixdevelop.schem2obj.wavefront.material;
 
-import com.davixdevelop.schem2obj.utilities.ImageUtility;
-import com.davixdevelop.schem2obj.utilities.Utility;
+import com.davixdevelop.schem2obj.util.ImageUtility;
+import com.davixdevelop.schem2obj.util.Utility;
 import com.davixdevelop.schem2obj.wavefront.WavefrontUtility;
 
 import java.awt.image.BufferedImage;
@@ -24,6 +24,9 @@ public class SEUSMaterial extends Material {
     private String specularTexture;
 
     private BufferedImage customDiffuse;
+
+    //Factor to mix in "black" parts of the emission texture with the diffuse texture
+    private double emissionMixFactor = 0.5;
 
     /**
      * Create new SEUS Material from diffuse texture name
@@ -52,6 +55,10 @@ public class SEUSMaterial extends Material {
 
     public SEUSMaterial(){}
 
+    public String getResourcePath() {
+        return resourcePath;
+    }
+
     @Override
     public InputStream getDiffuseImage() {
         if(customDiffuse != null)
@@ -77,18 +84,33 @@ public class SEUSMaterial extends Material {
         customDiffuse = diffuseImage;
     }
 
+    public void setEmissionMixFactor(double emissionMixFactor) {
+        this.emissionMixFactor = emissionMixFactor;
+    }
+
     @Override
     public ArrayList<String> toMat(String textureFolder) {
         Path diffuseTextureOut = Paths.get(textureFolder, getDiffuseTextureName() + ".png");
 
         String textureFolderName = diffuseTextureOut.getParent().toFile().getName();
 
+
+
+        /*if(getDiffuseImage() == null)
+            return null;*/
+
         InputStream assetStream = getDiffuseImage();
 
-        if(assetStream == null)
-            return null;
-
         ImageUtility.copyImageToFile(assetStream, diffuseTextureOut.toFile().toString());
+
+        /*boolean hasAlpha = false;
+
+        try{
+            InputStream diffuseStream = new FileInputStream(diffuseTextureOut.toFile().toString());
+            hasAlpha = ImageUtility.hasAlpha(diffuseStream);
+        }catch (Exception ex){
+            Utility.Log(ex.getMessage());
+        }*/
 
         boolean hasNormal = false;
 
@@ -135,7 +157,7 @@ public class SEUSMaterial extends Material {
                         String texturePBRName = String.format("%s_%s",rawName, (c == 0) ? "r" : (c == 1) ? "m" : "e");
 
                         if(c == 2){
-                            RME[c] = ImageUtility.maskImage(getDiffuseImage(), RME[c]);
+                            RME[c] = ImageUtility.maskImage(getDiffuseImage(), RME[c], emissionMixFactor);
                         }
 
                         //Path to output texture
@@ -177,7 +199,7 @@ public class SEUSMaterial extends Material {
         }
         matLines.add(String.format("map_Ka %s/%s.png", textureFolderName, getDiffuseTextureName()));
         matLines.add(String.format("map_Kd %s/%s.png", textureFolderName, getDiffuseTextureName()));
-        if(getName().contains("glass") || getName().contains("leaves") || getName().equals("slime"))
+        if(hasTransparency())
             matLines.add(String.format("map_d %s/%s.png", textureFolderName, getDiffuseTextureName()));
         if(getEmissionStrength() > 0.0){
             if(!hasSpec)
@@ -188,6 +210,8 @@ public class SEUSMaterial extends Material {
 
         //If material has normal define it
         if(hasNormal){
+            matLines.add(String.format("map_Kn %s/%s.png", textureFolderName, WavefrontUtility.textureName(normalsTexture)));
+            matLines.add(String.format("norm %s/%s.png", textureFolderName, WavefrontUtility.textureName(normalsTexture)));
             matLines.add(String.format("map_bump -bm 1.0 %s/%s.png", textureFolderName, WavefrontUtility.textureName(normalsTexture)));
         }
 

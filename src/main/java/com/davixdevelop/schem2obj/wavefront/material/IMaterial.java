@@ -12,7 +12,7 @@ public interface IMaterial {
      * @return
      */
     double getEmissionStrength();
-    void seEmissionStrength(double value);
+    void setEmissionStrength(double value);
 
     /**
      * Get Ka value (Ambient Color)
@@ -84,6 +84,9 @@ public interface IMaterial {
     InputStream getDiffuseImage();
     void setDiffuseImage(BufferedImage diffuseImage);
     ArrayList<String> toMat(String textureFolder);
+
+    void setTransparency(boolean transparency);
+    boolean hasTransparency();
 
     /**
      * Return a deep copy of the material
