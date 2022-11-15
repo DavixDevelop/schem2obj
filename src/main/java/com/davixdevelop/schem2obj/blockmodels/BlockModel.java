@@ -33,7 +33,7 @@ public class BlockModel {
         this.elements = elements;
     }
 
-    public String getName() { return name; }
+    //public String getName() { return name; }
 
     public String getParent() {
         return parent;

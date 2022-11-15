@@ -34,15 +34,15 @@ public class ImageUtility {
                 imageStream.close();
 
             }catch (Exception ex){
-                Utility.Log("Could not read from assets");
-                Utility.Log(ex.getMessage());
+                LogUtility.Log("Could not read from assets");
+                LogUtility.Log(ex.getMessage());
                 return false;
             }
 
 
         }catch (FileNotFoundException ex){
-            Utility.Log("Could not copy asset to file");
-            Utility.Log(ex.getMessage());
+            LogUtility.Log("Could not copy asset to file");
+            LogUtility.Log(ex.getMessage());
             return false;
         }
 
@@ -55,7 +55,7 @@ public class ImageUtility {
             ImageIO.write(image, "png", outputStream);
             return new ByteArrayInputStream(outputStream.toByteArray());
         }catch (Exception ex){
-            Utility.Log("Could not convert BufferedImage to InputStream");
+            LogUtility.Log("Could not convert BufferedImage to InputStream");
             return null;
         }
     }
@@ -152,8 +152,8 @@ public class ImageUtility {
             return RME;
 
         }catch (Exception ex){
-            Utility.Log("Failed to read specular texture");
-            Utility.Log(ex.getMessage());
+            LogUtility.Log("Failed to read specular texture");
+            LogUtility.Log(ex.getMessage());
             return null;
         }
 
@@ -236,8 +236,8 @@ public class ImageUtility {
             return maskedImage;
 
         }catch (Exception ex){
-            Utility.Log("Could not mask image");
-            Utility.Log(ex.getMessage());
+            LogUtility.Log("Could not mask image");
+            LogUtility.Log(ex.getMessage());
             return null;
         }
     }
@@ -284,8 +284,8 @@ public class ImageUtility {
             return coloredImage;
 
         }catch (Exception ex){
-            Utility.Log("Failed to read input image");
-            Utility.Log(ex.getMessage());
+            LogUtility.Log("Failed to read input image");
+            LogUtility.Log(ex.getMessage());
             return null;
         }
     }
@@ -319,8 +319,8 @@ public class ImageUtility {
             return combinedImage;
 
         }catch (Exception ex){
-            Utility.Log("Failed to combine images");
-            Utility.Log(ex.getMessage());
+            LogUtility.Log("Failed to combine images");
+            LogUtility.Log(ex.getMessage());
             return null;
         }
     }
@@ -355,8 +355,8 @@ public class ImageUtility {
 
 
         }catch (Exception ex){
-            Utility.Log("Could not mask image with alpha");
-            Utility.Log(ex.getMessage());
+            LogUtility.Log("Could not mask image with alpha");
+            LogUtility.Log(ex.getMessage());
             return null;
         }
     }

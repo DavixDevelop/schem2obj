@@ -1,4 +1,4 @@
-package com.davixdevelop.schem2obj.wavefront.custom;
+package com.davixdevelop.schem2obj.wavefront.custom.entity;
 
 import com.davixdevelop.schem2obj.Constants;
 import com.davixdevelop.schem2obj.models.HashedDoubleList;
@@ -25,6 +25,8 @@ public class LiquidWavefrontObject extends WavefrontObject {
     public static double NON_BLOCK_LIQUID_COEFFICIENT = 0.63419845853;
     public static double NON_BLOCK_LIQUID_VERTICAL_INTERCEPT = 5.50024722391;
 
+    public static Integer[][] NORTH_SOUTH_WEST_EAST_DIRECTION_VECTORS = new Integer[][]{{0,1}, {0,-1},{-1,0},{1,0}};
+
     //A collection to store all the CornerHeights for each liquid block
     //Map<key: y axis, value: Map<key: x axis, value: Map<key: z axis, value: CornerHeights>>>
     private Map<Integer, Map<Integer, Map<Integer, LiquidBlock>>> LiquidBlocksCollection = new HashMap<>();
@@ -49,14 +51,14 @@ public class LiquidWavefrontObject extends WavefrontObject {
 
     enum FLOW_DIRECTION {
         STILL,
-        NORTH_SOUTH,
-        SOUTH_NORTH,
-        WEST_EAST,
-        EAST_WEST,
-        NE_SW,
-        NW_SE,
-        SW_NE,
-        SE_NW
+        SOUTH,
+        NORTH,
+        EAST,
+        WEST,
+        SOUTH_WEST,
+        SOUTH_EAST,
+        NORTH_EAST,
+        NORTH_WEST
     }
 
     public static double MAX_FLOWABLE_LEVEL = 15 / 16.0;
@@ -130,29 +132,41 @@ public class LiquidWavefrontObject extends WavefrontObject {
 
         if(!createFullBlock) {
 
+            //2D Array to store what adjacent blocks are a liquid
+            /*
+                north_west  north   north_east
+                west        center  east
+                south_west  south   south_east
+            */
+            boolean[][] liquidMatrix = new boolean[][]{
+                    {(north_west != null && isLiquidAdjacent(north_west)), (north != null && isLiquidAdjacent(north)), (north_east != null && isLiquidAdjacent(north_east))},
+                    {(west != null && isLiquidAdjacent(west)), true, (east != null && isLiquidAdjacent(east))},
+                    {(south_west != null && isLiquidAdjacent(south_west)), (south != null && isLiquidAdjacent(south)), (south_east != null && isLiquidAdjacent(south_east))}
+            };
+
             //Set north east corner
             //Check east block
-            setCornersFromAdjacentBlock(liquidLevel, cornerHeights, east, "east", isLiquidAdjacent, hasLiquidDown, flow_direction);
+            setCornersFromAdjacentBlock(liquidLevel, cornerHeights, east, "east", isLiquidAdjacent, hasLiquidDown, flow_direction, liquidMatrix);
             //Check north east block
-            setCornersFromAdjacentBlock(liquidLevel, cornerHeights, north_east, "north_east", isLiquidAdjacent, hasLiquidDown, flow_direction);
+            setCornersFromAdjacentBlock(liquidLevel, cornerHeights, north_east, "north_east", isLiquidAdjacent, hasLiquidDown, flow_direction, liquidMatrix);
             //Check north block
-            setCornersFromAdjacentBlock(liquidLevel, cornerHeights, north, "north", isLiquidAdjacent, hasLiquidDown, flow_direction);
+            setCornersFromAdjacentBlock(liquidLevel, cornerHeights, north, "north", isLiquidAdjacent, hasLiquidDown, flow_direction, liquidMatrix);
 
             //Set north west corner
             //Check north west block
-            setCornersFromAdjacentBlock(liquidLevel, cornerHeights, north_west, "north_west", isLiquidAdjacent, hasLiquidDown, flow_direction);
+            setCornersFromAdjacentBlock(liquidLevel, cornerHeights, north_west, "north_west", isLiquidAdjacent, hasLiquidDown, flow_direction, liquidMatrix);
             //Check west block
-            setCornersFromAdjacentBlock(liquidLevel, cornerHeights, west, "west", isLiquidAdjacent, hasLiquidDown, flow_direction);
+            setCornersFromAdjacentBlock(liquidLevel, cornerHeights, west, "west", isLiquidAdjacent, hasLiquidDown, flow_direction, liquidMatrix);
 
             //Set south west corner
             //Check south west block
-            setCornersFromAdjacentBlock(liquidLevel, cornerHeights, south_west, "south_west", isLiquidAdjacent, hasLiquidDown, flow_direction);
+            setCornersFromAdjacentBlock(liquidLevel, cornerHeights, south_west, "south_west", isLiquidAdjacent, hasLiquidDown, flow_direction, liquidMatrix);
             //Check south block
-            setCornersFromAdjacentBlock(liquidLevel, cornerHeights, south, "south", isLiquidAdjacent, hasLiquidDown, flow_direction);
+            setCornersFromAdjacentBlock(liquidLevel, cornerHeights, south, "south", isLiquidAdjacent, hasLiquidDown, flow_direction, liquidMatrix);
 
             //Set south east corner
             //Check south east block
-            setCornersFromAdjacentBlock(liquidLevel, cornerHeights, south_east, "south_east", isLiquidAdjacent, hasLiquidDown, flow_direction);
+            setCornersFromAdjacentBlock(liquidLevel, cornerHeights, south_east, "south_east", isLiquidAdjacent, hasLiquidDown, flow_direction, liquidMatrix);
 
 
             for (int c = 0; c < cornerHeights.length; c++) {
@@ -385,25 +399,25 @@ public class LiquidWavefrontObject extends WavefrontObject {
 
                     //Rotate the UV up coordinates depending on the flow direction
                     switch (flowDirection) {
-                        case NORTH_SOUTH:
+                        case SOUTH:
                             WavefrontUtility.shiftRotateUV(faceUV, 180.0);
                             break;
-                        case WEST_EAST:
+                        case EAST:
                             WavefrontUtility.shiftRotateUV(faceUV, 90.0);
                             break;
-                        case EAST_WEST:
+                        case WEST:
                             WavefrontUtility.shiftRotateUV(faceUV, 270.0);
                             break;
-                        case SW_NE:
+                        case NORTH_EAST:
                             WavefrontUtility.shiftRotateUV(faceUV,45.0);
                             break;
-                        case NW_SE:
+                        case SOUTH_EAST:
                             WavefrontUtility.shiftRotateUV(faceUV, 135.0);
                             break;
-                        case NE_SW:
+                        case SOUTH_WEST:
                             WavefrontUtility.shiftRotateUV(faceUV, 225.0);
                             break;
-                        case SE_NW:
+                        case NORTH_WEST:
                             WavefrontUtility.shiftRotateUV(faceUV, 315.0);
                             break;
                     }
@@ -476,8 +490,9 @@ public class LiquidWavefrontObject extends WavefrontObject {
      * @param orientation The orientation of the adjacent block (ex, north, north_east...)
      * @param hasLiquidAdjacent True if block has any liquid adjacent
      * @param hasLiquidDown True if block has liquid bellow
+     * @param liquidMatrix 2D Boolean array Array which shows if adjacent block has a liquid
      */
-    public void setCornersFromAdjacentBlock(int liquidLevel, Double[] cornerHeights, Namespace adjacent, String orientation, boolean hasLiquidAdjacent, boolean hasLiquidDown, FLOW_DIRECTION flowDirection){
+    public void setCornersFromAdjacentBlock(int liquidLevel, Double[] cornerHeights, Namespace adjacent, String orientation, boolean hasLiquidAdjacent, boolean hasLiquidDown, FLOW_DIRECTION flowDirection, boolean[][] liquidMatrix){
         Double cornerHeight = null;
 
         if (!hasLiquidAdjacent) {
@@ -580,13 +595,34 @@ public class LiquidWavefrontObject extends WavefrontObject {
                     cornerHeight = DEFAULT_LIQUID_COEFFICIENT * intersect_abscissa + DEFAULT_LIQUID_VERTICAL_INTERCEPT;
 
                 } else if (adjacent == null || isNonBlockAdjacent(adjacent)) { //Check if adjacent block in a non block
-                    if((flowDirection.equals(FLOW_DIRECTION.EAST_WEST) && (orientation.equals("west") || orientation.equals("north_west") || orientation.equals("south_west"))) ||
-                            (flowDirection.equals(FLOW_DIRECTION.WEST_EAST) && (orientation.equals("east") || orientation.equals("north_east") || orientation.equals("south_east"))) ||
-                            (flowDirection.equals(FLOW_DIRECTION.SOUTH_NORTH) && (orientation.equals("north") || orientation.equals("north_west") || orientation.equals("north_east"))) ||
-                            (flowDirection.equals(FLOW_DIRECTION.NORTH_SOUTH) && (orientation.equals("south") || orientation.equals("south_west") || orientation.equals("south_east")))) {
+
+                    //Check if the direction the liquidMatrix faces and the flow direction and orientation all face the same way. Ex:
+                    /*
+                      false true false
+                      true true true   => facing north
+                      true true true
+
+                      or
+
+                      false false false
+                      false true true   => facing north_west
+                      false true true
+
+                      If it does negate the cornerHeight, instead of adding it to the corner
+                     */
+                    if((flowDirection.equals(FLOW_DIRECTION.WEST) && (orientation.equals("west") || orientation.equals("north_west") || orientation.equals("south_west"))) ||
+                            (flowDirection.equals(FLOW_DIRECTION.EAST) && (orientation.equals("east") || orientation.equals("north_east") || orientation.equals("south_east"))) ||
+                            (flowDirection.equals(FLOW_DIRECTION.NORTH) && (orientation.equals("north") || orientation.equals("north_west") || orientation.equals("north_east"))) ||
+                            (flowDirection.equals(FLOW_DIRECTION.SOUTH) && (orientation.equals("south") || orientation.equals("south_west") || orientation.equals("south_east"))) ||
+                            (flowDirection.equals(FLOW_DIRECTION.NORTH_EAST) && !liquidMatrix[0][1] && !liquidMatrix[1][2] && liquidMatrix[1][0] && (orientation.equals("north") || orientation.equals("north_east"))) ||
+                            (flowDirection.equals(FLOW_DIRECTION.NORTH_WEST) && !liquidMatrix[0][1] && !liquidMatrix[1][0] && liquidMatrix[1][2] && (orientation.equals("north") || orientation.equals("north_west")) ||
+                            (flowDirection.equals(FLOW_DIRECTION.SOUTH_EAST) && !liquidMatrix[2][1] && !liquidMatrix[1][2] && liquidMatrix[1][0] && (orientation.equals("south") || orientation.equals("south_east"))) ||
+                            (flowDirection.equals(FLOW_DIRECTION.SOUTH_WEST) && !liquidMatrix[2][1] && !liquidMatrix[1][0] && liquidMatrix[1][2] && (orientation.equals("south") || orientation.equals("south_west"))))) {
+                        abscissa += -0.5;
                         cornerHeight = NON_BLOCK_LIQUID_COEFFICIENT * abscissa + NON_BLOCK_LIQUID_VERTICAL_INTERCEPT;
                         cornerHeight *= -1;
-                    }else{
+                    }
+                    else{
                         if(liquidLevel == 0)
                             abscissa = 0;
                         else{
@@ -702,20 +738,86 @@ public class LiquidWavefrontObject extends WavefrontObject {
      * @return The direction of the flow
      */
     private FLOW_DIRECTION getFlowDirection(int l, Namespace n, Namespace s, Namespace w, Namespace e, Namespace ne, Namespace nw, Namespace se, Namespace sw){
-        int nwc = getLiquidLevel(nw);
+        /*int nwc = getLiquidLevel(nw);
         int nc = getLiquidLevel(n);
         int nec = getLiquidLevel(ne);
         int ec = getLiquidLevel(e);
         int wc = getLiquidLevel(w);
         int sec = getLiquidLevel(se);
         int swc = getLiquidLevel(sw);
-        int sc = getLiquidLevel(s);
+        int sc = getLiquidLevel(s);*/
 
-        if(l == 0){
-          String ww = "2";
+
+        //liquidMatrix of adjacent liquid levels. Ex:
+        /*
+        -1 -1  7
+        -1  7  6
+        -1  6  5
+         */
+        int[][] liquidMatrix = new int[][]{
+                {getLiquidLevel(nw), getLiquidLevel(n), getLiquidLevel(ne)},
+                {getLiquidLevel(w), l, getLiquidLevel(e)},
+                {getLiquidLevel(sw), getLiquidLevel(s), getLiquidLevel(se)}
+        };
+
+        if(Constants.LOADED_SCHEMATIC.getPosY() == 6 && liquidMatrix[0][1] == -1 && liquidMatrix[2][1] == 0 && liquidMatrix[1][0] == -1){ //&& liquidMatrix[1][2] == 1){
+            String ww = "2";
         }
 
-        LinkedHashMap<FLOW_DIRECTION, Integer> directions = new LinkedHashMap<>();
+        //Loop through the matrix and inverse the liquid levels (highest value is 7 and lowest is 0)
+        inverseLiquidMatrix(liquidMatrix);
+
+        //Sum the center liquid level and the 4 adjacent corner (north, south, west, east)
+        int[] levelSums = new int[]{0,0,0,0};
+
+        levelSums[0] = liquidMatrix[1][1] + liquidMatrix[0][1];
+        levelSums[1] = liquidMatrix[1][1] + liquidMatrix[2][1];
+        levelSums[2] = liquidMatrix[1][1] + liquidMatrix[1][0];
+        levelSums[3] = liquidMatrix[1][1] + liquidMatrix[1][2];
+
+        //Get the minimum sum
+        Integer minimumSum = null;
+        for(int x : levelSums){
+            if(minimumSum == null)
+                minimumSum = x;
+            else if(minimumSum > x)
+                minimumSum = x;
+        }
+
+        Integer[] directionVector = new Integer[]{0,0};
+
+        //Loop through the level sums
+        for(int d = 0; d < 4; d++){
+            int levelSum = levelSums[d];
+            //If levelSum equals minimum sum the direction vector with the direction vector of the adjacent corner
+            if(minimumSum.equals(levelSum)){
+                directionVector[0] += NORTH_SOUTH_WEST_EAST_DIRECTION_VECTORS[d][0];
+                directionVector[1] += +NORTH_SOUTH_WEST_EAST_DIRECTION_VECTORS[d][1];
+            }
+        }
+
+        switch (String.format("%d:%d", directionVector[0],directionVector[1])){
+            case "-1:1":
+                return FLOW_DIRECTION.NORTH_WEST;
+            case "0:1":
+                return FLOW_DIRECTION.NORTH;
+            case "1:1":
+                return FLOW_DIRECTION.NORTH_EAST;
+            case "-1:0":
+                return FLOW_DIRECTION.WEST;
+            case "0:0":
+                return FLOW_DIRECTION.STILL;
+            case "1:0":
+                return FLOW_DIRECTION.EAST;
+            case "-1:-1":
+                return FLOW_DIRECTION.SOUTH_WEST;
+            case "0:-1":
+                return FLOW_DIRECTION.SOUTH;
+            case "1:-1":
+                return FLOW_DIRECTION.SOUTH_EAST;
+        }
+
+        /*LinkedHashMap<FLOW_DIRECTION, Integer> directions = new LinkedHashMap<>();
 
         //North check
         checkAndCountDirection(directions, l, nc, FLOW_DIRECTION.SOUTH_NORTH, FLOW_DIRECTION.NORTH_SOUTH);
@@ -781,9 +883,106 @@ public class LiquidWavefrontObject extends WavefrontObject {
 
                 count += 1;
             }
-        }
+        }*/
 
         return FLOW_DIRECTION.STILL;
+
+    }
+
+    /**
+     * Inverse the liquid level matrix.
+     * Ex: level 1 -> level 7
+     * @param liquidLevelMatrix Ad 2D array representing a matrix with adjacent liquid levels
+     * Ex:
+     * -1 -1  7
+     * -1  7  6
+     * -1  6  5
+     * @return inverse of liquid level matrix
+     */
+    private void inverseLiquidMatrix(int[][] liquidLevelMatrix){
+
+        //Get the centerLiquid and inverse it
+        int centerLiquid = liquidLevelMatrix[1][1];
+        centerLiquid = 8 - centerLiquid;
+
+        int[][] originalLiquidMatrix = new int[liquidLevelMatrix.length][];
+        for(int c = 0; c < liquidLevelMatrix.length; c++)
+            originalLiquidMatrix[c] = Arrays.copyOf(liquidLevelMatrix[c], liquidLevelMatrix[c].length);
+
+        for(int y = 0; y < liquidLevelMatrix.length; y++){
+            int[] row = originalLiquidMatrix[y];
+            for(int x = 0; x < row.length; x++){
+
+                int liquidLevel = row[x];
+
+                if(liquidLevel == -1){
+                    int[] adjacentLiquidLevels = new int[]{};
+
+                    if(x == 0 && y == 0)
+                        adjacentLiquidLevels = new int[]{
+                                originalLiquidMatrix[2][2],
+                                originalLiquidMatrix[2][1],
+                                originalLiquidMatrix[1][2]};
+                    else if(x == 1 && y == 0)
+                        adjacentLiquidLevels = new int[]{
+                                originalLiquidMatrix[2][0],
+                                originalLiquidMatrix[2][0],
+                                originalLiquidMatrix[2][2]};
+                    else if(x == 2 && y == 0)
+                        adjacentLiquidLevels = new int[]{
+                                originalLiquidMatrix[2][0],
+                                originalLiquidMatrix[2][1],
+                                originalLiquidMatrix[1][0]};
+                    else if(x == 0 && y == 1)
+                        adjacentLiquidLevels = new int[]{
+                                originalLiquidMatrix[1][2],
+                                originalLiquidMatrix[0][2],
+                                originalLiquidMatrix[2][2]};
+                    else if(x == 2 && y == 1)
+                        adjacentLiquidLevels = new int[]{
+                                originalLiquidMatrix[1][0],
+                                originalLiquidMatrix[0][0],
+                                originalLiquidMatrix[2][0]};
+                    else if(x == 0 && y == 2)
+                        adjacentLiquidLevels = new int[]{
+                                originalLiquidMatrix[0][2],
+                                originalLiquidMatrix[0][1],
+                                originalLiquidMatrix[1][2]};
+                    else if(x == 1 && y == 2)
+                        adjacentLiquidLevels = new int[]{
+                                originalLiquidMatrix[0][1],
+                                originalLiquidMatrix[0][0],
+                                originalLiquidMatrix[0][2]};
+                    else if(x == 2 && y == 2)
+                        adjacentLiquidLevels = new int[]{
+                                originalLiquidMatrix[0][0],
+                                originalLiquidMatrix[0][1],
+                                originalLiquidMatrix[1][0]};
+
+                    for(int adjacentLevel : adjacentLiquidLevels){
+                        if(adjacentLevel != -1){
+                            adjacentLevel = 8 - adjacentLevel;
+                            if(centerLiquid > adjacentLevel)
+                                liquidLevel = centerLiquid + 1;
+                            else
+                                liquidLevel = centerLiquid - 1;
+                            break;
+                        }
+                    }
+
+                    if(liquidLevel == -1)
+                        liquidLevel = centerLiquid - 1;
+
+                }else{
+                    liquidLevel = 8 - liquidLevel;
+                }
+
+                liquidLevelMatrix[y][x] = liquidLevel;
+            }
+
+
+        }
+
 
     }
 

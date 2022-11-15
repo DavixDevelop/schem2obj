@@ -75,15 +75,20 @@ public class WavefrontUtility {
         return textureMaterialsPerRootModel;
     }
 
-    public static void generateOrGetMaterial(String materialName, Namespace blockNamespace){
-        if (Constants.BLOCK_MATERIALS.containsMaterial(materialName)) {
-            if(!Constants.BLOCK_MATERIALS.usedMaterials().contains(materialName)){
+    /**
+     * Get material or generate it
+     * @param materialPath The path of material, ex. blocks/fire or entity/black-bed
+     * @param blockNamespace The namespace of the block the material uses
+     */
+    public static void generateOrGetMaterial(String materialPath, Namespace blockNamespace){
+        if (Constants.BLOCK_MATERIALS.containsMaterial(materialPath)) {
+            if(!Constants.BLOCK_MATERIALS.usedMaterials().contains(materialPath)){
                 //If material isn't yet used, but It's in BLOCK_MATERIALS collection, it means It's a custom material, added from a resource pack
                 //Modify the material to include the lightValue of the block
-                IMaterial material = Constants.BLOCK_MATERIALS.getMaterial(materialName);
+                IMaterial material = Constants.BLOCK_MATERIALS.getMaterial(materialPath);
                 if(blockNamespace.getLightValue() != 0.0)
                     material.setEmissionStrength(blockNamespace.getLightValue() / 16);
-                Constants.BLOCK_MATERIALS.setMaterial(materialName, material);
+                Constants.BLOCK_MATERIALS.setMaterial(materialPath, material);
             }
         }else {
             Material material = new Material();
@@ -101,11 +106,21 @@ public class WavefrontUtility {
                             }
                         }*/
 
-            material.setDiffuseTexturePath(materialName);
-            material.setDiffuseTextureName(textureName(materialName));
+            //If material is a block or is an entity and doesn't contain - in it's material path
+            //use the material path for the diffuse texture path
+            if(materialPath.startsWith("blocks") || (materialPath.startsWith("entity") && !materialPath.contains("-"))) {
+                material.setDiffuseTexturePath(materialPath);
+
+            }else if(materialPath.startsWith("entity") && materialPath.contains("-")){
+                String materialName = textureName(materialPath);
+                //If material path contains a -, it means the texture for that material is in a subfolder with the name of the entity
+                //Ex: black-bed -> diffuseTexturePath = entity/bed/black
+                material.setDiffuseTexturePath(String.format("entity/%s/%s", blockNamespace.getType(), materialName.substring(0, materialName.indexOf('-'))));
+            }
+
             material.setEmissionStrength(blockNamespace.getLightValue());
-            material.setName(textureName(materialName));
-            Constants.BLOCK_MATERIALS.setMaterial(materialName, material);
+            material.setName(textureName(materialPath));
+            Constants.BLOCK_MATERIALS.setMaterial(materialPath, material);
         }
 
 
@@ -646,7 +661,7 @@ public class WavefrontUtility {
      * @param spaceSize The size of the space [width, length, height]
      * @return
      */
-    public static IWavefrontObject translateWavefrontBlock(IWavefrontObject wavefrontBlock, Integer[] position, Integer[] spaceSize){
+    public static void translateWavefrontBlock(IWavefrontObject wavefrontBlock, Integer[] position, Integer[] spaceSize){
         //Value by how much to move each vert (vert + translate)
         Double translateX = position[0] - (spaceSize[0].doubleValue() / 2);
         Double translateY = (position[1] * -1) + ((spaceSize[1].doubleValue() / 2) - 1);
@@ -661,8 +676,6 @@ public class WavefrontUtility {
 
         //Set new vertices back to object
         wavefrontBlock.setVertices(verticesArray);
-
-        return wavefrontBlock;
     }
 
     /**

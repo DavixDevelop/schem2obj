@@ -57,7 +57,7 @@ public class FireWavefrontObject extends BlockWavefrontObject {
             fireModels.set(v, new VariantModels(models.getVariant(), blockModels));
         }
 
-        super.toObj(fireModels, variants, blockNamespace);
+        super.toObj(fireModels, blockNamespace);
 
         return false;
     }

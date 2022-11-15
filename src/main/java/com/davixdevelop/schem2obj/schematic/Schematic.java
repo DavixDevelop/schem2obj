@@ -4,6 +4,10 @@ import java.io.DataInput;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import com.flowpowered.nbt.*;
 import com.flowpowered.nbt.stream.NBTInputStream;
@@ -20,15 +24,17 @@ public class Schematic implements java.io.Serializable {
     private short width;
     private short length;
     private short height;
-    private ListTag tileEntities;
+    private Map<String, EntityValues>  tileEntities;
+    private List<EntityValues> entities;
 
-    public Schematic(int[] blocks, int[] data, short width, short length, short height, ListTag tileEntities) {
+    public Schematic(int[] blocks, int[] data, short width, short length, short height, Map<String, EntityValues>  tileEntities, List<EntityValues> entities) {
         this.blocks = blocks;
         this.data = data;
         this.width = width;
         this.length = length;
         this.height = height;
         this.tileEntities = tileEntities;
+        this.entities = entities;
     }
 
     public int[] getBlocks() {
@@ -51,8 +57,12 @@ public class Schematic implements java.io.Serializable {
         return height;
     }
 
-    public ListTag getTileEntities(){
+    public Map<String, EntityValues> getTileEntities(){
         return tileEntities;
+    }
+
+    public List<EntityValues> getEntities() {
+        return entities;
     }
 
     /**
@@ -109,10 +119,54 @@ public class Schematic implements java.io.Serializable {
             }
         }
 
-        ListTag tileEntities = (ListTag)nbtData.get("TileEntities");
+        Map<String, EntityValues> tileEntities = new HashMap<>();
+
+        ListTag rawTileEntities = (ListTag)nbtData.get("TileEntities");
+
+        //Loop through the entities
+        for(Object tag : rawTileEntities.getValue()){
+            //Check if tag is of type TAG_COMPOUND
+            if(tag instanceof CompoundTag){
+                CompoundTag compoundTag = (CompoundTag) tag;
+                //Get the CompoundMap
+                CompoundMap compoundMap = compoundTag.getValue();
+
+                //Get the position of the entity and remove it from the compoundMap
+                IntTag xTag = (IntTag) compoundMap.get("x");
+                IntTag yTag = (IntTag) compoundMap.get("y");
+                IntTag zTag = (IntTag) compoundMap.get("z");
+                compoundMap.remove("x");
+                compoundMap.remove("y");
+                compoundMap.remove("z");
+
+                //Parse through the compoundMap
+                EntityValues values = new EntityValues();
+                values.parseCompoundMap(compoundMap);
+
+                tileEntities.put(String.format("%d:%d:%d", xTag.getValue(), yTag.getValue(), zTag.getValue()), values);
+            }
+        }
+
+        List<EntityValues> entities = new ArrayList<>();
+
+        ListTag rawEntities = (ListTag)nbtData.get("Entities");
+
+        for(Object tag : rawEntities.getValue()){
+            if(tag instanceof CompoundTag){
+                CompoundTag compoundTag = (CompoundTag) tag;
+                //Get the CompoundMap
+                CompoundMap compoundMap = compoundTag.getValue();
+
+                //Parse through the compoundMap
+                EntityValues values = new EntityValues();
+                values.parseCompoundMap(compoundMap);
+
+                entities.add(values);
+            }
+        }
 
         stream.close();
 
-        return new Schematic(blocks, data, width, length, height, tileEntities);
+        return new Schematic(blocks, data, width, length, height, tileEntities, entities);
     }
 }

@@ -37,7 +37,7 @@ public class LeavesBlockWavefrontObject extends BlockWavefrontObject {
         modifyLeavesMaterials(leavesModels, blockNamespace);
 
         //Generate the OBJ for the leaves block variant
-        super.toObj(leavesModels, variants, blockNamespace);
+        super.toObj(leavesModels, blockNamespace);
 
         return true;
     }

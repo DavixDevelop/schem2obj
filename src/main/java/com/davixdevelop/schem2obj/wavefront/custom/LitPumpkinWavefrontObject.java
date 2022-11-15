@@ -6,7 +6,7 @@ import com.davixdevelop.schem2obj.blockstates.BlockState;
 import com.davixdevelop.schem2obj.models.HashedDoubleList;
 import com.davixdevelop.schem2obj.namespace.Namespace;
 import com.davixdevelop.schem2obj.util.ArrayVector;
-import com.davixdevelop.schem2obj.util.Utility;
+import com.davixdevelop.schem2obj.util.LogUtility;
 import com.davixdevelop.schem2obj.wavefront.WavefrontObject;
 import com.davixdevelop.schem2obj.wavefront.WavefrontUtility;
 import com.davixdevelop.schem2obj.wavefront.material.IMaterial;
@@ -73,8 +73,8 @@ public class LitPumpkinWavefrontObject extends WavefrontObject {
                         BufferedImage diffuseImage = ImageIO.read(seusMaterial.getDiffuseImage());
                         STACK_SIZE = diffuseImage.getHeight() / diffuseImage.getWidth();
                     }catch (Exception ex){
-                        Utility.Log("Error while calculating count of textures in the animation texture for pumpkin_face_on");
-                        Utility.Log(ex.getMessage());
+                        LogUtility.Log("Error while calculating count of textures in the animation texture for pumpkin_face_on");
+                        LogUtility.Log(ex.getMessage());
                     }
                 }
             }

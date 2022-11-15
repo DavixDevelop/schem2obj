@@ -4,7 +4,10 @@ import com.davixdevelop.schem2obj.blockmodels.BlockModelCollection;
 import com.davixdevelop.schem2obj.blockstates.BlockState;
 import com.davixdevelop.schem2obj.blockstates.BlockStateCollection;
 import com.davixdevelop.schem2obj.namespace.Namespace;
+import com.davixdevelop.schem2obj.schematic.EntityValues;
 import com.davixdevelop.schem2obj.wavefront.custom.*;
+import com.davixdevelop.schem2obj.wavefront.custom.entity.BedWavefrontObject;
+import com.davixdevelop.schem2obj.wavefront.custom.entity.TileEntity;
 import com.davixdevelop.schem2obj.wavefront.material.MaterialCollection;
 
 import java.util.HashMap;
@@ -17,19 +20,25 @@ public class WavefrontCollection {
         wavefrontObjecs = new HashMap<>();
     }
 
-    public IWavefrontObject fromNamespace(Namespace blockNamespace){
+    public IWavefrontObject fromNamespace(Namespace blockNamespace, EntityValues ...entityValues){
         if(wavefrontObjecs.containsKey(blockNamespace))
             return wavefrontObjecs.get(blockNamespace).clone();
         else{
             IWavefrontObject block = getType(blockNamespace);
 
-            //Only store object in memory if to does not have random variants (multiple variants in "variants" field)
-            //If it does recreate it every time
-            if(block.fromNamespace(blockNamespace))
-                wavefrontObjecs.put(blockNamespace, block);
+            if(block instanceof TileEntity){
+                //Only store tile entity object in memory if it specifies it
+                //If it does recreate it every time
+                if(((TileEntity) block).fromNamespace(blockNamespace, entityValues[0]));
+                    wavefrontObjecs.put(blockNamespace, block);
+            }else {
+                //Only store object in memory if to does not have random variants (multiple variants in "variants" field)
+                //If it does recreate it every time
+                if(block.fromNamespace(blockNamespace))
+                    wavefrontObjecs.put(blockNamespace, block);
+            }
 
             return block.clone();
-
         }
     }
 
@@ -79,10 +88,13 @@ public class WavefrontCollection {
                 return new LitFurnaceWavefrontObject();
             case "cauldron":
                 return new CauldronWavefrontObject();
+            case "bed":
+                return new BedWavefrontObject();
             default:
                 return new BlockWavefrontObject();
         }
     }
+
 
     public static boolean isTranslucentOrNotFull(IWavefrontObject object){
         return (object instanceof GlassBlockWavefrontObject) ||

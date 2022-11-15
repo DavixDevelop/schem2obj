@@ -77,10 +77,19 @@ public interface IMaterial {
 
     String getName();
     void setName(String name);
+
+    /**
+     *
+     * @return Path to the diffuse texture file
+     */
     String getDiffuseTexturePath();
+
+    /**
+     * Set the path to the diffuse texture file
+     * @param texturePath Relative path to the diffuse texture file (ex. blocks/dirt)
+     */
     void setDiffuseTexturePath(String texturePath);
-    String getDiffuseTextureName();
-    void setDiffuseTextureName(String textureName);
+
     InputStream getDiffuseImage();
     void setDiffuseImage(BufferedImage diffuseImage);
     ArrayList<String> toMat(String textureFolder);

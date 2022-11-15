@@ -1,6 +1,6 @@
 package com.davixdevelop.schem2obj.blockstates;
 
-import com.davixdevelop.schem2obj.util.Utility;
+import com.davixdevelop.schem2obj.util.LogUtility;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.reflect.TypeToken;
@@ -63,8 +63,8 @@ public class AdjacentBlockState {
                 checkOrder.add(orientation);
             }
         }catch (Exception ex){
-            Utility.Log("Error while reading adjacent block state for " + assetPath);
-            Utility.Log(ex.getMessage());
+            LogUtility.Log("Error while reading adjacent block state for " + assetPath);
+            LogUtility.Log(ex.getMessage());
         }
     }
 

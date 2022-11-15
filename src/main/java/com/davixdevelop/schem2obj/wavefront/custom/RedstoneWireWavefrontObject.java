@@ -98,7 +98,6 @@ public class RedstoneWireWavefrontObject extends BlockWavefrontObject implements
                             IMaterial new_material = Constants.BLOCK_MATERIALS.getMaterial(newTextureName);
 
                             new_material.setName(String.format("%s_power_%s", new_material.getName(), power));
-                            new_material.setDiffuseTextureName(new_material.getName());
 
                             Integer p = Integer.valueOf(power);
                             new_material.setEmissionStrength((p == 0) ? 0.0 :  p / 16.0);

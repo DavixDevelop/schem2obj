@@ -1,10 +1,8 @@
 package com.davixdevelop.schem2obj.wavefront.material;
 
 import com.davixdevelop.schem2obj.util.ImageUtility;
-import com.davixdevelop.schem2obj.util.Utility;
 
 import java.awt.image.BufferedImage;
-import java.io.FileInputStream;
 import java.io.InputStream;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -15,7 +13,7 @@ import java.util.Locale;
  * @author DavixDevelop
  */
 public class Material implements IMaterial {
-    private String diffuseTextureName;
+    //private String diffuseTextureName;
     private String diffuseTexturePath;
 
     private Double Ke;
@@ -32,20 +30,9 @@ public class Material implements IMaterial {
     private boolean transparency = false;
 
     public Material() {
-        this.diffuseTextureName = null;
         this.diffuseTexturePath = null;
         this.Ke = 0.0;
         this.Ka = 0.2;
-    }
-
-    @Override
-    public String getDiffuseTextureName() {
-        return diffuseTextureName;
-    }
-
-    @Override
-    public void setDiffuseTextureName(String textureName) {
-        this.diffuseTextureName = textureName;
     }
 
     @Override
@@ -74,7 +61,7 @@ public class Material implements IMaterial {
             return ImageUtility.bufferedImageToInputStream(customDiffuse);
         }
 
-
+        //Get the path to the diffuse texture, ex. minecraft/textures/entity/bed/blue.png
         String assetMaterial = String.format("minecraft/textures/%s.png", getDiffuseTexturePath());
 
         InputStream assetStream = this.getClass().getClassLoader().getResourceAsStream("assets/" + assetMaterial);
@@ -150,22 +137,14 @@ public class Material implements IMaterial {
     @Override
     public ArrayList<String> toMat(String textureFolder) {
 
-        Path diffuseTextureOut = Paths.get(textureFolder, getDiffuseTextureName() + ".png");
+        Path diffuseTextureOut = Paths.get(textureFolder, getName() + ".png");
+
+        String textureFolderName = diffuseTextureOut.getParent().toFile().getName();
 
 
         InputStream assetStream = getDiffuseImage();
 
         ImageUtility.copyImageToFile(assetStream, diffuseTextureOut.toFile().toString());
-
-        //boolean hasAlpha = false;
-
-        /*try{
-            InputStream diffuseStream = new FileInputStream(diffuseTextureOut.toFile().toString());
-            hasAlpha = ImageUtility.hasAlpha(diffuseStream);
-        }catch (Exception ex){
-            Utility.Log(ex.getMessage());
-        }*/
-
 
         //To store each line that defines a new material
         ArrayList<String> matLines = new ArrayList<>();
@@ -186,12 +165,12 @@ public class Material implements IMaterial {
         if(getEmissionStrength() > 0.0){
             matLines.add(String.format(Locale.ROOT, "Ke %f %f %f", getEmissionStrength(), getEmissionStrength(), getEmissionStrength()));
         }
-        matLines.add(String.format("map_Ka %s/%s.png", diffuseTextureOut.getParent().toFile().getName(), getDiffuseTextureName()));
-        matLines.add(String.format("map_Kd %s/%s.png", diffuseTextureOut.getParent().toFile().getName(), getDiffuseTextureName()));
+        matLines.add(String.format("map_Ka %s/%s.png", textureFolderName, getName()));
+        matLines.add(String.format("map_Kd %s/%s.png", textureFolderName, getName()));
         if(transparency)
-            matLines.add(String.format("map_d %s/%s.png", diffuseTextureOut.getParent().toFile().getName(), getDiffuseTextureName()));
+            matLines.add(String.format("map_d %s/%s.png", textureFolderName, getName()));
         if(getEmissionStrength() > 0.0){
-            matLines.add(String.format("map_Ke %s/%s.png", diffuseTextureOut.getParent().toFile().getName(), getDiffuseTextureName()));
+            matLines.add(String.format("map_Ke %s/%s.png", textureFolderName, getName()));
         }
 
         if(illum != null)
@@ -227,7 +206,6 @@ public class Material implements IMaterial {
     public void copy(IMaterial clone) {
         Material cloneMaterial = (Material) clone;
         customDiffuse = cloneMaterial.customDiffuse;
-        diffuseTextureName = cloneMaterial.diffuseTextureName;
         diffuseTexturePath = cloneMaterial.diffuseTexturePath;
         name = cloneMaterial.name;
 

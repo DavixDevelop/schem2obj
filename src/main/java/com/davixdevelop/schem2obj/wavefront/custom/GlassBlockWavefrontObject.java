@@ -29,7 +29,7 @@ public class GlassBlockWavefrontObject extends BlockWavefrontObject {
         GlassPaneWavefrontObject.modifyGlassMaterials(glassModel, blockNamespace);
 
         //Generate the OBJ for the glass pane variant
-        super.toObj(glassModel, variants, blockNamespace);
+        super.toObj(glassModel, blockNamespace);
 
         return true;
     }

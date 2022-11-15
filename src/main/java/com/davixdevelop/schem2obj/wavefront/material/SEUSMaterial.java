@@ -1,7 +1,8 @@
 package com.davixdevelop.schem2obj.wavefront.material;
 
+import com.davixdevelop.schem2obj.Constants;
 import com.davixdevelop.schem2obj.util.ImageUtility;
-import com.davixdevelop.schem2obj.util.Utility;
+import com.davixdevelop.schem2obj.util.LogUtility;
 import com.davixdevelop.schem2obj.wavefront.WavefrontUtility;
 
 import java.awt.image.BufferedImage;
@@ -20,36 +21,36 @@ import java.util.Locale;
 public class SEUSMaterial extends Material {
     private String resourcePath;
 
-    private String normalsTexture;
-    private String specularTexture;
+    private boolean hasNormalsTexture;
+    private boolean hasSpecularTexture;
 
     private BufferedImage customDiffuse;
 
     //Factor to mix in "black" parts of the emission texture with the diffuse texture
-    private double emissionMixFactor = 0.5;
+    private double emissionMixFactor = Constants.EMISSION_MIX_FACTOR;
 
     /**
-     * Create new SEUS Material from diffuse texture name
-     * @param resourcePath
-     * @param textureFile
+     * Create new SEUS Material from diffuse texture file name
+     * @param materialName The name of the material, ex: dirt, blue-bed...
+     * @param textureFile The path to the texture, ex blocks/dirt.png, entity/bed/blue.png
+     * @param resourcePath The path to the resource pack
      */
-    public SEUSMaterial(String resourcePath, String textureFile){
+    public SEUSMaterial(String materialName, String textureFile, String resourcePath){
         this.resourcePath = resourcePath;
         Path textureFilePath = Paths.get(resourcePath, "assets","minecraft","textures",textureFile);
 
-        setName(WavefrontUtility.textureName(textureFile).replace(".png",""));
+        setName(WavefrontUtility.textureName(materialName));
+
+        //Set the relative path to the diffuse texture, ex entity/bed/blue.png -> entity/bed/blue
         setDiffuseTexturePath(textureFile.replace(".png",""));
-        setDiffuseTextureName(WavefrontUtility.textureName(textureFile).replace(".png",""));
 
-        String textureParentFolderName = textureFilePath.getParent().toFile().getName();
+        //Set the name of the normals texture. Ex dirt_n.png, or blue_n.png
+        String normalsTextureName = String.format("%s_n.png", WavefrontUtility.textureName(getDiffuseTexturePath()));
+        this.hasNormalsTexture = Paths.get(textureFilePath.getParent().toFile().toString(), normalsTextureName).toFile().exists();
 
-        Path normalFilePath = Paths.get(textureFilePath.getParent().toFile().toString(), String.format("%s_n.png", getDiffuseTextureName()));
-        if(normalFilePath.toFile().exists())
-            normalsTexture = Paths.get(textureParentFolderName, String.format("%s_n", getDiffuseTextureName())).toString();
-
-        Path specularFilePath = Paths.get(textureFilePath.getParent().toFile().toString(), String.format("%s_s.png", getDiffuseTextureName()));
-        if(specularFilePath.toFile().exists())
-            specularTexture = Paths.get(textureParentFolderName, String.format("%s_s", getDiffuseTextureName())).toString();
+        //Set the name of specular texture. Ex dirt_s.png, or blue_s.png
+        String specularTextureName = String.format("%s_s.png", WavefrontUtility.textureName(getDiffuseTexturePath()));
+        this.hasSpecularTexture = Paths.get(textureFilePath.getParent().toFile().toString(), specularTextureName).toFile().exists();
 
     }
 
@@ -64,6 +65,7 @@ public class SEUSMaterial extends Material {
         if(customDiffuse != null)
             return ImageUtility.bufferedImageToInputStream(customDiffuse);
         else{
+            //Get the path to the external diffuse texture, ex. <resourcePath>/assets/minecraft/textures/entity/bed/blue.png
             String externalDiffuse = ImageUtility.getExternalTexture(resourcePath, getDiffuseTexturePath()).toFile().toString();
 
             try{
@@ -71,8 +73,8 @@ public class SEUSMaterial extends Material {
 
                 return externalAsset;
             }catch (FileNotFoundException ex){
-                Utility.Log("Could not find " + getDiffuseTexturePath() + ".png in resource pack");
-                Utility.Log(ex.getMessage());
+                LogUtility.Log("Could not find " + getDiffuseTexturePath() + ".png in resource pack");
+                LogUtility.Log(ex.getMessage());
                 return null;
             }
 
@@ -90,37 +92,25 @@ public class SEUSMaterial extends Material {
 
     @Override
     public ArrayList<String> toMat(String textureFolder) {
-        Path diffuseTextureOut = Paths.get(textureFolder, getDiffuseTextureName() + ".png");
+        //Set the path to the output diffuse texture
+        Path diffuseTextureOut = Paths.get(textureFolder, getName() + ".png");
 
         String textureFolderName = diffuseTextureOut.getParent().toFile().getName();
-
-
-
-        /*if(getDiffuseImage() == null)
-            return null;*/
 
         InputStream assetStream = getDiffuseImage();
 
         ImageUtility.copyImageToFile(assetStream, diffuseTextureOut.toFile().toString());
 
-        /*boolean hasAlpha = false;
-
-        try{
-            InputStream diffuseStream = new FileInputStream(diffuseTextureOut.toFile().toString());
-            hasAlpha = ImageUtility.hasAlpha(diffuseStream);
-        }catch (Exception ex){
-            Utility.Log(ex.getMessage());
-        }*/
-
         boolean hasNormal = false;
 
         //Copy normal image to texture folder
-        if(normalsTexture != null){
-            String normalTextureFile = WavefrontUtility.textureName(normalsTexture);
-            String normalTextureOut = Paths.get(textureFolder, normalTextureFile + ".png").toFile().toString();
+        if(hasNormalsTexture){
+            //Set the path to the output normals file -> ex <textureFolder>/blue-bed_n.png
+            String normalTextureOut = Paths.get(textureFolder, String.format("%s_n.png",getName())).toFile().toString();
+
             try{
-                //Get path to normal texture in resource pack
-                String externalNormal = ImageUtility.getExternalTexture(resourcePath, normalsTexture).toFile().toString();
+                //Get path to normal texture in resource pack. Ex. <resourcePack>/assets/minecraft/textures/entity/bed/blue_n.png
+                String externalNormal = ImageUtility.getExternalTexture(resourcePath, String.format("%s_n", getDiffuseTexturePath())).toFile().toString();
                 InputStream externalAsset = new FileInputStream(externalNormal);
 
                 //Copy normal texture to output texture folder
@@ -130,8 +120,8 @@ public class SEUSMaterial extends Material {
 
 
             }catch (FileNotFoundException ex){
-                Utility.Log("Could not find normal texture" + getDiffuseTexturePath() + "_n.png in resource pack");
-                Utility.Log(ex.getMessage());
+                LogUtility.Log("Could not find normal texture" + getDiffuseTexturePath() + "_n.png in resource pack");
+                LogUtility.Log(ex.getMessage());
                 return null;
             }
         }
@@ -139,22 +129,19 @@ public class SEUSMaterial extends Material {
         boolean hasSpec = false;
 
         //Check if material has specular texture
-        if(specularTexture != null){
+        if(hasSpecularTexture){
             try{
-                String specularTextureFile = WavefrontUtility.textureName(specularTexture);
 
-                //Get path to normal texture in resource pack
-                String externalNormal = ImageUtility.getExternalTexture(resourcePath, specularTexture).toFile().toString();
-                InputStream externalAsset = new FileInputStream(externalNormal);
+                //Get path to specular texture in resource pack. Ex. <resourcePack>/assets/minecraft/textures/entity/bed/blue_s.png
+                String externalSpecular = ImageUtility.getExternalTexture(resourcePath, String.format("%s_s", getDiffuseTexturePath())).toFile().toString();
+                InputStream externalAsset = new FileInputStream(externalSpecular);
 
                 //Get the Roughness, Mealiness and Emission image from the specular texture
                 BufferedImage[] RME = ImageUtility.extractPBRFromSpec(externalAsset);
 
                 if(RME != null){
-                    String rawName = specularTextureFile.replace("_s","");
-
                     for(int c =0 ; c < 3; c++){
-                        String texturePBRName = String.format("%s_%s",rawName, (c == 0) ? "r" : (c == 1) ? "m" : "e");
+                        String texturePBRName = String.format("%s_%s",getName(), (c == 0) ? "r" : (c == 1) ? "m" : "e");
 
                         if(c == 2){
                             RME[c] = ImageUtility.maskImage(getDiffuseImage(), RME[c], emissionMixFactor);
@@ -174,8 +161,8 @@ public class SEUSMaterial extends Material {
                 }
 
             }catch (Exception ex){
-                Utility.Log("Failed get extract the Glossiness, Mealiness and Emission texture from the specular texture " + specularTexture);
-                Utility.Log(ex.getMessage());
+                LogUtility.Log("Failed get extract the Glossiness, Mealiness and Emission texture from the specular texture " + hasSpecularTexture);
+                LogUtility.Log(ex.getMessage());
             }
 
         }
@@ -197,27 +184,27 @@ public class SEUSMaterial extends Material {
         if(getEmissionStrength() > 0.0){
             matLines.add(String.format(Locale.ROOT, "Ke %f %f %f", getEmissionStrength(), getEmissionStrength(), getEmissionStrength()));
         }
-        matLines.add(String.format("map_Ka %s/%s.png", textureFolderName, getDiffuseTextureName()));
-        matLines.add(String.format("map_Kd %s/%s.png", textureFolderName, getDiffuseTextureName()));
+        matLines.add(String.format("map_Ka %s/%s.png", textureFolderName, getName()));
+        matLines.add(String.format("map_Kd %s/%s.png", textureFolderName, getName()));
         if(hasTransparency())
-            matLines.add(String.format("map_d %s/%s.png", textureFolderName, getDiffuseTextureName()));
+            matLines.add(String.format("map_d %s/%s.png", textureFolderName, getName()));
         if(getEmissionStrength() > 0.0){
             if(!hasSpec)
-                matLines.add(String.format("map_Ke %s/%s.png", textureFolderName, getDiffuseTextureName()));
+                matLines.add(String.format("map_Ke %s/%s.png", textureFolderName, getName()));
             else
-                matLines.add(String.format("map_Ke %s/%s_e.png", textureFolderName, WavefrontUtility.textureName(specularTexture).replace("_s","")));
+                matLines.add(String.format("map_Ke %s/%s_e.png", textureFolderName, getName()));
         }
 
         //If material has normal define it
         if(hasNormal){
-            matLines.add(String.format("map_Kn %s/%s.png", textureFolderName, WavefrontUtility.textureName(normalsTexture)));
-            matLines.add(String.format("norm %s/%s.png", textureFolderName, WavefrontUtility.textureName(normalsTexture)));
-            matLines.add(String.format("map_bump -bm 1.0 %s/%s.png", textureFolderName, WavefrontUtility.textureName(normalsTexture)));
+            matLines.add(String.format("map_Kn %s/%s_n.png", textureFolderName, getName()));
+            matLines.add(String.format("norm %s/%s_n.png", textureFolderName, getName()));
+            matLines.add(String.format("map_bump -bm 1.0 %s/%s_.png", textureFolderName, getName()));
         }
 
         if(hasSpec){
-            matLines.add(String.format("map_Pr %s/%s_r.png", textureFolderName, WavefrontUtility.textureName(specularTexture).replace("_s","")));
-            matLines.add(String.format("map_Pm %s/%s_m.png", textureFolderName, WavefrontUtility.textureName(specularTexture).replace("_s","")));
+            matLines.add(String.format("map_Pr %s/%s_r.png", textureFolderName, getName()));
+            matLines.add(String.format("map_Pm %s/%s_m.png", textureFolderName, getName()));
         }
 
         if(getIlluminationModel() != null)
@@ -244,7 +231,7 @@ public class SEUSMaterial extends Material {
         SEUSMaterial seusCopy = (SEUSMaterial)clone;
         customDiffuse = seusCopy.customDiffuse;
         resourcePath = seusCopy.resourcePath;
-        normalsTexture = seusCopy.normalsTexture;
-        specularTexture = seusCopy.specularTexture;
+        hasNormalsTexture = seusCopy.hasNormalsTexture;
+        hasSpecularTexture = seusCopy.hasSpecularTexture;
     }
 }

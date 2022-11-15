@@ -3,6 +3,8 @@ package com.davixdevelop.schem2obj.schematic;
 import com.davixdevelop.schem2obj.Constants;
 import com.davixdevelop.schem2obj.namespace.Namespace;
 
+import java.util.List;
+
 public class SchematicHolder {
     private Schematic schematic;
 
@@ -57,14 +59,23 @@ public class SchematicHolder {
 
             int meta = schematic.getData()[index];
 
-            if(meta == 2)
-            {
-                String w = "2";
-            }
+            //If blockID is negative add 256 to the id to get the actual id of the block
+            if(blockID < 0)
+                blockID += 256;
 
             return getNamespace(blockID + ":" + meta);
         }
 
         return null;
+    }
+
+    public EntityValues getEntityValues(int x, int y, int z){
+        //Construct key:
+        String key = String.format("%d:%d:%d", x, y, z);
+        return schematic.getTileEntities().get(key);
+    }
+
+    public List<EntityValues> getEntities(){
+        return schematic.getEntities();
     }
 }

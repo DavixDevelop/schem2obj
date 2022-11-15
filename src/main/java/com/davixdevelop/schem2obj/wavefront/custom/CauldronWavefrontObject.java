@@ -66,7 +66,7 @@ public class CauldronWavefrontObject extends BlockWavefrontObject {
             variantModels.set(0, new VariantModels(models.getVariant(), blockModels));
         }
 
-        super.toObj(variantModels, variants, blockNamespace);
+        super.toObj(variantModels, blockNamespace);
     }
 
     @Override

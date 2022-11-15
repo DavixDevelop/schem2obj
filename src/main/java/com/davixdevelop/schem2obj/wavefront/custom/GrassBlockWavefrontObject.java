@@ -7,7 +7,7 @@ import com.davixdevelop.schem2obj.models.HashedDoubleList;
 import com.davixdevelop.schem2obj.namespace.Namespace;
 import com.davixdevelop.schem2obj.util.ArrayVector;
 import com.davixdevelop.schem2obj.util.ImageUtility;
-import com.davixdevelop.schem2obj.util.Utility;
+import com.davixdevelop.schem2obj.util.LogUtility;
 import com.davixdevelop.schem2obj.wavefront.BlockWavefrontObject;
 import com.davixdevelop.schem2obj.wavefront.IWavefrontObject;
 import com.davixdevelop.schem2obj.wavefront.WavefrontUtility;
@@ -35,7 +35,7 @@ public class GrassBlockWavefrontObject extends BlockWavefrontObject {
         Namespace aboveBlock = Constants.LOADED_SCHEMATIC.getNamespace(Constants.LOADED_SCHEMATIC.getPosX(), Constants.LOADED_SCHEMATIC.getPosY() + 1, Constants.LOADED_SCHEMATIC.getPosZ());
         if(aboveBlock != null){
             if(aboveBlock.getName().equals("snow_layer"))
-                grassNamespace.data.put("snowy", "true");
+                grassNamespace.setData("snowy", "true");
         }
 
         BlockState blockState = Constants.BLOCKS_STATES.getBlockState(grassNamespace);
@@ -61,7 +61,7 @@ public class GrassBlockWavefrontObject extends BlockWavefrontObject {
             modifySnowyGrassMaterial(grassNamespace);
 
             if(!RANDOM_VARIANTS.containsKey(variants.get(0))){
-                createSnowyVariant(grassNamespace);
+                createSnowyVariant(grassNamespace, variants.get(0));
                 RANDOM_VARIANTS.put(variants.get(0), this);
             }else{
                 IWavefrontObject snowyVariant = RANDOM_VARIANTS.get(variants.get(0));
@@ -72,8 +72,12 @@ public class GrassBlockWavefrontObject extends BlockWavefrontObject {
         return false;
     }
 
-    public void createSnowyVariant(Namespace blockNamespace){
-        createGrassBlock("snowy_grass", "blocks/snowy_grass_top", "blocks/grass_side_snowed", blockNamespace, null);
+    public void createSnowyVariant(Namespace blockNamespace, BlockState.Variant randomVariant){
+        ArrayVector.MatrixRotation rotationY = null;
+        if(randomVariant.getY() != null)
+            rotationY = new ArrayVector.MatrixRotation(randomVariant.getY(), "Z");
+
+        createGrassBlock("snowy_grass", "blocks/snowy_grass_top", "blocks/grass_side_snowed", blockNamespace, rotationY, randomVariant.getUvlock());
     }
 
     public void createNormalVariant(Namespace blockNamespace, BlockState.Variant randomVariant){
@@ -81,10 +85,10 @@ public class GrassBlockWavefrontObject extends BlockWavefrontObject {
         if(randomVariant.getY() != null)
             rotationY = new ArrayVector.MatrixRotation(randomVariant.getY(), "Z");
 
-        createGrassBlock("grass", "blocks/grass_top", "blocks/grass_side", blockNamespace, rotationY);
+        createGrassBlock("grass", "blocks/grass_top", "blocks/grass_side", blockNamespace, rotationY, randomVariant.getUvlock());
     }
 
-    public void createGrassBlock(String name, String top_texture, String side_texture, Namespace blockNamespace, ArrayVector.MatrixRotation rotationY){
+    public void createGrassBlock(String name, String top_texture, String side_texture, Namespace blockNamespace, ArrayVector.MatrixRotation rotationY, boolean uvLock){
         setName(name);
 
         //Each item is an array with the following values [vx, vy, vz]
@@ -125,7 +129,7 @@ public class GrassBlockWavefrontObject extends BlockWavefrontObject {
                 cubeFaces);
 
         //Convert cube to obj
-        WavefrontUtility.convertCubeToWavefront(cube, false, null, rotationY, vertices, textureCoordinates, faces, boundingFaces, modelsMaterials);
+        WavefrontUtility.convertCubeToWavefront(cube, uvLock, null, rotationY, vertices, textureCoordinates, faces, boundingFaces, modelsMaterials);
 
         //Create normals for the object
         WavefrontUtility.createNormals(normalsArray, vertices, faces);
@@ -194,13 +198,12 @@ public class GrassBlockWavefrontObject extends BlockWavefrontObject {
 
             IMaterial snowy_grass_top = Constants.BLOCK_MATERIALS.getMaterial("blocks/snowy_grass_top");
             snowy_grass_top.setName("snowy_grass_top");
-            snowy_grass_top.setDiffuseTextureName("snowy_grass_top");
 
             try {
                 snowy_grass_top.setDiffuseImage(ImageUtility.colorImage(grass_top.getDiffuseImage(), Constants.SNOW_COLOR));
             }catch (Exception ex){
-                Utility.Log("Could not create snowy grass texture");
-                Utility.Log(ex.getMessage());
+                LogUtility.Log("Could not create snowy grass texture");
+                LogUtility.Log(ex.getMessage());
             }
 
             snowy_grass_top.setSpecularHighlights(0.0);

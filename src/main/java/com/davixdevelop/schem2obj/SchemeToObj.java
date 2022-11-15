@@ -2,10 +2,10 @@ package com.davixdevelop.schem2obj;
 
 import com.davixdevelop.schem2obj.namespace.Namespace;
 import com.davixdevelop.schem2obj.schematic.Schematic;
-import com.davixdevelop.schem2obj.util.Utility;
+import com.davixdevelop.schem2obj.util.LogUtility;
 import com.davixdevelop.schem2obj.wavefront.*;
-import com.davixdevelop.schem2obj.wavefront.custom.LavaWavefrontObject;
-import com.davixdevelop.schem2obj.wavefront.custom.WaterWavefrontObject;
+import com.davixdevelop.schem2obj.wavefront.custom.entity.LavaWavefrontObject;
+import com.davixdevelop.schem2obj.wavefront.custom.entity.WaterWavefrontObject;
 import com.davixdevelop.schem2obj.wavefront.material.IMaterial;
 import com.davixdevelop.schem2obj.wavefront.material.json.PackTemplate;
 import com.google.gson.Gson;
@@ -37,7 +37,7 @@ public class SchemeToObj {
                     else
                         schem_path = arg[1];
                 }else{
-                    Utility.Log("Input scheme doesn't use the .schematic extension");
+                    LogUtility.Log("Input scheme doesn't use the .schematic extension");
                     return;
                 }
             }else
@@ -73,19 +73,25 @@ public class SchemeToObj {
 
                                 reader.close();
 
+                                //Check that the format is in the correct format
                                 if(packMetaJson.pack.pack_format.intValue() == 3) {
+
+                                    //Register the material, blocks models and block states the resource pack uses
                                     Constants.BLOCK_MATERIALS.registerTexturePack(format, resourcePath);
+                                    Constants.BLOCK_MODELS.parseResourcePack(resourcePath);
+                                    Constants.BLOCKS_STATES.parseResourcePack(resourcePath);
+
                                 }else
-                                    Utility.Log(String.format("Incompatible resource pack (Pack format: %d). Using built resource pack instead",packMetaJson.pack.pack_format.intValue()));
+                                    LogUtility.Log(String.format("Incompatible resource pack (Pack format: %d). Using built resource pack instead",packMetaJson.pack.pack_format.intValue()));
                             }catch (Exception ex){
-                                Utility.Log("Error while reading pack.mcmeta");
-                                Utility.Log(ex.getMessage());
-                                Utility.Log("Using built resource pack instead");
+                                LogUtility.Log("Error while reading pack.mcmeta");
+                                LogUtility.Log(ex.getMessage());
+                                LogUtility.Log("Using built resource pack instead");
                             }
 
                         }else{
-                            Utility.Log("Input resource pack isn't valid");
-                            Utility.Log("Using built resource pack instead");
+                            LogUtility.Log("Input resource pack isn't valid");
+                            LogUtility.Log("Using built resource pack instead");
                         }
                     }
 
@@ -104,7 +110,7 @@ public class SchemeToObj {
                         output_path = arg[nextArgIndex + 1];
 
                 }else {
-                    Utility.Log("Output Wavefront file doesn't end with .obj");
+                    LogUtility.Log("Output Wavefront file doesn't end with .obj");
                     return;
                 }
             }else
@@ -129,17 +135,17 @@ public class SchemeToObj {
         ArrayList<IWavefrontObject> objects = s.schemToObj(schem_path, exportAllBlock);
 
         if(objects == null || objects.isEmpty()){
-            Utility.Log("Failed to convert schematic to OBJ");
+            LogUtility.Log("Failed to convert schematic to OBJ");
             return;
         }
 
         //Write wavefront objects and materials to file
         if(!s.writeObjToFile(objects, output_path)){
-            Utility.Log("Failed to write wavefront file");
+            LogUtility.Log("Failed to write wavefront file");
             return;
         }
 
-        Utility.Log("Success");
+        LogUtility.Log("Success");
 
 
     }
@@ -157,13 +163,13 @@ public class SchemeToObj {
                 Constants.LOADED_SCHEMATIC.setSchematic(schematic);
             }
             catch(IOException exception){
-                Utility.Log("Error while reading schematic");
-                Utility.Log(exception.getMessage());
+                LogUtility.Log("Error while reading schematic");
+                LogUtility.Log(exception.getMessage());
                 return null;
             }
         }catch (FileNotFoundException exception){
-            Utility.Log("Could not find specified schematic");
-            Utility.Log(exception.getMessage());
+            LogUtility.Log("Could not find specified schematic");
+            LogUtility.Log(exception.getMessage());
             return null;
         }
 
@@ -192,34 +198,51 @@ public class SchemeToObj {
                     //ToDo: Write custom blocks (ex, Chest, Sign, Wall Sign...). Until then, ignore these blocks
                     if (blockNamespace == null || blockNamespace.getDomain().equals("builtin")){
                         if(blockNamespace != null) {
-                            if (blockNamespace.getType().equals("flowing_water") || blockNamespace.getType().equals("water")) {
-                                if (waterObject == null)
-                                    waterObject = new WaterWavefrontObject();
+                            switch (blockNamespace.getType()){
+                                case "flowing_water":
+                                case "water":
+                                    if (waterObject == null)
+                                        waterObject = new WaterWavefrontObject();
 
-                                waterObject.addBlock(blockNamespace);
-                            }
+                                    waterObject.addBlock(blockNamespace);
+                                    break;
+                                case "flowing_lava":
+                                case "lava":
+                                    if(lavaObject == null)
+                                        lavaObject = new LavaWavefrontObject();
 
-                            if (blockNamespace.getType().equals("flowing_lava") || blockNamespace.getType().equals("lava")) {
-                                if(lavaObject == null)
-                                    lavaObject = new LavaWavefrontObject();
+                                    lavaObject.addBlock(blockNamespace);
+                                    break;
+                                case "bed":
+                                    //Get  singleton tile entity wavefrontBlock from memory or create it anew every time
+                                    IWavefrontObject entityWavefrontObject = Constants.WAVEFRONT_COLLECTION.fromNamespace(
+                                            blockNamespace,
+                                            Constants.LOADED_SCHEMATIC.getEntityValues(Constants.LOADED_SCHEMATIC.getPosX(), Constants.LOADED_SCHEMATIC.getPosY(), Constants.LOADED_SCHEMATIC.getPosZ()));
 
-                                lavaObject.addBlock(blockNamespace);
+                                    //Translate the singleton block to the position of the block in the space
+                                    WavefrontUtility.translateWavefrontBlock(entityWavefrontObject, new Integer[]{x, z, y}, new Integer[]{width,length,height});
+
+                                    //Add it to blocks
+                                    if (exportAllBlocks)
+                                        blocks.add(entityWavefrontObject);
+                                    else
+                                        allBlocks.put(index, entityWavefrontObject);
+
+                                    continue;
                             }
                         }
 
-                        if (exportAllBlocks)
-                            continue;
-                        else {
+                        if (!exportAllBlocks)
                             allBlocks.put(index, null);
-                            continue;
-                        }
+
+                        continue;
                     }
 
                     //Get  singleton wavefrontBlock from memory
                     IWavefrontObject wavefrontObject = Constants.WAVEFRONT_COLLECTION.fromNamespace(blockNamespace);
 
                     //Translate the singleton block to the position of the block in the space
-                    wavefrontObject = WavefrontUtility.translateWavefrontBlock(wavefrontObject, new Integer[]{x, z, y}, new Integer[]{width,length,height});
+                    WavefrontUtility.translateWavefrontBlock(wavefrontObject, new Integer[]{x, z, y}, new Integer[]{width,length,height});
 
                     if (exportAllBlocks)
                         blocks.add(wavefrontObject);
@@ -355,8 +378,8 @@ public class SchemeToObj {
             f.close();
 
         }catch (FileNotFoundException ex){
-            Utility.Log("Could not create output file:");
-            Utility.Log(ex.getMessage());
+            LogUtility.Log("Could not create output file:");
+            LogUtility.Log(ex.getMessage());
             return false;
         }
 
@@ -406,8 +429,8 @@ public class SchemeToObj {
             f.close();
 
         }catch (Exception ex){
-            Utility.Log("Could not create material file");
-            Utility.Log(ex.getMessage());
+            LogUtility.Log("Could not create material file");
+            LogUtility.Log(ex.getMessage());
             return false;
         }
 

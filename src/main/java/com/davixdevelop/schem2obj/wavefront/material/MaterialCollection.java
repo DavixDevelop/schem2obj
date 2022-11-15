@@ -1,12 +1,14 @@
 package com.davixdevelop.schem2obj.wavefront.material;
 
-import com.davixdevelop.schem2obj.util.Utility;
+import com.davixdevelop.schem2obj.Constants;
+import com.davixdevelop.schem2obj.util.LogUtility;
 
 import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
 
@@ -51,42 +53,72 @@ public class MaterialCollection {
         //Get the texture folders inside the textures folder of the resource pack
         File[] textureFolders = resourcePackTexturesFolder.toFile().listFiles();
 
+        if(textureFolders == null)
+            return;
 
-        Matcher matcher = null;
         //Loop through the textureFolders
         for(File textureFolder : textureFolders){
-            //ToDo: For now only scan for textures in blocks
-            if(!textureFolder.getName().equals("blocks"))
+            //Scan for textures in blocks and entities
+            if(!textureFolder.getName().equals("blocks") && !textureFolder.getName().equals("entity"))
                 continue;
 
             File[] textures = textureFolder.listFiles();
-
             String textureFolderName = textureFolder.getName();
 
-            //Loop through the textures
-            for(File texture : textures){
-                //Pattern to get texture name from png texture (example grass_n.png or grass.png -> grass)
-                matcher = Utility.TEXTURE_NAME_FROM_FILE.matcher(texture.getName());
-                if(matcher.find()){
-                    String textureName = matcher.group(1);
+            if(textures != null) {
+                if (textureFolder.getName().equals("entity")) {
+                    for (File file : textures) {
 
+                        if (file.isDirectory() && Constants.EntityFilter.contains(file.getName())) {
+                            File[] entityTextures = file.listFiles();
 
-                    String materialName = String.format("%s/%s",textureFolderName,textureName);
-                    //Check if material (texture folder + / + texture name, example blocks/grass)
-                    //Is not already in memory
-                    if(!containsMaterial(materialName)){
-                        //Create material depending on the format (SEUS, Specular, Vanilla)
-                        IMaterial material = null;
-
-                        switch (format){
-                            case "SEUS":
-                                material = new SEUSMaterial(resourcePack, materialName + ".png");
+                            //Parse all textures in the subfolder inside the entity folder
+                            if (entityTextures != null)
+                                parseTexturesFromPack(entityTextures, textureFolderName, format, resourcePack, file.getName());
                         }
+                        //ToDo: Here read the entity textures that are in the root entity folder
 
-                        //Put material into memory, for later use
-                        modifyOtherMaterials(material);
-                        materials.put(materialName, material);
                     }
+                } else {
+                    parseTexturesFromPack(textures, textureFolderName, format, resourcePack, null);
+                }
+            }
+        }
+    }
+
+    private void parseTexturesFromPack(File[] textures, String textureFolderName, String format, String resourcePack, String entityName){
+        Matcher matcher = null;
+
+        //Loop through the textures
+        for(File texture : textures){
+            //Pattern to get texture name from png texture (example grass_n.png or grass.png -> grass)
+            matcher = Constants.TEXTURE_NAME_FROM_FILE.matcher(texture.getName());
+            if(matcher.find()){
+                String textureName = matcher.group(1);
+
+                //If texture is a block the material name is blocks/<texture name>
+                //If texture is a entity the material name is entity/<texture name>-<entity name>
+                String materialName = (entityName != null) ? String.format("%s/%s-%s",textureFolderName,textureName, entityName) :
+                        String.format("%s/%s",textureFolderName,textureName);
+
+                String textureFilePath = (entityName != null) ? String.format("%s/%s/%s.png",textureFolderName,entityName,textureName) :
+                        String.format("%s/%s.png",textureFolderName,textureName);
+
+                //Check if material (texture folder + / + texture name, example blocks/grass)
+                //Is not already in memory
+                if(!containsMaterial(materialName)){
+                    //Create material depending on the format (SEUS, Specular, Vanilla)
+                    IMaterial material = null;
+
+                    switch (format){
+                        case "SEUS":
+                            material = new SEUSMaterial(materialName, textureFilePath, resourcePack);
+                            break;
+                    }
+
+                    //Put material into memory, for later use
+                    modifyOtherMaterials(material);
+                    materials.put(materialName, material);
                 }
             }
         }

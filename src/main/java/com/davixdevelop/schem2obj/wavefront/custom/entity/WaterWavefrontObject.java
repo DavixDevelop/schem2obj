@@ -1,13 +1,7 @@
-package com.davixdevelop.schem2obj.wavefront.custom;
+package com.davixdevelop.schem2obj.wavefront.custom.entity;
 
-import com.davixdevelop.schem2obj.Constants;
-import com.davixdevelop.schem2obj.models.HashedDoubleList;
 import com.davixdevelop.schem2obj.namespace.Namespace;
-import com.davixdevelop.schem2obj.util.ArrayVector;
 import com.davixdevelop.schem2obj.wavefront.IWavefrontObject;
-import com.davixdevelop.schem2obj.wavefront.WavefrontObject;
-
-import java.util.*;
 
 public class WaterWavefrontObject extends LiquidWavefrontObject {
     public WaterWavefrontObject(){

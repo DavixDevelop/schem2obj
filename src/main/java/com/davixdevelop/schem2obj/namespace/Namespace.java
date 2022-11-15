@@ -13,7 +13,7 @@ public class Namespace {
     private String domain;
     private String name;
     private String type;
-    public HashMap<String, String> data;
+    private HashMap<String, String> data;
 
     private Double lightValue;
 
@@ -54,9 +54,15 @@ public class Namespace {
         return data;
     }
 
+    public String getData(String key) {
+        return data.get(key);
+    }
+
     public void setData(HashMap<String, String> data) {
         this.data = data;
     }
+
+    public void setData(String key, String value) {this.data.put(key, value);}
 
     public Double getLightValue() {
         return lightValue;

@@ -1,9 +1,9 @@
-package com.davixdevelop.schem2obj.wavefront.custom;
+package com.davixdevelop.schem2obj.wavefront.custom.entity;
 
 import com.davixdevelop.schem2obj.namespace.Namespace;
 import com.davixdevelop.schem2obj.wavefront.IWavefrontObject;
 
-public class LavaWavefrontObject extends LiquidWavefrontObject{
+public class LavaWavefrontObject extends LiquidWavefrontObject {
 
     public LavaWavefrontObject(){
         super("blocks/lava_flow", "blocks/lava_still",20.0, 32.0);

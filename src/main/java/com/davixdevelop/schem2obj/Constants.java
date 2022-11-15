@@ -8,7 +8,10 @@ import com.davixdevelop.schem2obj.wavefront.WavefrontCollection;
 import com.davixdevelop.schem2obj.wavefront.material.MaterialCollection;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
+import java.util.regex.Pattern;
 
 public class Constants {
 
@@ -29,6 +32,8 @@ public class Constants {
         REDSTONE_COLORS.put(13,15140352);
         REDSTONE_COLORS.put(14,15801088);
         REDSTONE_COLORS.put(15,16527616);
+
+        EntityFilter.add("bed");
     }
 
     public static final SchematicHolder LOADED_SCHEMATIC = new SchematicHolder();
@@ -50,7 +55,13 @@ public class Constants {
 
     public static boolean IS_SNOWY = false;
 
+    public static Set<String> EntityFilter = new HashSet<>();
+
     public static final Double[] BLOCK_ORIGIN = new Double[] {0.5,0.5,0.5};
 
+    public static Pattern TEXTURE_NAME_FROM_FILE = Pattern.compile("^(.*?)((?>_[a-z])|(?>))\\.png");
+
+    //Factor to mix in "black" parts of the emission texture with the diffuse texture
+    public static double EMISSION_MIX_FACTOR = 0.5;
 
 }
