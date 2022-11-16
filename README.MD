@@ -33,7 +33,7 @@ All basic blocks (that are only basic cubes), and some builtin blocks (ex, water
 
 ### Supported resource packs
 For now, only  resource packs that uses the SEUS format are supported. Beside using the textures the resource pack includes,
-it also reads the models & block states the resource pack defines. 
+it also reads the models & block states the resource pack defines.
 <br>To add a resource pack or multiple ones, first add the optional parameter `-t`, specify the format, ex. `SEUS:` and afterwards specify the path to the resource pack.
 <br> Then to add any additional resource pack separate them with a space. Ex:
 
