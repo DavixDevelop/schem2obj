@@ -33,6 +33,11 @@ public class Constants {
         REDSTONE_COLORS.put(14,15801088);
         REDSTONE_COLORS.put(15,16527616);
 
+        FACING_ROTATION.put("north", 270.0);
+        FACING_ROTATION.put("south", 90.0);
+        FACING_ROTATION.put("west", 180.0);
+        FACING_ROTATION.put("east", 0.0);
+
         EntityFilter.add("bed");
     }
 
@@ -63,5 +68,11 @@ public class Constants {
 
     //Factor to mix in "black" parts of the emission texture with the diffuse texture
     public static double EMISSION_MIX_FACTOR = 0.5;
+
+    public static String[] META_COLORS = new String[]{
+            "white", "orange", "magenta", "light_blue", "yellow", "lime", "pink", "gray", "silver", "cyan", "purple", "blue", "brown", "green", "red", "black"
+    };
+
+    public static Map<String, Double> FACING_ROTATION = new HashMap<>();
 
 }

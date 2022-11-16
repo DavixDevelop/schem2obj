@@ -186,6 +186,50 @@ public class WavefrontObject implements IWavefrontObject {
         setBoundingFaces(boundingFaces);
     }
 
+    /**
+     * Create the obj from one or more cubes
+     * @param name The name of the object
+     * @param uvLock Set to true, to keep the uv's in place, and just rotate the cube
+     * @param rotationX RotationMatrix around the X axis
+     * @param rotationY R0tationMatrix around the Z axis
+     * @param modelsMaterials A map of texture variables and the material it's set to, ex key: #north, value: block/dirt
+     * @param cubeElements Cube element/element's to create a obj from
+     */
+    public void createObjFromCube(String name, Boolean uvLock, ArrayVector.MatrixRotation rotationX, ArrayVector.MatrixRotation rotationY,HashMap<String,String> modelsMaterials, CubeElement ...cubeElements){
+        setName(name);
+
+        //Each item is an array with the following values [vx, vy, vz]
+        HashedDoubleList vertices = new HashedDoubleList();
+        HashedDoubleList textureCoordinates = new HashedDoubleList();
+        ArrayList<Double[]> normalsArray = new ArrayList<>();
+        //Map of materialName and It's faces, where each face consists of an list of array indices
+        //Each indice consists of the vertex index, texture coordinate index and vertex normal index
+        HashMap<String, ArrayList<ArrayList<Integer[]>>> faces = new HashMap<>();
+
+        //A map that keeps track of what faces (indexes) bounds the block bounding box on that specific orientation
+        //Map<Facing (Orientation):String, Map<MaterialName:String, List<FaceIndex:Integer>>>
+        HashMap<String, HashMap<String, ArrayList<Integer>>> boundingFaces = new HashMap<>();
+
+        //Convert the cubes to wavefront
+        for(CubeElement cube : cubeElements) {
+            WavefrontUtility.convertCubeToWavefront(cube, uvLock, rotationX, rotationY, vertices, textureCoordinates, faces, boundingFaces, modelsMaterials);
+        }
+
+        //Create normals for the object
+        WavefrontUtility.createNormals(normalsArray, vertices, faces);
+        //Get vertex list
+        ArrayList<Double[]> verticesArray = vertices.toList();
+
+        //Normalize vertex normals
+        WavefrontUtility.normalizeNormals(normalsArray);
+
+        setVertices(verticesArray);
+        setVertexNormals(normalsArray);
+        setTextureCoordinates(textureCoordinates.toList());
+        setMaterialFaces(faces);
+        setBoundingFaces(boundingFaces);
+    }
+
     public void deleteFaces(String orientation){
         //Get the materials and list of their faces that face the direction
         HashMap<String, ArrayList<Integer>> faceMaterials = facing.get(orientation);

@@ -214,6 +214,10 @@ public class SchemeToObj {
                                     lavaObject.addBlock(blockNamespace);
                                     break;
                                 case "bed":
+                                    if(Constants.LOADED_SCHEMATIC.getPosZ() == 5 && Constants.LOADED_SCHEMATIC.getPosX() == 7){
+                                        String www = "2";
+                                    }
+
                                     //Get  singleton tile entity wavefrontBlock from memory or create it anew every time
                                     IWavefrontObject entityWavefrontObject = Constants.WAVEFRONT_COLLECTION.fromNamespace(
                                             blockNamespace,

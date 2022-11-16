@@ -29,7 +29,7 @@ public class WavefrontCollection {
             if(block instanceof TileEntity){
                 //Only store tile entity object in memory if it specifies it
                 //If it does recreate it every time
-                if(((TileEntity) block).fromNamespace(blockNamespace, entityValues[0]));
+                if(((TileEntity) block).fromNamespace(blockNamespace, entityValues[0]))
                     wavefrontObjecs.put(blockNamespace, block);
             }else {
                 //Only store object in memory if to does not have random variants (multiple variants in "variants" field)
@@ -117,6 +117,7 @@ public class WavefrontCollection {
                 object.getName().contains("piston_head") ||
                 object.getName().contains("comparator") ||
                 object.getName().contains("repeater") ||
-                object.getName().equals("snow_layer");
+                object.getName().equals("snow_layer") ||
+                object instanceof TileEntity;
     }
 }

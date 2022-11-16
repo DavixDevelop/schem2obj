@@ -21,7 +21,7 @@ public class LeavesBlockWavefrontObject extends BlockWavefrontObject {
     @Override
     public boolean fromNamespace(Namespace blockNamespace) {
         //Get BlockState for the leaves block
-        BlockState blockState = Constants.BLOCKS_STATES.getBlockState(blockNamespace);
+        BlockState blockState = Constants.BLOCKS_STATES.getBlockState(blockNamespace.getName());
 
         //Get the variant for the glass block
         ArrayList<BlockState.Variant> variants = blockState.getVariants(blockNamespace);
@@ -30,7 +30,7 @@ public class LeavesBlockWavefrontObject extends BlockWavefrontObject {
 
         //Get the models for the glass
         for(BlockState.Variant variant : variants)
-            leavesModels.add(new VariantModels(variant, Constants.BLOCK_MODELS.getBlockModel(blockNamespace, variant)));
+            leavesModels.add(new VariantModels(variant, Constants.BLOCK_MODELS.getBlockModel(variant.getModel())));
 
 
         //Modify the leaves materials if they were not yet modified

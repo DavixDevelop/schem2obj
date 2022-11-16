@@ -21,20 +21,6 @@ public class MagmaBlockWavefrontObject extends WavefrontObject {
     }
 
     public void toObj(Namespace blockNamespace){
-        setName("magma");
-
-        //Each item is an array with the following values [vx, vy, vz]
-        HashedDoubleList vertices = new HashedDoubleList();
-        ArrayList<Double[]> normalsArray = new ArrayList<>();
-        HashedDoubleList textureCoordinates = new HashedDoubleList();
-        //Map of materialName and It's faces, where each face consists of an list of array indices
-        //Each indice consists of the vertex index, texture coordinate index and vertex normal index
-        HashMap<String, ArrayList<ArrayList<Integer[]>>> faces = new HashMap<>();
-
-        //A map that keeps track of what faces (indexes) bounds the block bounding box on that specific orientation
-        //Map<Facing (Orientation):String, Map<MaterialName:String, List<FaceIndex:Integer>>>
-        HashMap<String, HashMap<String, ArrayList<Integer>>> boundingFaces = new HashMap<>();
-
         HashMap<String,String> modelsMaterials = new HashMap<>();
         WavefrontUtility.generateOrGetMaterial("blocks/magma", blockNamespace);
         modelsMaterials.put("all", "blocks/magma");
@@ -59,22 +45,7 @@ public class MagmaBlockWavefrontObject extends WavefrontObject {
                 cubeFaces);
 
         //Convert cube to obj
-        WavefrontUtility.convertCubeToWavefront(cube, false, null, null, vertices, textureCoordinates, faces, boundingFaces, modelsMaterials);
-
-        //Create normals for the object
-        WavefrontUtility.createNormals(normalsArray,vertices, faces);
-
-        //Get vertex list
-        ArrayList<Double[]> verticesArray = vertices.toList();
-
-        //Normalize vertex normals
-        WavefrontUtility.normalizeNormals(normalsArray);
-
-        setVertices(verticesArray);
-        setVertexNormals(normalsArray);
-        setTextureCoordinates(textureCoordinates.toList());
-        setMaterialFaces(faces);
-        setBoundingFaces(boundingFaces);
+        createObjFromCube("magma", false,null,null,modelsMaterials,cube);
     }
 
     public void modifyMagmaMaterial(Namespace blockNamespace){

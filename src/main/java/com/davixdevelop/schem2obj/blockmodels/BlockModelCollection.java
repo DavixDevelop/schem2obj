@@ -31,16 +31,10 @@ public class BlockModelCollection {
      * and the block parents model
      * The last two parameters are constants, and should not be changed outside the method call
      * @param models An list to populate with the block's models
-     * @param block The namespace of the block
-     * @param modelType Specify the type of model, ex. item or block
+     * @param modelName The name of the model. Ex. blocks/dirt
      * @return List of BlockModels
      */
-    private void getBlockModelInternal(ArrayList<BlockModel> models, Namespace block, BlockState.Variant variant, String modelType){
-
-        String modelName = modelType + "/" + block.getName();
-
-        if(!block.getDomain().equals("internal"))
-            modelName = modelType + "/" + variant.getModel();
+    private void getBlockModelInternal(ArrayList<BlockModel> models, String modelName){
 
         //Check if block was already read from assets
         if (blocksModels.containsKey(modelName)) {
@@ -53,7 +47,7 @@ public class BlockModelCollection {
             //Check if model has parent
             if (item.getParent() != null) {
                 //Recursive call to get model parent/parents
-                getBlockModelInternal(models, new Namespace(null, "internal", item.getParent().substring(item.getParent().lastIndexOf("/") + 1), null, null, 0.0), variant,item.getParent().substring(0, item.getParent().indexOf("/")));
+                getBlockModelInternal(models, item.getParent());
             }
 
         } else {
@@ -90,7 +84,7 @@ public class BlockModelCollection {
 
             if (model.getParent() != null) {
                 //Recursive call to get model parent/parents
-                getBlockModelInternal(models, new Namespace(modelName, "internal", model.getParent().substring(model.getParent().lastIndexOf("/") + 1), null, null, 0.0), variant, model.getParent().substring(0, model.getParent().indexOf("/")));
+                getBlockModelInternal(models, model.getParent());
             }
 
         }
@@ -99,16 +93,18 @@ public class BlockModelCollection {
     /**
      * Method to get the block's models
      * and the block parents model
-     * @param block The namespace of the block
+     * @param modelName The name of the model, ex. dirt
      * @param modelType Specify the type of model, ex. item or blocks. If not specified, It's block by default
      * @return List of BlockModels
      */
-    public ArrayList<BlockModel> getBlockModel(Namespace block, BlockState.Variant variant, String ...modelType){
+    public ArrayList<BlockModel> getBlockModel(String modelName, String ...modelType){
         ArrayList<BlockModel> models = new ArrayList<>();
-        getBlockModelInternal(models, block, variant, modelType.length > 0 ? modelType[0] : "block");
+        getBlockModelInternal(models, modelType.length > 0 ? modelType[0] + "/" + modelName : "block/" + modelName);
 
         return models;
     }
+
+
 
     /**
      * Parse through resource pack BlockModels, and add them to externalBlockModels, for it to be read later

@@ -30,10 +30,9 @@ public class LitPumpkinWavefrontObject extends WavefrontObject {
     }
 
     public void toObj(Namespace blockNamespace){
-        setName("lit_pumpkin");
 
         //Get BlockState for the lit_pumpkin
-        BlockState blockState = Constants.BLOCKS_STATES.getBlockState(blockNamespace);
+        BlockState blockState = Constants.BLOCKS_STATES.getBlockState(blockNamespace.getName());
 
         //Get the variant for the lit pumpkin block
         BlockState.Variant variant = blockState.getVariants(blockNamespace).get(0);
@@ -42,18 +41,6 @@ public class LitPumpkinWavefrontObject extends WavefrontObject {
         //Check if variant need's to be rotated
         if(variant.getY() != null)
             rotationY = new ArrayVector.MatrixRotation(variant.getY(), "Z");
-
-        //Each item is an array with the following values [vx, vy, vz]
-        HashedDoubleList vertices = new HashedDoubleList();
-        HashedDoubleList textureCoordinates = new HashedDoubleList();
-        ArrayList<Double[]> normalsArray = new ArrayList<>();
-        //Map of materialName and It's faces, where each face consists of an list of array indices
-        //Each indice consists of the vertex index, texture coordinate index and vertex normal index
-        HashMap<String, ArrayList<ArrayList<Integer[]>>> faces = new HashMap<>();
-
-        //A map that keeps track of what faces (indexes) bounds the block bounding box on that specific orientation
-        //Map<Facing (Orientation):String, Map<MaterialName:String, List<FaceIndex:Integer>>>
-        HashMap<String, HashMap<String, ArrayList<Integer>>> boundingFaces = new HashMap<>();
 
         HashMap<String,String> modelsMaterials = new HashMap<>();
         modifyLitPumpkinMaterials(blockNamespace);
@@ -103,23 +90,7 @@ public class LitPumpkinWavefrontObject extends WavefrontObject {
                 cubeFaces);
 
         //Convert cube to obj
-        WavefrontUtility.convertCubeToWavefront(cube, false, null, rotationY, vertices, textureCoordinates, faces, boundingFaces, modelsMaterials);
-
-        //Create normals for the object
-        WavefrontUtility.createNormals(normalsArray, vertices, faces);
-
-        //Get vertex list
-        ArrayList<Double[]> verticesArray = vertices.toList();
-
-        //Normalize vertex normals
-        WavefrontUtility.normalizeNormals(normalsArray);
-
-        setVertices(verticesArray);
-        setVertexNormals(normalsArray);
-        setTextureCoordinates(textureCoordinates.toList());
-        setMaterialFaces(faces);
-        setBoundingFaces(boundingFaces);
-
+        createObjFromCube("lit_pumpkin", false, null, rotationY, modelsMaterials, cube);
     }
 
     public void modifyLitPumpkinMaterials(Namespace blockNamespace){

@@ -28,6 +28,9 @@ All basic blocks (that are only basic cubes), and some builtin blocks (ex, water
 - Sea Lantern
 - Magma Block (fixed compressed texture)
 
+### Supported entities
+- Beds
+
 ### Supported resource packs
 For now, only  resource packs that uses the SEUS format are supported. Beside using the textures the resource pack includes,
 it also reads the models & block states the resource pack defines. 

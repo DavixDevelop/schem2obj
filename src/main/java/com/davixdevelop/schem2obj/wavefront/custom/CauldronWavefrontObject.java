@@ -21,12 +21,12 @@ public class CauldronWavefrontObject extends BlockWavefrontObject {
     }
 
     public void toObj(Namespace blockNamespace){
-        BlockState blockState = Constants.BLOCKS_STATES.getBlockState(blockNamespace);
+        BlockState blockState = Constants.BLOCKS_STATES.getBlockState(blockNamespace.getName());
         ArrayList<BlockState.Variant> variants = blockState.getVariants(blockNamespace);
         BlockState.Variant variant = variants.get(0);
 
         ArrayList<VariantModels> variantModels = new ArrayList<>();
-        variantModels.add(new VariantModels(variant, Constants.BLOCK_MODELS.getBlockModel(blockNamespace, variant)));
+        variantModels.add(new VariantModels(variant, Constants.BLOCK_MODELS.getBlockModel(variant.getModel())));
 
         if(!blockNamespace.getData().get("level").equals("0")){
             VariantModels models = variantModels.get(0);

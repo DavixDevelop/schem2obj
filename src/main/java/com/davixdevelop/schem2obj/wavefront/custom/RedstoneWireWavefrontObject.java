@@ -60,11 +60,11 @@ public class RedstoneWireWavefrontObject extends BlockWavefrontObject implements
     private void toObj(Namespace wireNamespace) {
         setName(wireNamespace.getName());
 
-        BlockState blockState = Constants.BLOCKS_STATES.getBlockState(wireNamespace);
+        BlockState blockState = Constants.BLOCKS_STATES.getBlockState(wireNamespace.getName());
         ArrayList<BlockState.Variant> variants = blockState.getVariants(wireNamespace);
         ArrayList<VariantModels> wireModels = new ArrayList<>();
         for (BlockState.Variant variant : variants)
-            wireModels.add(new VariantModels(variant, Constants.BLOCK_MODELS.getBlockModel(wireNamespace, variant)));
+            wireModels.add(new VariantModels(variant, Constants.BLOCK_MODELS.getBlockModel(variant.getModel())));
 
         HashedDoubleList vertices = new HashedDoubleList();
         ArrayList<Double[]> normalsArray = new ArrayList<>();

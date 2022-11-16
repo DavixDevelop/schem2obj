@@ -21,36 +21,41 @@ public class BlockStateCollection {
         externalBlockStates = new HashMap<>();
     }
 
-    public BlockState getBlockState(Namespace namespace){
+    /**
+     * Get the block state
+     * @param blockStateName The name of the block state
+     * @return
+     */
+    public BlockState getBlockState(String blockStateName){
         //Check if block state is already in memory
         //Else read it from assets and at it to memory
-        if(blockStates.containsKey(namespace.getName())){
-            return blockStates.get(namespace.getName());
+        if(blockStates.containsKey(blockStateName)){
+            return blockStates.get(blockStateName);
         }else {
 
             InputStream inputStream = null;
 
             boolean readFromAssets = true;
 
-            if(externalBlockStates.containsKey(namespace.getName())) {
+            if(externalBlockStates.containsKey(blockStateName)) {
                 try {
-                    inputStream = new FileInputStream(externalBlockStates.get(namespace.getName()));
+                    inputStream = new FileInputStream(externalBlockStates.get(blockStateName));
                     readFromAssets = false;
 
                 } catch (Exception ex) {
-                    LogUtility.Log(String.format("Failed to read external BlockState: %s.json (%s)", namespace.getName(), externalBlockStates.get(namespace.getName())));
+                    LogUtility.Log(String.format("Failed to read external BlockState: %s.json (%s)", blockStateName, externalBlockStates.get(blockStateName)));
                     LogUtility.Log(ex.getMessage());
                 }
             }
 
             if(readFromAssets)
-                inputStream = this.getClass().getClassLoader().getResourceAsStream(String.format("assets/minecraft/blockstates/%s.json", namespace.getName()));
+                inputStream = this.getClass().getClassLoader().getResourceAsStream(String.format("assets/minecraft/blockstates/%s.json", blockStateName));
 
 
 
             BlockState blockState = BlockState.readFromJson(inputStream);
 
-            blockStates.put(namespace.getName(), blockState);
+            blockStates.put(blockStateName, blockState);
 
             return blockState;
         }

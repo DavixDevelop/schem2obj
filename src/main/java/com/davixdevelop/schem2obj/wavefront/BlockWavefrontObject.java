@@ -18,7 +18,7 @@ public class BlockWavefrontObject extends WavefrontObject {
     @Override
     public boolean fromNamespace(Namespace blockNamespace) {
         //Get the BlockState for the block
-        BlockState blockState = Constants.BLOCKS_STATES.getBlockState(blockNamespace);
+        BlockState blockState = Constants.BLOCKS_STATES.getBlockState(blockNamespace.getName());
 
         //Get the variant/variants of the block
         ArrayList<BlockState.Variant> variants = blockState.getVariants(blockNamespace);
@@ -28,7 +28,7 @@ public class BlockWavefrontObject extends WavefrontObject {
 
         //Get the model/models the block uses based on the BlockState
         for(BlockState.Variant variant : variants)
-            blockModels.add(new VariantModels(variant, Constants.BLOCK_MODELS.getBlockModel(blockNamespace, variant)));
+            blockModels.add(new VariantModels(variant, Constants.BLOCK_MODELS.getBlockModel(variant.getModel())));
 
         if(blockState.isRandomVariants()){
             //Check if random variant is not in BLOCK_RANDOM_VARIANTS, generate it and store it
@@ -57,7 +57,7 @@ public class BlockWavefrontObject extends WavefrontObject {
      */
     public void baseConvert(Namespace blockNamespace){
         //Get the BlockState for the block
-        BlockState blockState = Constants.BLOCKS_STATES.getBlockState(blockNamespace);
+        BlockState blockState = Constants.BLOCKS_STATES.getBlockState(blockNamespace.getName());
 
         //Get the variant/variants of the block
         ArrayList<BlockState.Variant> variants = blockState.getVariants(blockNamespace);
@@ -67,7 +67,7 @@ public class BlockWavefrontObject extends WavefrontObject {
 
         //Get the model/models the block uses based on the BlockState
         for(BlockState.Variant variant : variants)
-            blockModels.add(new VariantModels(variant, Constants.BLOCK_MODELS.getBlockModel(blockNamespace, variant)));
+            blockModels.add(new VariantModels(variant, Constants.BLOCK_MODELS.getBlockModel(variant.getModel())));
 
         toObj(blockModels,blockNamespace);
     }

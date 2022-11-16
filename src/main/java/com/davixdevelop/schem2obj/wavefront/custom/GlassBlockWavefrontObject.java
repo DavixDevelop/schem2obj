@@ -13,7 +13,7 @@ public class GlassBlockWavefrontObject extends BlockWavefrontObject {
     @Override
     public boolean fromNamespace(Namespace blockNamespace) {
         //Get BlockState for the glass block
-        BlockState blockState = Constants.BLOCKS_STATES.getBlockState(blockNamespace);
+        BlockState blockState = Constants.BLOCKS_STATES.getBlockState(blockNamespace.getName());
 
         //Get the variant for the glass block
         ArrayList<BlockState.Variant> variants = blockState.getVariants(blockNamespace);
@@ -22,7 +22,7 @@ public class GlassBlockWavefrontObject extends BlockWavefrontObject {
 
         //Get the models for the glass
         for(BlockState.Variant variant : variants)
-            glassModel.add(new VariantModels(variant, Constants.BLOCK_MODELS.getBlockModel(blockNamespace, variant)));
+            glassModel.add(new VariantModels(variant, Constants.BLOCK_MODELS.getBlockModel(variant.getModel())));
 
 
         //Modify the glass materials if they were not yet modified

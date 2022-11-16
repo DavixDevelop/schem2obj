@@ -16,7 +16,7 @@ public class FireWavefrontObject extends BlockWavefrontObject {
     @Override
     public boolean fromNamespace(Namespace blockNamespace) {
         //Get the BlockState for the fire
-        BlockState blockState = Constants.BLOCKS_STATES.getBlockState(blockNamespace);
+        BlockState blockState = Constants.BLOCKS_STATES.getBlockState(blockNamespace.getName());
 
         //Get the multipart variants of fire
         ArrayList<BlockState.Variant> variants = blockState.getVariants(blockNamespace);
@@ -25,7 +25,7 @@ public class FireWavefrontObject extends BlockWavefrontObject {
 
         //Get the model/models the multipart variants use
         for(BlockState.Variant variant : variants)
-            fireModels.add(new VariantModels(variant, Constants.BLOCK_MODELS.getBlockModel(blockNamespace, variant)));
+            fireModels.add(new VariantModels(variant, Constants.BLOCK_MODELS.getBlockModel(variant.getModel())));
 
         //Modify the uv's of faces to use a random portion of the texture for fire, that consists of 32 textures
         Double[] uv = WavefrontUtility.getRandomUV(32);
