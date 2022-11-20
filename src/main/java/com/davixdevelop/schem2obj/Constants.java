@@ -2,15 +2,12 @@ package com.davixdevelop.schem2obj;
 
 import com.davixdevelop.schem2obj.blockmodels.BlockModelCollection;
 import com.davixdevelop.schem2obj.blockstates.BlockStateCollection;
+import com.davixdevelop.schem2obj.cubemodels.CubeModelFactory;
 import com.davixdevelop.schem2obj.namespace.BlockMapping;
 import com.davixdevelop.schem2obj.schematic.SchematicHolder;
-import com.davixdevelop.schem2obj.wavefront.WavefrontCollection;
-import com.davixdevelop.schem2obj.wavefront.material.MaterialCollection;
+import com.davixdevelop.schem2obj.materials.MaterialCollection;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.regex.Pattern;
 
 public class Constants {
@@ -48,7 +45,7 @@ public class Constants {
     public static final BlockMapping BLOCK_MAPPING = new BlockMapping();
 
     public static final MaterialCollection BLOCK_MATERIALS = new MaterialCollection();
-    public static final WavefrontCollection WAVEFRONT_COLLECTION = new WavefrontCollection();
+    public static final CubeModelFactory CUBE_MODEL_FACTORY = new CubeModelFactory();
 
     public static int BIOME_GRASS_COLOR = 9551193;
     public static int BIOME_FOLIAGE_COLOR = 7842607;

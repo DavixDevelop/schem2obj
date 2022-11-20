@@ -1,13 +1,15 @@
 package com.davixdevelop.schem2obj;
 
+import com.davixdevelop.schem2obj.cubemodels.CubeModelUtility;
+import com.davixdevelop.schem2obj.cubemodels.ICubeModel;
+import com.davixdevelop.schem2obj.cubemodels.entity.LavaCubeModel;
+import com.davixdevelop.schem2obj.cubemodels.entity.WaterCubeModel;
 import com.davixdevelop.schem2obj.namespace.Namespace;
 import com.davixdevelop.schem2obj.schematic.Schematic;
 import com.davixdevelop.schem2obj.util.LogUtility;
 import com.davixdevelop.schem2obj.wavefront.*;
-import com.davixdevelop.schem2obj.wavefront.custom.entity.LavaWavefrontObject;
-import com.davixdevelop.schem2obj.wavefront.custom.entity.WaterWavefrontObject;
-import com.davixdevelop.schem2obj.wavefront.material.IMaterial;
-import com.davixdevelop.schem2obj.wavefront.material.json.PackTemplate;
+import com.davixdevelop.schem2obj.materials.IMaterial;
+import com.davixdevelop.schem2obj.materials.json.PackTemplate;
 import com.google.gson.Gson;
 
 import java.io.*;
@@ -132,7 +134,7 @@ public class SchemeToObj {
 
         SchemeToObj s = new SchemeToObj();
 
-        ArrayList<IWavefrontObject> objects = s.schemToObj(schem_path, exportAllBlock);
+        ArrayList<ICubeModel> objects = s.schemToCubeModels(schem_path, exportAllBlock);
 
         if(objects == null || objects.isEmpty()){
             LogUtility.Log("Failed to convert schematic to OBJ");
@@ -140,7 +142,7 @@ public class SchemeToObj {
         }
 
         //Write wavefront objects and materials to file
-        if(!s.writeObjToFile(objects, output_path)){
+        if(!s.exportToOBJ(objects, output_path)){
             LogUtility.Log("Failed to write wavefront file");
             return;
         }
@@ -150,7 +152,7 @@ public class SchemeToObj {
 
     }
 
-    public ArrayList<IWavefrontObject> schemToObj(String schemPath, boolean exportAllBlocks){
+    public ArrayList<ICubeModel> schemToCubeModels(String schemPath, boolean exportAllBlocks){
 
 
         try {
@@ -174,16 +176,16 @@ public class SchemeToObj {
         }
 
         //The final blocks to export
-        ArrayList<IWavefrontObject> blocks = new ArrayList<>();
+        ArrayList<ICubeModel> blocks = new ArrayList<>();
         //All blocks (including air -> null)
-        HashMap<Integer,IWavefrontObject> allBlocks = new HashMap<>();
+        HashMap<Integer,ICubeModel> allBlocks = new HashMap<>();
 
         Integer width = (int) Constants.LOADED_SCHEMATIC.getWidth();
         Integer length = (int) Constants.LOADED_SCHEMATIC.getLength();
         Integer height = (int) Constants.LOADED_SCHEMATIC.getHeight();
 
-        WaterWavefrontObject waterObject = null;
-        LavaWavefrontObject lavaObject = null;
+        WaterCubeModel waterObject = null;
+        LavaCubeModel lavaObject = null;
 
         for (int x = 0; x < width; x++)  {
             for (int y = 0; y < height; y++) {
@@ -202,14 +204,14 @@ public class SchemeToObj {
                                 case "flowing_water":
                                 case "water":
                                     if (waterObject == null)
-                                        waterObject = new WaterWavefrontObject();
+                                        waterObject = new WaterCubeModel();
 
                                     waterObject.addBlock(blockNamespace);
                                     break;
                                 case "flowing_lava":
                                 case "lava":
                                     if(lavaObject == null)
-                                        lavaObject = new LavaWavefrontObject();
+                                        lavaObject = new LavaCubeModel();
 
                                     lavaObject.addBlock(blockNamespace);
                                     break;
@@ -218,19 +220,19 @@ public class SchemeToObj {
                                         String www = "2";
                                     }
 
-                                    //Get  singleton tile entity wavefrontBlock from memory or create it anew every time
-                                    IWavefrontObject entityWavefrontObject = Constants.WAVEFRONT_COLLECTION.fromNamespace(
+                                    //Get  singleton tile entity cube model from memory or create it anew every time
+                                    ICubeModel entityCubeModel = Constants.CUBE_MODEL_FACTORY.fromNamespace(
                                             blockNamespace,
                                             Constants.LOADED_SCHEMATIC.getEntityValues(Constants.LOADED_SCHEMATIC.getPosX(), Constants.LOADED_SCHEMATIC.getPosY(), Constants.LOADED_SCHEMATIC.getPosZ()));
 
                                     //Translate the singleton block to the position of the block in the space
-                                    WavefrontUtility.translateWavefrontBlock(entityWavefrontObject, new Integer[]{x, z, y}, new Integer[]{width,length,height});
+                                    CubeModelUtility.translateCubeModel(entityCubeModel, new Integer[]{x, z, y}, new Integer[]{width,length,height});
 
                                     //Add it to blocks
                                     if (exportAllBlocks)
-                                        blocks.add(entityWavefrontObject);
+                                        blocks.add(entityCubeModel);
                                     else
-                                        allBlocks.put(index, entityWavefrontObject);
+                                        allBlocks.put(index, entityCubeModel);
 
                                     continue;
                             }
@@ -242,16 +244,16 @@ public class SchemeToObj {
                         continue;
                     }
 
-                    //Get  singleton wavefrontBlock from memory
-                    IWavefrontObject wavefrontObject = Constants.WAVEFRONT_COLLECTION.fromNamespace(blockNamespace);
+                    //Get  singleton cube model from memory
+                    ICubeModel cubeModel = Constants.CUBE_MODEL_FACTORY.fromNamespace(blockNamespace);
 
                     //Translate the singleton block to the position of the block in the space
-                    WavefrontUtility.translateWavefrontBlock(wavefrontObject, new Integer[]{x, z, y}, new Integer[]{width,length,height});
+                    CubeModelUtility.translateCubeModel(cubeModel, new Integer[]{x, z, y}, new Integer[]{width,length,height});
 
                     if (exportAllBlocks)
-                        blocks.add(wavefrontObject);
+                        blocks.add(cubeModel);
                     else
-                        allBlocks.put(index, wavefrontObject);
+                        allBlocks.put(index, cubeModel);
 
                 }
             }
@@ -268,8 +270,30 @@ public class SchemeToObj {
 
                         Constants.LOADED_SCHEMATIC.setCurrentBlockPosition(x, y, z);
 
-                        IWavefrontObject object = allBlocks.get(index);
+                        ICubeModel object = allBlocks.get(index);
                         if(object != null){
+
+                            for(int o = 0; o < 6; o++){
+                                Orientation faceOrientation = Orientation.getOrientation(o);
+
+                                Orientation oppositeOrientation = faceOrientation.getOpposite();
+
+                                Integer adjacentX = x + faceOrientation.getXOffset();
+                                Integer adjacentZ = z - faceOrientation.getYOffset();
+                                Integer adjacentY = y + faceOrientation.getZOffset();
+
+                                if(adjacentX >= 0 && adjacentX < width &&
+                                adjacentZ >= 0 && adjacentZ < length &&
+                                adjacentY >= 0 && adjacentY < height){
+                                    Integer adjacentIndex = adjacentX + (adjacentY * length + adjacentZ) * width;
+
+                                    ICubeModel adjacentCubeModel = allBlocks.get(adjacentIndex);
+
+                                    if(CubeModelUtility.checkFacing(object, adjacentCubeModel, faceOrientation, oppositeOrientation))
+                                        object.deleteFaces(faceOrientation);
+                                }
+                            }
+                            /*
                             final Set<String> objectBoundingFaces = object.getBoundingFaces().keySet();
 
                             if(objectBoundingFaces.isEmpty()) {
@@ -279,43 +303,43 @@ public class SchemeToObj {
 
                             //West block check
                             if(x > 0)
-                                if(WavefrontUtility.checkFacing(objectBoundingFaces, object, allBlocks.get((x - 1) + (y * length + z) * width), "west", "east"))
+                                if(CubeModelUtility.checkFacing(objectBoundingFaces, object, allBlocks.get((x - 1) + (y * length + z) * width), "west", "east"))
                                     object.deleteFaces("west");
 
 
                             //East block check
                             if(x + 1 < width)
-                                if(WavefrontUtility.checkFacing(objectBoundingFaces, object, allBlocks.get((x + 1) + (y* length + z) * width), "east", "west"))
+                                if(CubeModelUtility.checkFacing(objectBoundingFaces, object, allBlocks.get((x + 1) + (y* length + z) * width), "east", "west"))
                                     object.deleteFaces("east");
 
 
                             //North block check
                             if(z > 0)
-                                if(WavefrontUtility.checkFacing(objectBoundingFaces, object, allBlocks.get(x + (y * length + (z - 1)) * width), "north", "south"))
+                                if(CubeModelUtility.checkFacing(objectBoundingFaces, object, allBlocks.get(x + (y * length + (z - 1)) * width), "north", "south"))
                                     object.deleteFaces("north");
 
 
                             //South block check
                             if(z + 1 < length)
-                                if(WavefrontUtility.checkFacing(objectBoundingFaces, object, allBlocks.get(x + (y * length + (z + 1)) * width), "south", "north"))
+                                if(CubeModelUtility.checkFacing(objectBoundingFaces, object, allBlocks.get(x + (y * length + (z + 1)) * width), "south", "north"))
                                     object.deleteFaces("south");
 
 
                             //Up block check
                             if(y + 1 < height)
-                                if(WavefrontUtility.checkFacing(objectBoundingFaces, object, allBlocks.get(x + ((y + 1) * length + z) * width), "up", "down"))
+                                if(CubeModelUtility.checkFacing(objectBoundingFaces, object, allBlocks.get(x + ((y + 1) * length + z) * width), "up", "down"))
                                     object.deleteFaces("up");
 
 
                             //Down block check
                             if(y > 0)
-                                if(WavefrontUtility.checkFacing(objectBoundingFaces, object, allBlocks.get(x + ((y - 1) * length + z) * width), "down", "up"))
+                                if(CubeModelUtility.checkFacing(objectBoundingFaces, object, allBlocks.get(x + ((y - 1) * length + z) * width), "down", "up"))
                                     object.deleteFaces("down");
 
                             if(!object.getMaterialFaces().isEmpty()) {
                                 //Reset the normals for the object to reflect the deleted faces and add them to all normals
                                 WavefrontUtility.resetNormals(allNormals, object);
-                            }
+                            }*/
 
                             blocks.add(object);
                         }
@@ -337,12 +361,12 @@ public class SchemeToObj {
         }
 
         if(waterObject != null){
-            waterObject.finalizeObject();
+            waterObject.finalizeCubeModel();
             blocks.add(waterObject);
         }
 
         if(lavaObject != null){
-            lavaObject.finalizeObject();
+            lavaObject.finalizeCubeModel();
             blocks.add(lavaObject);
         }
 
@@ -352,7 +376,7 @@ public class SchemeToObj {
         return blocks;
     }
 
-    public boolean writeObjToFile(ArrayList<IWavefrontObject> objects, String outputPath){
+    public boolean exportToOBJ(ArrayList<ICubeModel> cubeModels, String outputPath){
         Path output_path = Paths.get(outputPath);
 
         String fileName = output_path.toFile().getName().replace(".obj","");
@@ -372,9 +396,12 @@ public class SchemeToObj {
             //Array variable to keep track of how many vertices, texture coordinates and vertex normals were writen
             int[] countTracker = new int[]{0,0,0};
 
-            for(IWavefrontObject object : objects){
-                if(!object.getMaterialFaces().isEmpty())
+            for(ICubeModel cubeModel : cubeModels){
+                IWavefrontObject object = WavefrontObjectFactory.fromCubeModel(cubeModel);
+
+                if(object != null && !object.getMaterialFaces().isEmpty()){
                     countTracker = WavefrontUtility.writeObjectData(object, f, countTracker);
+                }
             }
 
             //Flush and close output stream
@@ -418,7 +445,7 @@ public class SchemeToObj {
                 IMaterial material = Constants.BLOCK_MATERIALS.getMaterial(materialName);
 
                 //Get the material lines
-                ArrayList<String> materialLines = material.toMat(textureFileOutPath);
+                ArrayList<String> materialLines = material.toMTL(textureFileOutPath);
 
                 //Write material to file
                 for(String line : materialLines)

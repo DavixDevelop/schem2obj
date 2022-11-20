@@ -1,6 +1,6 @@
 package com.davixdevelop.schem2obj.util;
 
-import com.davixdevelop.schem2obj.wavefront.material.IMaterial;
+import com.davixdevelop.schem2obj.materials.IMaterial;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
@@ -11,6 +11,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.List;
 
 public class ImageUtility {
     public static boolean copyImageToFile(InputStream imageStream, String filePath){
@@ -62,7 +63,7 @@ public class ImageUtility {
 
     static HashMap<String, BufferedImage> LOADED_IMAGES = new HashMap<>();
 
-    public static boolean hasAlpha(IMaterial material, ArrayList<Double[]> UV){
+    public static boolean hasAlpha(IMaterial material, List<Double[]> UV){
         try {
             if(!LOADED_IMAGES.containsKey(material.getDiffuseTexturePath())){
                 LOADED_IMAGES.put(material.getDiffuseTexturePath(), ImageIO.read(material.getDiffuseImage()));
