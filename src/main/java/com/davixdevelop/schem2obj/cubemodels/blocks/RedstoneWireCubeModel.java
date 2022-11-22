@@ -104,7 +104,7 @@ public class RedstoneWireCubeModel extends CubeModel implements IAdjacentCheck {
                             new_material.setEmissionStrength((p == 0) ? 0.0 :  p / 16.0);
 
                             //Color the gray overlay with the redstone wire color
-                            BufferedImage coloredRedstone = ImageUtility.colorImage(new_material.getDiffuseImage(), Constants.REDSTONE_COLORS.get(p));
+                            BufferedImage coloredRedstone = ImageUtility.colorImage(new_material.getDefaultDiffuseImage(), Constants.REDSTONE_COLORS.get(p));
                             //Set colored image as diffuseImage
                             new_material.setDiffuseImage(coloredRedstone);
 

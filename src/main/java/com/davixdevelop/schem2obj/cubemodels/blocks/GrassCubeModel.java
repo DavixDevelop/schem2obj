@@ -125,16 +125,16 @@ public class GrassCubeModel extends BlockCubeModel {
             IMaterial grass_side_overlay = Constants.BLOCK_MATERIALS.getMaterial("blocks/grass_side_overlay");
 
             //Color the gray grass top with the biome grass color
-            BufferedImage coloredTop = ImageUtility.colorImage(grass_top.getDiffuseImage(), Constants.BIOME_GRASS_COLOR);
+            BufferedImage coloredTop = ImageUtility.colorImage(grass_top.getDefaultDiffuseImage(), Constants.BIOME_GRASS_COLOR);
 
-            //Set grass top diffuse image to colored top
+            //Set grass top output diffuse image to colored top
             grass_top.setDiffuseImage(coloredTop);
 
             //Color the gray grass side overlay with the biome grass color
-            BufferedImage colored_side_overlay = ImageUtility.colorImage(grass_side_overlay.getDiffuseImage(), Constants.BIOME_GRASS_COLOR);
+            BufferedImage colored_side_overlay = ImageUtility.colorImage(grass_side_overlay.getDefaultDiffuseImage(), Constants.BIOME_GRASS_COLOR);
 
             //Combine the grass side and colored overlay
-            BufferedImage combinedOverlay = ImageUtility.overlayImages(grass_side.getDiffuseImage(),colored_side_overlay);
+            BufferedImage combinedOverlay = ImageUtility.overlayImages(grass_side.getDefaultDiffuseImage(),colored_side_overlay);
             grass_side.setDiffuseImage(combinedOverlay);
 
             grass_side.setSpecularHighlights(0.0);
@@ -167,7 +167,7 @@ public class GrassCubeModel extends BlockCubeModel {
             snowy_grass_top.setName("snowy_grass_top");
 
             try {
-                snowy_grass_top.setDiffuseImage(ImageUtility.colorImage(grass_top.getDiffuseImage(), Constants.SNOW_COLOR));
+                snowy_grass_top.setDiffuseImage(ImageUtility.colorImage(grass_top.getDefaultDiffuseImage(), Constants.SNOW_COLOR));
             }catch (Exception ex){
                 LogUtility.Log("Could not create snowy grass texture");
                 LogUtility.Log(ex.getMessage());

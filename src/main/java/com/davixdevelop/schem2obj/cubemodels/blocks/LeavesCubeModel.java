@@ -49,7 +49,7 @@ public class LeavesCubeModel extends BlockCubeModel {
             IMaterial leaves_material = Constants.BLOCK_MATERIALS.getMaterial(leaves_texture);
 
             //Color the leaves with the foliage color
-            leaves_material.setDiffuseImage(ImageUtility.colorImage(leaves_material.getDiffuseImage(), Constants.BIOME_FOLIAGE_COLOR));
+            leaves_material.setDiffuseImage(ImageUtility.colorImage(leaves_material.getDefaultDiffuseImage(), Constants.BIOME_FOLIAGE_COLOR));
 
             //Set the material options for leaves
             leaves_material.setSpecularHighlights(0.0);

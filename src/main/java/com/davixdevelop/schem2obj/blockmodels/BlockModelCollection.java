@@ -19,11 +19,9 @@ public class BlockModelCollection {
     private static final Double[] BLOCK_ORIGIN = new Double[] {0.5, 0.5, 0.5};
 
     private HashMap<String, BlockModel> blocksModels;
-    private HashMap<String, String> externalBlockModels;
 
     public BlockModelCollection(){
         blocksModels = new HashMap<>();
-        externalBlockModels = new HashMap<>();
     }
 
     /**
@@ -51,26 +49,9 @@ public class BlockModelCollection {
             }
 
         } else {
+            //Else get block model from built assets
 
-            InputStream modelStream = null;
-
-            boolean readFromAssets = true;
-
-            if(externalBlockModels.containsKey(modelName)) {
-                try {
-                    //Read from resource pack
-                    modelStream = new FileInputStream(externalBlockModels.get(modelName));
-                    readFromAssets = false;
-
-                } catch (Exception ex) {
-                    LogUtility.Log(String.format("Failed to read external BlockModel: %s.json (%s)", modelName, externalBlockModels.get(modelName)));
-                    LogUtility.Log(ex.getMessage());
-                }
-            }
-
-            //Read from assets
-            if(readFromAssets)
-                modelStream = this.getClass().getClassLoader().getResourceAsStream("assets/minecraft/model/" + modelName + ".json");
+            InputStream modelStream = this.getClass().getClassLoader().getResourceAsStream("assets/minecraft/model/" + modelName + ".json");
 
             //Read from stream
             BlockModel model = BlockModel.readFromJson(modelStream, modelName);
@@ -104,35 +85,13 @@ public class BlockModelCollection {
         return models;
     }
 
-
-
     /**
-     * Parse through resource pack BlockModels, and add them to externalBlockModels, for it to be read later
-     * @param resourcePack Path to resource pack
+     * Convert the input stream to a block model and store it in memory
+     * @param modelStream The stream to the model
+     * @param modelName The name of the model
      */
-    public void parseResourcePack(String resourcePack){
-        File resourcePackBlockModelsFolder = Paths.get(resourcePack, "assets","minecraft","model").toFile();
-
-        //Check if resource pack has a model folder
-        if(resourcePackBlockModelsFolder.exists() && resourcePackBlockModelsFolder.isDirectory()){
-            File[] modelsSubfolder = resourcePackBlockModelsFolder.listFiles();
-
-            if(modelsSubfolder != null){
-                for(File modelsFolder : modelsSubfolder){
-                    if(modelsFolder.isDirectory()){
-                        File[] blockModels = modelsFolder.listFiles();
-
-                        if(blockModels != null)
-                            for(File blockModel : blockModels){
-                                if(blockModel.isFile() && blockModel.getName().endsWith(".json")) {
-                                    externalBlockModels.put(modelsFolder.getName() + "/" + blockModel.getName().replace(".json", ""), blockModel.getPath());
-                                }
-                            }
-
-                    }
-
-                }
-            }
-        }
+    public void putBlockModel(InputStream modelStream, String modelName){
+        BlockModel model = BlockModel.readFromJson(modelStream, modelName);
+        blocksModels.put(modelName, model.clone());
     }
 }

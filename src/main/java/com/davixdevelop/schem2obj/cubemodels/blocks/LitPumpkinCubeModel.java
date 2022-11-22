@@ -11,7 +11,6 @@ import com.davixdevelop.schem2obj.namespace.Namespace;
 import com.davixdevelop.schem2obj.util.ArrayVector;
 import com.davixdevelop.schem2obj.util.LogUtility;
 
-import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.nio.file.Paths;
 import java.util.HashMap;
@@ -48,7 +47,7 @@ public class LitPumpkinCubeModel extends CubeModel {
                 if(STACK_SIZE == -1){
                     //Find out number of textures in the animation texture for pumpkin_face_on
                     try{
-                        BufferedImage diffuseImage = ImageIO.read(seusMaterial.getDiffuseImage());
+                        BufferedImage diffuseImage = seusMaterial.getDefaultDiffuseImage();
                         STACK_SIZE = diffuseImage.getHeight() / diffuseImage.getWidth();
                     }catch (Exception ex){
                         LogUtility.Log("Error while calculating count of textures in the animation texture for pumpkin_face_on");
@@ -105,12 +104,12 @@ public class LitPumpkinCubeModel extends CubeModel {
             IMaterial lit_pumpkin_top = Constants.BLOCK_MATERIALS.getMaterial("blocks/lit_pumpkin_top");
 
             if(lit_pumpkin_side instanceof SEUSMaterial)
-                lit_pumpkin_side.setEmissionStrength(0);
+                lit_pumpkin_side.setEmissionStrength(0.0);
             else
                 lit_pumpkin_side.setEmissionStrength(15 / 16.0);
 
             if(lit_pumpkin_top instanceof SEUSMaterial)
-                lit_pumpkin_top.setEmissionStrength(0);
+                lit_pumpkin_top.setEmissionStrength(0.0);
             else
                 lit_pumpkin_top.setEmissionStrength(15 / 16.0);
 

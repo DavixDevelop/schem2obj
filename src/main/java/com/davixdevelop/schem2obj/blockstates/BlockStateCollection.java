@@ -1,5 +1,6 @@
 package com.davixdevelop.schem2obj.blockstates;
 
+import com.davixdevelop.schem2obj.blockmodels.BlockModel;
 import com.davixdevelop.schem2obj.namespace.Namespace;
 import com.davixdevelop.schem2obj.util.LogUtility;
 
@@ -13,12 +14,9 @@ import java.util.HashMap;
 public class BlockStateCollection {
     //Key: block name, value: BlockStateObject
     public HashMap<String, BlockState> blockStates;
-    //Key: block name, value: Path to block state file in resource pack
-    public HashMap<String, String> externalBlockStates;
 
     public BlockStateCollection(){
         blockStates = new HashMap<>();
-        externalBlockStates = new HashMap<>();
     }
 
     /**
@@ -28,31 +26,11 @@ public class BlockStateCollection {
      */
     public BlockState getBlockState(String blockStateName){
         //Check if block state is already in memory
-        //Else read it from assets and at it to memory
+        //Else read it from assets and add it to memory
         if(blockStates.containsKey(blockStateName)){
             return blockStates.get(blockStateName);
         }else {
-
-            InputStream inputStream = null;
-
-            boolean readFromAssets = true;
-
-            if(externalBlockStates.containsKey(blockStateName)) {
-                try {
-                    inputStream = new FileInputStream(externalBlockStates.get(blockStateName));
-                    readFromAssets = false;
-
-                } catch (Exception ex) {
-                    LogUtility.Log(String.format("Failed to read external BlockState: %s.json (%s)", blockStateName, externalBlockStates.get(blockStateName)));
-                    LogUtility.Log(ex.getMessage());
-                }
-            }
-
-            if(readFromAssets)
-                inputStream = this.getClass().getClassLoader().getResourceAsStream(String.format("assets/minecraft/blockstates/%s.json", blockStateName));
-
-
-
+            InputStream inputStream = this.getClass().getClassLoader().getResourceAsStream(String.format("assets/minecraft/blockstates/%s.json", blockStateName));
             BlockState blockState = BlockState.readFromJson(inputStream);
 
             blockStates.put(blockStateName, blockState);
@@ -62,23 +40,13 @@ public class BlockStateCollection {
     }
 
     /**
-     * Parse through resource pack BlockStates, and add them to externalBlockStates, for it to be read later
-     * @param resourcePack Path to resource pack
+     * Convert the input stream to a block model and store it in memory
+     * @param blockStateStream The stream to the model
+     * @param blockStateName name of the model
      */
-    public void parseResourcePack(String resourcePack){
-        File resourcePackBlockStatesFolder = Paths.get(resourcePack, "assets","minecraft","blockstates").toFile();
-
-        //Check if resource pack has a blockstates folder
-        if(resourcePackBlockStatesFolder.exists() && resourcePackBlockStatesFolder.isDirectory()){
-            File[] blockStates = resourcePackBlockStatesFolder.listFiles();
-
-            if(blockStates != null){
-                for(File blockState : blockStates){
-                    if(blockState.isFile() && blockState.getName().endsWith(".json"))
-                        externalBlockStates.put(blockState.getName().replace(".json",""), blockState.getPath());
-                }
-            }
-        }
+    public void putBlockState(InputStream blockStateStream, String blockStateName){
+        BlockState blockState = BlockState.readFromJson(blockStateStream);
+        blockStates.put(blockStateName, blockState);
     }
 
 }

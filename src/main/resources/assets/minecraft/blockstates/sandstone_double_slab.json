@@ -1,6 +1,0 @@
-{
-    "variants": {
-        "type=normal": { "model": "sandstone_normal" },
-        "type=all":    { "model": "sandstone_all" }
-    }
-}

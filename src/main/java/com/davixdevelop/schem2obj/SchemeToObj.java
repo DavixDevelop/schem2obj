@@ -7,6 +7,7 @@ import com.davixdevelop.schem2obj.cubemodels.entity.WaterCubeModel;
 import com.davixdevelop.schem2obj.namespace.Namespace;
 import com.davixdevelop.schem2obj.schematic.Schematic;
 import com.davixdevelop.schem2obj.util.LogUtility;
+import com.davixdevelop.schem2obj.util.ResourcePackUtility;
 import com.davixdevelop.schem2obj.wavefront.*;
 import com.davixdevelop.schem2obj.materials.IMaterial;
 import com.davixdevelop.schem2obj.materials.json.PackTemplate;
@@ -30,14 +31,34 @@ public class SchemeToObj {
 
         Constants.setConstants();
 
-        if(arg.length >= 4) {
+        if(arg.length >= 6) {
+            //Get the path to the minecraft folder from the arguments
+            if(arg[0].startsWith("-minecraftFolder")){
+                String minecraftFolder = arg[1];
+                Path minecraftJarPath = Paths.get(minecraftFolder, "versions", "1.12.2", "1.12.2.jar");
+                if(Files.exists(minecraftJarPath)){
+                    //Register the material, blocks models and block states for the provided 1.12.2.jar
+                    String resourcePath = minecraftJarPath.toString();
+
+                    LogUtility.Log("Loading resources from 1.12.2.jar...");
+                    if(!ResourcePackUtility.registerResourcePack(resourcePath, "Vanilla", Constants.BLOCK_MATERIALS, Constants.BLOCK_MODELS, Constants.BLOCKS_STATES)){
+                        LogUtility.Log("Failed to read versions/1.12.2/1.12.2.jar in minecraft folder");
+                        return;
+                    }
+                }
+                else {
+                    LogUtility.Log("Could not find versions/1.12.2/1.12.2.jar in minecraft folder");
+                    return;
+                }
+            }
+
             //Get scheme file from arguments
-            if(arg[0].startsWith("-i")){
-                if(arg[1].endsWith(".schematic") || arg[1].endsWith(".nbt")) {
-                    if(arg[1].startsWith(".")) //If filename starts with . It's a relative path -> convert it to absolute
-                        schem_path = Paths.get(rootFolder, arg[1].substring(1)).toString();
+            if(arg[2].startsWith("-i")){
+                if(arg[3].endsWith(".schematic") || arg[1].endsWith(".nbt")) {
+                    if(arg[3].startsWith(".")) //If filename starts with . It's a relative path -> convert it to absolute
+                        schem_path = Paths.get(rootFolder, arg[3].substring(1)).toString();
                     else
-                        schem_path = arg[1];
+                        schem_path = arg[3];
                 }else{
                     LogUtility.Log("Input scheme doesn't use the .schematic extension");
                     return;
@@ -45,71 +66,13 @@ public class SchemeToObj {
             }else
                 return;
 
-            Integer nextArgIndex = 3;
-
-            //Get texture pack path from arguments
-            if(arg[2].startsWith("-t")){
-                //Repeat until next argument is -o
-                while(!arg[nextArgIndex].equals("-o")){
-
-                    //Check if the user defined what format the resource pack is
-                    if(arg[nextArgIndex].startsWith("SEUS:") || arg[nextArgIndex].startsWith("Vanilla:") || arg[nextArgIndex].startsWith("Specular:")){
-                        //Get resource pack path
-                        String resourcePath = arg[nextArgIndex].substring(arg[nextArgIndex].indexOf(":") + 1);
-                        if(resourcePath.startsWith(".")) //Relative path -> convert to absolute
-                            resourcePath = Paths.get(rootFolder, resourcePath.substring(1)).toString();
-                        //Read the resource pack format (SEUS, Vanilla, Specular)
-                        String format = arg[nextArgIndex].substring(0, arg[nextArgIndex].indexOf(":"));
-
-                        //Get path to pack.mcmeta
-                        Path packPath = Paths.get(resourcePath,"pack.mcmeta");
-                        //Check if pack.mcmeta exists
-                        if(Files.exists(packPath)){
-                            try{
-                                //Get input stream for pack.mcmeta
-                                InputStream inputStream = new FileInputStream(packPath.toFile().toString());
-                                //Get reader for pack.mcmeta
-                                Reader reader = new InputStreamReader(inputStream);
-                                //Deserialize json
-                                PackTemplate packMetaJson = new Gson().fromJson(reader, PackTemplate.class);
-
-                                reader.close();
-
-                                //Check that the format is in the correct format
-                                if(packMetaJson.pack.pack_format.intValue() == 3) {
-
-                                    //Register the material, blocks models and block states the resource pack uses
-                                    Constants.BLOCK_MATERIALS.registerTexturePack(format, resourcePath);
-                                    Constants.BLOCK_MODELS.parseResourcePack(resourcePath);
-                                    Constants.BLOCKS_STATES.parseResourcePack(resourcePath);
-
-                                }else
-                                    LogUtility.Log(String.format("Incompatible resource pack (Pack format: %d). Using built resource pack instead",packMetaJson.pack.pack_format.intValue()));
-                            }catch (Exception ex){
-                                LogUtility.Log("Error while reading pack.mcmeta");
-                                LogUtility.Log(ex.getMessage());
-                                LogUtility.Log("Using built resource pack instead");
-                            }
-
-                        }else{
-                            LogUtility.Log("Input resource pack isn't valid");
-                            LogUtility.Log("Using built resource pack instead");
-                        }
-                    }
-
-                    nextArgIndex += 1;
-                }
-
-            }else
-                nextArgIndex = 2;
-
             //Get output Wavefront file from arguments
-            if(arg[nextArgIndex].startsWith("-o")){
-                if(arg[nextArgIndex + 1].endsWith(".obj")){
-                    if(arg[nextArgIndex + 1].startsWith(".")) //If filename starts with . It's a relative path -> convert it to absolute
-                        output_path = Paths.get(rootFolder, arg[nextArgIndex + 1].substring(1)).toString();
+            if(arg[4].startsWith("-o")){
+                if(arg[5].endsWith(".obj")){
+                    if(arg[5].startsWith(".")) //If filename starts with . It's a relative path -> convert it to absolute
+                        output_path = Paths.get(rootFolder, arg[5].substring(1)).toString();
                     else
-                        output_path = arg[nextArgIndex + 1];
+                        output_path = arg[5];
 
                 }else {
                     LogUtility.Log("Output Wavefront file doesn't end with .obj");
@@ -119,10 +82,41 @@ public class SchemeToObj {
                 return;
 
             //Read additional parameters (ex -allBlocks)
-            if(nextArgIndex + 2 < arg.length){
-                nextArgIndex += 2;
+            if(6 < arg.length){
+                int nextArgIndex = 6;
                 while (nextArgIndex < arg.length){
-                    if(arg[nextArgIndex].equals("-allBlocks"))
+                    if(arg[nextArgIndex].startsWith("-t")){
+                        nextArgIndex += 1;
+
+                        //Check if the user defined what format the resource pack is
+                        while(arg[nextArgIndex].startsWith("SEUS:") || arg[nextArgIndex].startsWith("Vanilla:") || arg[nextArgIndex].startsWith("Specular:")){
+                            //Get resource pack path
+                            String resourcePath = arg[nextArgIndex].substring(arg[nextArgIndex].indexOf(":") + 1);
+                            if(resourcePath.startsWith(".")) //Relative path -> convert to absolute
+                                resourcePath = Paths.get(rootFolder, resourcePath.substring(1)).toString();
+                            //Read the resource pack format (SEUS, Vanilla, Specular)
+                            String format = arg[nextArgIndex].substring(0, arg[nextArgIndex].indexOf(":"));
+
+                            if(format.equals("SEUS") || format.equals("Vanilla") || format.equals("Specular")) {
+
+                                LogUtility.Log("Loading resources from: " + resourcePath + " .Please wait.");
+                                //Register the material, blocks models and block states the resource pack uses
+                                if (!ResourcePackUtility.registerResourcePack(resourcePath, format, Constants.BLOCK_MATERIALS, Constants.BLOCK_MODELS, Constants.BLOCKS_STATES)) {
+                                    LogUtility.Log("Input resource pack isn't valid");
+                                    LogUtility.Log("Using default textures instead");
+                                }
+                            }else
+                            {
+                                LogUtility.Log("Failed to register resource pack. Incorrect format provided: " + format);
+                            }
+
+                            nextArgIndex += 1;
+
+                            if(nextArgIndex >= arg.length)
+                                break;
+                        }
+                    }
+                    else if(arg[nextArgIndex].equals("-allBlocks"))
                         exportAllBlock = true;
                     else if(arg[nextArgIndex].equals("-snowy"))
                         Constants.IS_SNOWY = true;

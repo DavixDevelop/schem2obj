@@ -8,19 +8,33 @@ import java.awt.image.BufferedImage;
 import java.io.*;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 
 public class ImageUtility {
-    public static boolean copyImageToFile(InputStream imageStream, String filePath){
+    public static boolean copyImageToFile(BufferedImage bufferedImage, String filePath){
         //InputStream assetStream = this.getClass().getClassLoader().getResourceAsStream("assets/" + asset);
 
+        try {
+            InputStream imageStream = toInputStream(bufferedImage);
+
+            return copyImageStreamToFile(imageStream, filePath);
+        }catch (Exception ex){
+            LogUtility.Log(String.format("Could not read BufferedImage to InputStream for output image path: %s", filePath));
+            LogUtility.Log(ex.getMessage());
+        }
+
+        return false;
+    }
+
+    public static boolean copyImageStreamToFile(InputStream imageStream, String filePath){
         try {
             OutputStream outputStream = new FileOutputStream(filePath);
 
             try{
+
+
                 byte[] buffer = new byte[1024];
                 Integer readBytes = imageStream.read(buffer);
 
@@ -34,23 +48,23 @@ public class ImageUtility {
 
                 imageStream.close();
 
+                return true;
+
             }catch (Exception ex){
-                LogUtility.Log("Could not read from assets");
+                LogUtility.Log(String.format("Could not read from assets for output file path: %s", filePath));
                 LogUtility.Log(ex.getMessage());
-                return false;
             }
 
 
         }catch (FileNotFoundException ex){
-            LogUtility.Log("Could not copy asset to file");
+            LogUtility.Log(String.format("Could not copy asset to output file path: %s", filePath));
             LogUtility.Log(ex.getMessage());
-            return false;
         }
 
-        return true;
+        return false;
     }
 
-    public static InputStream bufferedImageToInputStream(BufferedImage image){
+    public static InputStream toInputStream(BufferedImage image){
         try {
             ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
             ImageIO.write(image, "png", outputStream);
@@ -61,16 +75,44 @@ public class ImageUtility {
         }
     }
 
-    static HashMap<String, BufferedImage> LOADED_IMAGES = new HashMap<>();
+    public static BufferedImage toBuffedImage(InputStream inputStream){
+        try {
+            BufferedImage bufferedImage = ImageIO.read(inputStream);
+
+            inputStream.close();
+
+            return bufferedImage;
+        }catch (IOException ex){
+            LogUtility.Log("Could read image from input stream");
+            LogUtility.Log(ex.getMessage());
+        }
+        return null;
+    }
+
+    static HashMap<String, BufferedImage> LOADED_ALPHA_IMAGES = new HashMap<>();
 
     public static boolean hasAlpha(IMaterial material, List<Double[]> UV){
         try {
-            if(!LOADED_IMAGES.containsKey(material.getDiffuseTexturePath())){
-                LOADED_IMAGES.put(material.getDiffuseTexturePath(), ImageIO.read(material.getDiffuseImage()));
+            BufferedImage image = null;
+
+            if(material.storeDiffuseImage())
+                image = material.getDiffuseImage();
+            else {
+                if(!LOADED_ALPHA_IMAGES.containsKey(material.getName())){
+                    BufferedImage diffuseImage = material.getDiffuseImage();
+
+                    if(diffuseImage.getTransparency() != 3)
+                        return false;
+
+                    //Strip the R G B channels, to only store the alpha channel in memory
+                    LOADED_ALPHA_IMAGES.put(material.getName(), extractAlphaChannel(diffuseImage));
+                }
+
+                image = LOADED_ALPHA_IMAGES.get(material.getName());
             }
 
-            BufferedImage image = LOADED_IMAGES.get(material.getDiffuseTexturePath());
-            boolean hasTransparency = (image.getTransparency() == 3);
+
+            boolean hasTransparency = (image.getType() == BufferedImage.TYPE_BYTE_GRAY) || (image.getTransparency() == 3);
             if(hasTransparency){
                 Double uv_min_x = UV.stream().min(Comparator.comparing(v -> v[0])).get()[0]; //Min x
                 Double uv_max_x = UV.stream().max(Comparator.comparing(v -> v[0])).get()[0]; //Max x
@@ -83,10 +125,12 @@ public class ImageUtility {
                 int y_min = (int) Math.round((1.0 - uv_max_y) * image.getHeight());
                 int y_max = (int) Math.round((1.0 - uv_min_y) * image.getHeight());
 
+                boolean isGrayscale = image.getType() == BufferedImage.TYPE_BYTE_GRAY;
+
                 for(int y = y_min ;y < y_max; y++){
                     for(int x = x_min ;x < x_max; x++){
                         int color = image.getRGB(x, y);
-                        float alpha = (float)(color >> 24 & 255);
+                        float alpha = (isGrayscale) ? (float)(color >> 16 & 255) : (float)(color >> 24 & 255);
                         if(alpha != 255.0) {
                             return true;
                         }
@@ -101,25 +145,43 @@ public class ImageUtility {
         return false;
     }
 
+    public static BufferedImage extractAlphaChannel(BufferedImage bufferedImage){
+            BufferedImage alphaGrayImage = new BufferedImage(bufferedImage.getWidth(), bufferedImage.getHeight(), BufferedImage.TYPE_BYTE_GRAY);
+
+            for(int y = 0; y < bufferedImage.getHeight(); y++){
+                for(int x = 0; x < bufferedImage.getWidth(); x++){
+                    int rawColor = bufferedImage.getRGB(x, y);
+
+                    Color color = new Color(rawColor, true);
+                    color = new Color(color.getAlpha(), color.getAlpha(), color.getAlpha());
+
+                    alphaGrayImage.setRGB(x, y, color.getRGB());
+
+                }
+            }
+
+
+            return alphaGrayImage;
+    }
+
     /**
      * Get the absolute path to the texture in a resource pack
      * @param resourcePath The path to the resource pack
      * @param texture The name of the texture, ex. blocks/dirt
      * @return
      */
-    public static Path getExternalTexture(String resourcePath, String texture){
+    public static Path getTexturePath(String resourcePath, String texture){
         return Paths.get(resourcePath, "assets","minecraft","textures",String.format("%s.png", texture));
     }
 
     /**
      * Extract the Roughness (Inverted Glossiness Red Channel), Metalness (Green Channel), Emission (Blue Channel) image from the specular texture
      * as SEUS stores Glossiness, Metalness and Emission in the the tree RGB channels in the specular texture
-     * @param specularAsset
+     * @param specularImage
      * @return
      */
-    public static BufferedImage[] extractPBRFromSpec(InputStream specularAsset){
+    public static BufferedImage[] extractPBRFromSpec(BufferedImage specularImage){
         try{
-            BufferedImage specularImage = ImageIO.read(specularAsset);
 
             BufferedImage[] RME = new BufferedImage[] {
                     new BufferedImage(specularImage.getWidth(), specularImage.getHeight(), BufferedImage.TYPE_INT_ARGB),
@@ -148,8 +210,6 @@ public class ImageUtility {
                 }
             }
 
-            specularAsset.close();
-
             return RME;
 
         }catch (Exception ex){
@@ -167,10 +227,9 @@ public class ImageUtility {
      * @return An masked imaged where the original image transparency is based on the mask
      * White pixels aren't transparent, while black pixels are full on transparent
      */
-    public static BufferedImage maskImage(InputStream image, BufferedImage mask,double mixFactor){
+    public static BufferedImage maskImage(BufferedImage image, BufferedImage mask,double mixFactor){
         try {
-            BufferedImage originalImage = ImageIO.read(image);
-            BufferedImage maskedImage = new BufferedImage(originalImage.getWidth(), originalImage.getHeight(), BufferedImage.TYPE_INT_ARGB_PRE);
+            BufferedImage maskedImage = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_INT_ARGB_PRE);
 
             Color color = null;
             Color maskColor = null;
@@ -200,12 +259,12 @@ public class ImageUtility {
             }
 
 
-            for(int x = 0; x < originalImage.getWidth(); x++){
-                for(int y = 0; y < originalImage.getHeight(); y++){
-                    int col = originalImage.getRGB(x, y);
+            for(int x = 0; x < image.getWidth(); x++){
+                for(int y = 0; y < image.getHeight(); y++){
+                    int col = image.getRGB(x, y);
                     color = new Color(col);
 
-                    int m = mask.getRGB((x * mask.getWidth()) / originalImage.getWidth(), (y * mask.getHeight()) / originalImage.getHeight());
+                    int m = mask.getRGB((x * mask.getWidth()) / image.getWidth(), (y * mask.getHeight()) / image.getHeight());
                     maskColor = new Color(m);
 
                     int alpha = maskColor.getRed();
@@ -233,7 +292,6 @@ public class ImageUtility {
                 }
             }
 
-            image.close();
             return maskedImage;
 
         }catch (Exception ex){
@@ -243,14 +301,13 @@ public class ImageUtility {
         }
     }
 
-    public static BufferedImage colorImage(InputStream image, int color){
+    public static BufferedImage colorImage(BufferedImage bufferedImage, int color){
 
         float multiRed = (float)(color >> 16 & 255) / 255.0f;
         float multiGreen = (float)(color >> 8 & 255) / 255.0f;
         float multiBlue = (float) (color & 255) / 255.0f;
 
         try {
-            BufferedImage bufferedImage = ImageIO.read(image);
             BufferedImage coloredImage = new BufferedImage(bufferedImage.getWidth(), bufferedImage.getHeight(), bufferedImage.getType());
 
             boolean hasAlpha = bufferedImage.getTransparency() == 3;
@@ -291,17 +348,16 @@ public class ImageUtility {
         }
     }
 
-    public static BufferedImage overlayImages(InputStream image, BufferedImage overlay){
+    public static BufferedImage overlayImages(BufferedImage image, BufferedImage overlay){
         try{
-            BufferedImage orgImage = ImageIO.read(image);
             boolean hasOverlayAlpha = overlay.getTransparency() == 3;
-            BufferedImage combinedImage = new BufferedImage(orgImage.getWidth(), orgImage.getHeight(), orgImage.getType());
+            BufferedImage combinedImage = new BufferedImage(image.getWidth(), image.getHeight(), image.getType());
 
-            for(int x = 0; x < orgImage.getWidth(); x++){
-                for(int y = 0; y < orgImage.getHeight(); y++){
-                    final int color1 = orgImage.getRGB(x, y);
-                    final int x1 = (x * overlay.getWidth()) / orgImage.getWidth();
-                    final int y1 = (y * overlay.getHeight()) / orgImage.getHeight();
+            for(int x = 0; x < image.getWidth(); x++){
+                for(int y = 0; y < image.getHeight(); y++){
+                    final int color1 = image.getRGB(x, y);
+                    final int x1 = (x * overlay.getWidth()) / image.getWidth();
+                    final int y1 = (y * overlay.getHeight()) / image.getHeight();
                     final int color2 = overlay.getRGB(x1, y1);
 
                     Color orginalColor = new Color(color1);
