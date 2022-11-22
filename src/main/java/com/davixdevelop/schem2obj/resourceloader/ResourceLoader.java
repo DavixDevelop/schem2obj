@@ -1,10 +1,9 @@
-package com.davixdevelop.schem2obj.util;
+package com.davixdevelop.schem2obj.resourceloader;
 
 import com.davixdevelop.schem2obj.Constants;
-import com.davixdevelop.schem2obj.blockmodels.BlockModelCollection;
-import com.davixdevelop.schem2obj.blockstates.BlockStateCollection;
-import com.davixdevelop.schem2obj.materials.MaterialCollection;
+import com.davixdevelop.schem2obj.SchemeToObj;
 import com.davixdevelop.schem2obj.materials.json.PackTemplate;
+import com.davixdevelop.schem2obj.util.LogUtility;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -12,13 +11,88 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Enumeration;
+import java.util.*;
 import java.util.jar.JarFile;
+import java.util.regex.Matcher;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
-public class ResourcePackUtility {
-    public static boolean registerResourcePack(String resourcePack, String format, MaterialCollection materialCollection, BlockModelCollection blockModelCollection, BlockStateCollection blockStateCollection){
+public class ResourceLoader {
+
+    public static List<IResourcePack> RESOURCE_PACKS = new ArrayList<>();
+    public static Map<String, Integer> RESOURCES = new HashMap<>();
+
+    /**
+     * Get the InputStream of the resource based on the path to the resource
+     * @param path Path to the resource, ex. textures/blocks/dirt.png
+     * @return The InputStream of the resource
+     */
+    public static InputStream getResource(String path){
+        if(RESOURCES.containsKey(path)){
+            Integer resourcePackIndex = RESOURCES.get(path);
+            return RESOURCE_PACKS.get(resourcePackIndex).getResource(path);
+        }else{
+            return ResourceLoader.class.getClassLoader().getResourceAsStream("assets/minecraft/" + path);
+        }
+    }
+
+    /**
+     * Return if resource can be kept in memory
+     * @param path The path to the resource
+     * @return True if it can be kept in memory, else not
+     */
+    public static boolean storeInMemory(String path){
+        if(RESOURCES.containsKey(path)){
+            Integer resourcePackIndex = RESOURCES.get(path);
+            return RESOURCE_PACKS.get(resourcePackIndex).storeInMemory();
+        }
+        return true;
+    }
+
+
+
+    /**
+     * Return the format of the resource pack
+     * @param path The path to the resource
+     * @return The format of the resource pack (Vanilla, SEUS...)
+     */
+    public static ResourcePack.Format getFormat(String path){
+        if(RESOURCES.containsKey(path)){
+            Integer resourcePackIndex = RESOURCES.get(path);
+            return RESOURCE_PACKS.get(resourcePackIndex).getFormat();
+        }else{
+            return ResourcePack.Format.Vanilla;
+        }
+    }
+
+    /**
+     * Get the relative path to the texture in a resource pack
+     * @param resourceType The path to the resource pack
+     * @param resourceName The name of the resource, ex. blocks/dirt, entity/bed/blue, magma.json...
+     * @param resourceFormat The format of the resource, ex. png, json...
+     * @return
+     */
+    public static String getResourcePath(String resourceType, String resourceName, String resourceFormat){
+        return String.format("%s/%s.%s",resourceType, resourceName, resourceFormat);
+    }
+
+    /**
+     * Check if resource exists
+     * @param path The path to the resource
+     * @return
+     */
+    public static boolean resourceExists(String path){
+        return RESOURCES.containsKey(path);
+    }
+
+    /**
+     * Register a new resource pack
+     * @param resourcePack The path to the folder or zip/jar of the resource pack
+     * @param format The format of the resource pack
+     * @return True if resource pack was registered or not
+     */
+    public static boolean registerResourcePack(String resourcePack, ResourcePack.Format format){
+
         Path resourcePackPath = Paths.get(resourcePack);
 
         //Check if resource pack is a folder
@@ -49,6 +123,14 @@ public class ResourcePackUtility {
                 return false;
             }
 
+            //Create new Resource Pack
+            IResourcePack folderResourcePack = new FolderResourcePack(resourcePack, format);
+            //Add it to the list of resource packs
+            RESOURCE_PACKS.add(folderResourcePack);
+
+            //Get the index to the resource pack
+            Integer resourcePackIndex = RESOURCE_PACKS.size() - 1;
+
             //Get the path to the textures folder
             Path texturesFolder = Paths.get(resourcePack, "assets","minecraft","textures");
 
@@ -60,15 +142,21 @@ public class ResourcePackUtility {
 
                 //Loop through the textureFolders and generate materials from it
                 if (textureFolders != null) {
+
+                    String textureFolderPath = Paths.get(resourcePack, "assets","minecraft").toString();
+
                     for (File textureFolder : textureFolders) {
                         //Scan for textures in blocks and entities
                         if (!textureFolder.getName().equals("blocks") && !textureFolder.getName().equals("entity"))
                             continue;
 
                         File[] textures = textureFolder.listFiles();
-                        String textureFolderName = textureFolder.getName();
+                        //String textureFolderName = textureFolder.getName();
 
                         if (textures != null) {
+                            parseTexturesFromPackFiles(textures, textureFolderPath, resourcePackIndex);
+
+                            /*
                             if (textureFolder.getName().equals("entity")) {
                                 for (File file : textures) {
 
@@ -76,15 +164,16 @@ public class ResourcePackUtility {
                                         File[] entityTextures = file.listFiles();
 
                                         //Parse all textures in the subfolder inside the entity folder
-                                        if (entityTextures != null)
-                                            materialCollection.parseTexturesFromPackFiles(entityTextures, textureFolderName, format, resourcePack, file.getName());
+                                        if (entityTextures != null) {
+                                            parseTexturesFromPackFiles(entityTextures, textureFolderName, resourcePackIndex, file.getName());
+                                        }
                                     }
                                     //ToDo: Here read the entity textures that are in the root entity folder
-
                                 }
                             } else {
-                                materialCollection.parseTexturesFromPackFiles(textures, textureFolderName, format, resourcePack);
-                            }
+
+                                parseTexturesFromPackFiles(textures, textureFolderName, resourcePackIndex);
+                            }*/
                         }
                     }
                 }
@@ -104,15 +193,8 @@ public class ResourcePackUtility {
                             if(blockModels != null)
                                 for(File blockModel : blockModels){
                                     if(blockModel.isFile() && blockModel.getName().endsWith(".json")) {
-                                        String modelName = String.format("%s/%s", modelsSubFolder.getName(), blockModel.getName().replace(".json", ""));
-                                        try{
-
-                                            InputStream modelStream = new FileInputStream(blockModel);
-                                            blockModelCollection.putBlockModel(modelStream, modelName);
-                                        }catch (Exception ex){
-                                            LogUtility.Log("Failed to read BlockModel " + modelName);
-                                            return false;
-                                        }
+                                        String modelPath = String.format("models/%s/%s", modelsSubFolder.getName(), blockModel.getName());
+                                        RESOURCES.put(modelPath, resourcePackIndex);
                                     }
                                 }
 
@@ -131,16 +213,8 @@ public class ResourcePackUtility {
                 if(blockStates != null){
                     for(File blockState : blockStates){
                         if(blockState.isFile() && blockState.getName().endsWith(".json")){
-                            String blockStateName = blockState.getName().replace(".json", "");
-                            try{
-                                InputStream blockStateStream = new FileInputStream(blockState);
-                                blockStateCollection.putBlockState(blockStateStream, blockStateName);
-                            }catch (Exception ex){
-                                LogUtility.Log("Failed to read BlockState " + blockStateName);
-                                return false;
-                            }
-
-
+                            String blockStatePath = String.format("blockstates/%s", blockState.getName());
+                            RESOURCES.put(blockStatePath, resourcePackIndex);
                         }
 
                     }
@@ -181,15 +255,22 @@ public class ResourcePackUtility {
 
                 Enumeration<? extends ZipEntry> entries = compressedFile.entries();
 
+                //Create new resource pack
+                IResourcePack compressedResourcePack = new ZippedResourcePack(compressedFile, format);
+                //Add it to resource pack list
+                RESOURCE_PACKS.add(compressedResourcePack);
+                //Get the index to the resource pack
+                Integer resourcePackIndex = RESOURCE_PACKS.size() - 1;
+
                 //Loop through the all entries is compressed file
                 while (entries.hasMoreElements()){
                     ZipEntry zipEntry = entries.nextElement();
 
                     String fullPath = zipEntry.getName();
 
-                    //Check if entry is in the texture folder and ends with .png
-                    if(fullPath.startsWith("assets/minecraft/textures/") && fullPath.endsWith(".png")){
-                        //Get the path to the texture within the texture folder
+                    //Check if entry is in the texture folder and ends with .png or .mcmeta
+                    if(fullPath.startsWith("assets/minecraft/textures/") && (fullPath.endsWith(".png") || fullPath.endsWith(".mcmeta"))){
+                        //Get the path to the texture within the texture folder  (ex. blocks/dirt.png)
                         String assetPath = fullPath.substring(26);
 
                         //Get the type of the texture (ex. blocks/dirt.png -> blocks)
@@ -199,67 +280,44 @@ public class ResourcePackUtility {
                         if(!textureType.equals("blocks") && !textureType.equals("entity"))
                             continue;
 
-
-
-                        //Get the file name of texture (ex. entity/bed/blue.png - > blue.png)
-                        String fileName = assetPath.substring(assetPath.lastIndexOf("/") + 1);
-                        //Get the full path to the folder of the texture
-                        //ex. assets/minecraft/textures/entity/bed/blue.png -> assets/minecraft/textures/entity/bed
-                        String folderPath = fullPath.substring(0, fullPath.length() - fileName.length() - 1);
+                        //Get the path to the texture (ex. textures/entity/bed/blue.png - > blue.png)
+                        String textureFilePath = fullPath.substring(17);
 
                         if(textureType.equals("entity")){
-                            //Get the entity name (ex. entity/bed/blue.png -> bed )
-                            String entityName = assetPath.substring(7);
-                            //Skip entity textures that are not in a subfolder inside the entity folder
-                            if(!entityName.equals(fileName)){
-                                entityName = entityName.substring(0, entityName.length() - fileName.length() - 1);
-                                if(Constants.EntityFilter.contains(entityName))
-                                    materialCollection.parseMaterialFromEntry(compressedFile, fileName, format, textureType, folderPath, entityName);
+                            //Get the path to the entity texture within the entity folder (ex. entity/bed/blue.json -> bed/blue.json)
+                            String entityPath = assetPath.substring(7);
+                            //If the entity path contains /, the entity uses one or more textures
+                            if(entityPath.contains("/")){
+                                //Get the name of the entity (name of folder)
+                                String entityName = entityPath.substring(0, entityPath.indexOf("/"));
+                                //If the entity isn't supported skip it
+                                if(!Constants.EntityFilter.contains(entityName))
+                                    continue;
                             }
-                            //ToDo: Here read the entity texture that are in the root folder
-                        }else {
-                            materialCollection.parseMaterialFromEntry(compressedFile, fileName, format, textureType, folderPath);
                         }
+
+                        //Add it to resources
+                        RESOURCES.put(textureFilePath, resourcePackIndex);
 
                         continue;
                     }
 
                     //Check if entry is in the models block folder and ends with .json
                     if(fullPath.startsWith("assets/minecraft/models/") && fullPath.endsWith(".json")){
-                        //Get the path to the block model within the models folder
-                        String assetPath = fullPath.substring(24);
-
-                        //Get the type of block model (block or item)
-                        String modelType = assetPath.substring(0, assetPath.indexOf("/"));
-
-                        String modelName = assetPath.substring(modelType.length() + 1, assetPath.length() - 5);
-
-                        try{
-                            InputStream modelStream = compressedFile.getInputStream(zipEntry);
-                            blockModelCollection.putBlockModel(modelStream, modelType + "/" + modelName);
-                        }catch (Exception ex){
-                            LogUtility.Log("Failed to read BlockModel " + modelName);
-                            return false;
-                        }
-
+                        //Get the path to the block model within the minecraft folder, ex. models/block/magma.json
+                        String modelPath = fullPath.substring(17);
+                        //Add the block model to the resources
+                        RESOURCES.put(modelPath, resourcePackIndex);
                         continue;
                     }
 
 
                     //Check if entry is in the block states folder and ends with .json
                     if(fullPath.startsWith("assets/minecraft/blockstates/") && fullPath.endsWith(".json")){
-                        //Get the path to the block state within the blockstates folder
-                        String assetPath = fullPath.substring(29);
-
-                        String blockStateName = assetPath.replace(".json", "");
-
-                        try{
-                            InputStream blockStateStream = compressedFile.getInputStream(zipEntry);
-                            blockStateCollection.putBlockState(blockStateStream, blockStateName);
-                        }catch (Exception ex){
-                            LogUtility.Log("Failed to read BlockState " + blockStateName);
-                            return false;
-                        }
+                        //Get the path to the block state within the minecraft folder, ex. blockstates/magma.json
+                        String blockStatePath = fullPath.substring(17);
+                        //Add the block state to the resources
+                        RESOURCES.put(blockStatePath, resourcePackIndex);
                     }
 
                 }
@@ -272,5 +330,30 @@ public class ResourcePackUtility {
         }
 
         return false;
+
     }
+
+    private static void parseTexturesFromPackFiles(File[] textures, String textureFolderPath, Integer resourcePackIndex){
+        //Loop through the textures and add them to resources
+        for(File texture : textures){
+            if(texture.isDirectory()){
+                //Skip entity textures that the program doesn't support
+                if(!Constants.EntityFilter.contains(texture.getName()))
+                    return;
+
+                File[] subTextures = texture.listFiles();
+                if(subTextures != null)
+                    parseTexturesFromPackFiles(subTextures, textureFolderPath, resourcePackIndex);
+            }
+            if(texture.getName().endsWith(".png") || texture.getName().endsWith(".mcmeta")) {
+
+                String textureFilePath = texture.getPath().substring(textureFolderPath.length() + 1).replace("\\","/");
+
+                //String textureFilePath = (subFolder.length > 0) ? String.format("textures/%s/%s/%s", textureFolderPath, subFolder[0], texture.getName()) :
+                //        String.format("textures/%s/%s", textureFolderPath, texture.getName());
+                RESOURCES.put(textureFilePath, resourcePackIndex);
+            }
+        }
+    }
+
 }

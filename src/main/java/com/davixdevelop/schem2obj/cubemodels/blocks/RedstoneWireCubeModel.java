@@ -114,12 +114,12 @@ public class RedstoneWireCubeModel extends CubeModel implements IAdjacentCheck {
                         }
 
                         materials.put(textureVariable, newTextureName);
-                        Constants.BLOCK_MATERIALS.unsetMaterial(textureName);
+                        Constants.BLOCK_MATERIALS.unsetUsedMaterial(textureName);
                     }
                 }
 
                 //Unset the overlay from the used materials
-                Constants.BLOCK_MATERIALS.unsetMaterial(materials.get("overlay"));
+                Constants.BLOCK_MATERIALS.unsetUsedMaterial(materials.get("overlay"));
             }
         }
 

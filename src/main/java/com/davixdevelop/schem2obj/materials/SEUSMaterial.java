@@ -2,6 +2,7 @@ package com.davixdevelop.schem2obj.materials;
 
 import com.davixdevelop.schem2obj.Constants;
 import com.davixdevelop.schem2obj.cubemodels.CubeModelUtility;
+import com.davixdevelop.schem2obj.resourceloader.ResourceLoader;
 import com.davixdevelop.schem2obj.util.ImageUtility;
 import com.davixdevelop.schem2obj.util.LogUtility;
 
@@ -24,65 +25,27 @@ public class SEUSMaterial extends Material {
     private boolean hasSpecularTexture;
     private BufferedImage specularImage;
 
-    private boolean storeInMemory;
-
     //Factor to mix in "black" parts of the emission texture with the diffuse texture
     private double emissionMixFactor = Constants.EMISSION_MIX_FACTOR;
 
     /**
      * Create new SEUS Material from diffuse texture file name
-     * @param materialName The name of the material, ex: dirt, blue-bed...
-     * @param textureFile The path to the texture, ex blocks/dirt.png, entity/bed/blue.png
-     * @param resourcePath The path to the resource pack
+     * @param materialPath The path of the material, ex: blocks/dirt, entity/blue-bed...
+     * @param diffuseTexturePath The relative path to the texture, ex blocks/dirt, entity/bed/blue
      */
-    public SEUSMaterial(String materialName, String textureFile, String resourcePath){
-        this.storeInMemory = false;
-        super.setResourcePath(resourcePath);
+    public SEUSMaterial(String materialPath, String diffuseTexturePath){
+        setName(CubeModelUtility.textureName(materialPath));
 
-        Path textureFilePath = Paths.get(resourcePath, "assets","minecraft","textures",textureFile);
+        //Set the relative path to the diffuse texture, ex entity/bed/blue
+        setDiffuseTexturePath(diffuseTexturePath);
 
-        setName(CubeModelUtility.textureName(materialName));
+        //Set the path name of the normals texture. Ex textures/blocks/dirt_n.png, or textures/entity/bed/blue_n.png
+        String normalsTexturePath = ResourceLoader.getResourcePath("textures", String.format("%s_n", getDiffuseTexturePath()), "png");
+        this.hasNormalsTexture = ResourceLoader.resourceExists(normalsTexturePath);
 
-        //Set the relative path to the diffuse texture, ex entity/bed/blue.png -> entity/bed/blue
-        setDiffuseTexturePath(textureFile.replace(".png",""));
-
-        //Set the name of the normals texture. Ex dirt_n.png, or blue_n.png
-        String normalsTextureName = String.format("%s_n.png", CubeModelUtility.textureName(getDiffuseTexturePath()));
-        this.hasNormalsTexture = Paths.get(textureFilePath.getParent().toFile().toString(), normalsTextureName).toFile().exists();
-
-        //Set the name of specular texture. Ex dirt_s.png, or blue_s.png
-        String specularTextureName = String.format("%s_s.png", CubeModelUtility.textureName(getDiffuseTexturePath()));
-        this.hasSpecularTexture = Paths.get(textureFilePath.getParent().toFile().toString(), specularTextureName).toFile().exists();
-
-    }
-
-    /**
-     * Create new SEUS Material from diffuse, normals and specular buffered image, and store them in memory
-     * @param materialName The name of the material, ex: dirt, blue-bed...
-     * @param textureFile The path to the texture, ex blocks/dirt.png, entity/bed/blue.png
-     * @param diffuseImage BufferedImage of the diffuse image
-     * @param normalsImage BufferedImage of the normals image
-     * @param specularImage BufferedImage of the specular image
-     * @param
-     */
-    public SEUSMaterial(String materialName, String textureFile, BufferedImage diffuseImage, BufferedImage normalsImage, BufferedImage specularImage){
-        storeInMemory = true;
-        setName(CubeModelUtility.textureName(materialName));
-        //Set the relative path to the diffuse texture, ex entity/bed/blue.png -> entity/bed/blue
-        setDiffuseTexturePath(textureFile.replace(".png",""));
-        setDefaultDiffuseImage(diffuseImage);
-
-        this.normalsImage = normalsImage;
-        hasNormalsTexture = normalsImage != null;
-
-        this.specularImage = specularImage;
-        hasSpecularTexture = specularImage != null;
-
-    }
-
-    @Override
-    public Boolean storeDiffuseImage() {
-        return storeInMemory;
+        //Set the path name of the specular texture. Ex textures/blocks/dirt_n.png, or textures/entity/bed/blue_n.png
+        String specularTexturePath = ResourceLoader.getResourcePath("textures", String.format("%s_s", getDiffuseTexturePath()), "png");
+        this.hasSpecularTexture = ResourceLoader.resourceExists(specularTexturePath);
     }
 
     public SEUSMaterial(){}
@@ -97,22 +60,24 @@ public class SEUSMaterial extends Material {
             //return ImageUtility.bufferedImageToInputStream(diffuseImage);
         }
 
-        String normalsTextureName = String.format("%s_n", getDiffuseTexturePath());
 
-        if(getResourcePath() == null){
-            String w = "2";
-        }
 
-        //Get the path to the normals texture, ex. <resourcePath>/minecraft/textures/blocks/dirt_n.png
-        String assetMaterial = ImageUtility.getTexturePath(getResourcePath(), normalsTextureName).toFile().toString();
+        //Get the relative path to the normals texture, ex. textures/entity/bed/blue_n.png
+        String normalsTexturePath = ResourceLoader.getResourcePath("textures", String.format("%s_n", getDiffuseTexturePath()), "png");
 
         try{
-            InputStream assetStream = new FileInputStream(assetMaterial);
+            InputStream assetStream = ResourceLoader.getResource(normalsTexturePath);
 
-            return ImageUtility.toBuffedImage(assetStream);
+            BufferedImage bufferedImage = ImageUtility.toBuffedImage(assetStream);
 
-        }catch (FileNotFoundException ex){
-            LogUtility.Log(String.format("Could not find %s in resource path: %s", normalsTextureName, getResourcePath()));
+            //Only store the normals image, if the the resource can be stored in memory
+            if(normalsImage == null && ResourceLoader.storeInMemory(normalsTexturePath))
+                normalsImage = bufferedImage;
+
+            return bufferedImage;
+
+        }catch (Exception ex){
+            LogUtility.Log(String.format("Could not find %s in resources", normalsTexturePath));
             LogUtility.Log(ex.getMessage());
             return null;
         }
@@ -124,18 +89,22 @@ public class SEUSMaterial extends Material {
             //return ImageUtility.bufferedImageToInputStream(diffuseImage);
         }
 
-        String specularTextureName = String.format("%s_s", getDiffuseTexturePath());
-
-        //Get the path to the normals texture, ex. <resourcePath>/minecraft/textures/blocks/dirt_n.png
-        String assetMaterial = ImageUtility.getTexturePath(getResourcePath(), specularTextureName).toFile().toString();
+        //Get the relative path to the specular texture, ex. textures/entity/bed/blue_s.png
+        String specularTexturePath = ResourceLoader.getResourcePath("textures", String.format("%s_s", getDiffuseTexturePath()), "png");
 
         try{
-            InputStream assetStream = new FileInputStream(assetMaterial);
+            InputStream assetStream = ResourceLoader.getResource(specularTexturePath);
 
-            return ImageUtility.toBuffedImage(assetStream);
+            BufferedImage bufferedImage = ImageUtility.toBuffedImage(assetStream);
 
-        }catch (FileNotFoundException ex){
-            LogUtility.Log(String.format("Could not find %s in resource path: %s", specularTextureName, getResourcePath()));
+            //Only store the specular image, if the the resource can be stored in memory
+            if(specularImage == null && ResourceLoader.storeInMemory(specularTexturePath))
+                specularImage = bufferedImage;
+
+            return bufferedImage;
+
+        }catch (Exception ex){
+            LogUtility.Log(String.format("Could not find %s in resources", specularTexturePath));
             LogUtility.Log(ex.getMessage());
             return null;
         }
@@ -277,7 +246,6 @@ public class SEUSMaterial extends Material {
         hasNormalsTexture = seusCopy.hasNormalsTexture;
         hasSpecularTexture = seusCopy.hasSpecularTexture;
         specularImage = seusCopy.specularImage;
-        storeInMemory = seusCopy.storeInMemory;
         emissionMixFactor = seusCopy.emissionMixFactor;
     }
 }

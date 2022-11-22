@@ -165,16 +165,6 @@ public class ImageUtility {
     }
 
     /**
-     * Get the absolute path to the texture in a resource pack
-     * @param resourcePath The path to the resource pack
-     * @param texture The name of the texture, ex. blocks/dirt
-     * @return
-     */
-    public static Path getTexturePath(String resourcePath, String texture){
-        return Paths.get(resourcePath, "assets","minecraft","textures",String.format("%s.png", texture));
-    }
-
-    /**
      * Extract the Roughness (Inverted Glossiness Red Channel), Metalness (Green Channel), Emission (Blue Channel) image from the specular texture
      * as SEUS stores Glossiness, Metalness and Emission in the the tree RGB channels in the specular texture
      * @param specularImage

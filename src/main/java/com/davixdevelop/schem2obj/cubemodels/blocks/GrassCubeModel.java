@@ -145,7 +145,7 @@ public class GrassCubeModel extends BlockCubeModel {
             grass_top.setSpecularColor(0.0);
             grass_top.setIlluminationModel(2);
 
-            Constants.BLOCK_MATERIALS.unsetMaterial("blocks/grass_side_overlay");
+            Constants.BLOCK_MATERIALS.unsetUsedMaterial("blocks/grass_side_overlay");
 
             NORMAL_MATERIAL_COLORED = true;
         }

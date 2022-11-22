@@ -1,13 +1,8 @@
 package com.davixdevelop.schem2obj.blockmodels;
 
-import com.davixdevelop.schem2obj.blockstates.BlockState;
-import com.davixdevelop.schem2obj.namespace.Namespace;
-import com.davixdevelop.schem2obj.util.LogUtility;
+import com.davixdevelop.schem2obj.resourceloader.ResourceLoader;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.InputStream;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -49,9 +44,10 @@ public class BlockModelCollection {
             }
 
         } else {
-            //Else get block model from built assets
+            //Else get block model from the Resources
+            String modelPath = ResourceLoader.getResourcePath("models", modelName,"json");
 
-            InputStream modelStream = this.getClass().getClassLoader().getResourceAsStream("assets/minecraft/model/" + modelName + ".json");
+            InputStream modelStream = ResourceLoader.getResource(modelPath);
 
             //Read from stream
             BlockModel model = BlockModel.readFromJson(modelStream, modelName);
@@ -83,15 +79,5 @@ public class BlockModelCollection {
         getBlockModelInternal(models, modelType.length > 0 ? modelType[0] + "/" + modelName : "block/" + modelName);
 
         return models;
-    }
-
-    /**
-     * Convert the input stream to a block model and store it in memory
-     * @param modelStream The stream to the model
-     * @param modelName The name of the model
-     */
-    public void putBlockModel(InputStream modelStream, String modelName){
-        BlockModel model = BlockModel.readFromJson(modelStream, modelName);
-        blocksModels.put(modelName, model.clone());
     }
 }

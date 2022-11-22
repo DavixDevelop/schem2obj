@@ -29,21 +29,40 @@ public class MaterialCollection {
         usedMaterials = new HashSet<>();
     }
 
+    /**
+     * Get a material from the collection
+     * @param name The name of the material ex, blocks/dirt
+     * @return Stored material from the collection
+     */
     public IMaterial getMaterial(String name){
         return materials.get(name);
     }
 
+    /**
+     * Put new material into collection, and set it as a used material
+     * @param name The name of the material ex, blocks/dirt
+     * @param material A Vanilla or SEUS Material object
+     */
     public void setMaterial(String name, IMaterial material){
         modifyOtherMaterials(material);
         materials.put(name, material);
         usedMaterials.add(name);
     }
 
+    /**
+     * Check if material is in collection
+     * @param name The name of the material ex, blocks/dirt
+     * @return True if it is present, else false
+     */
     public boolean containsMaterial(String name){
         return materials.containsKey(name);
     }
 
-    public void unsetMaterial(String name){
+    /**
+     * Remove a material from being used, but keep it in the collection
+     * @param name The name of the material ex, blocks/dirt
+     */
+    public void unsetUsedMaterial(String name){
         usedMaterials.remove(name);
     }
 
@@ -91,10 +110,10 @@ public class MaterialCollection {
 
                 switch (format){
                     case "SEUS":
-                        material = new SEUSMaterial(materialName, textureFilePath, resourcePack);
+                        //material = new SEUSMaterial(materialName, textureFilePath, resourcePack);
                         break;
                     case "Vanilla":
-                        material = new Material(materialName, textureFilePath, resourcePack);
+                        //material = new Material(materialName, textureFilePath, resourcePack);
                         break;
                 }
 
@@ -177,7 +196,7 @@ public class MaterialCollection {
                             specularImage = ImageUtility.toBuffedImage(specularInputStream);
                         }
 
-                        material = new SEUSMaterial(materialName, textureFilePath, diffuseImage, normalImage, specularImage);
+                        //material = new SEUSMaterial(materialName, textureFilePath, diffuseImage, normalImage, specularImage);
                     } catch (Exception ex) {
                         LogUtility.Log(String.format("Failed to create SUES material from: %s", textureName));
                         LogUtility.Log(ex.getMessage());
@@ -185,7 +204,7 @@ public class MaterialCollection {
                     break;
                 case "Vanilla":
                     try {
-                        material = new Material(materialName, textureFilePath, diffuseImage);
+                        //material = new Material(materialName, textureFilePath, diffuseImage);
 
                     } catch (Exception ex) {
                         LogUtility.Log(String.format("Failed to create Vanilla material from: %s", textureName));

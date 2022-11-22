@@ -1,6 +1,7 @@
 package com.davixdevelop.schem2obj.materials;
 
 import com.davixdevelop.schem2obj.cubemodels.CubeModelUtility;
+import com.davixdevelop.schem2obj.resourceloader.ResourceLoader;
 import com.davixdevelop.schem2obj.util.ImageUtility;
 import com.davixdevelop.schem2obj.util.LogUtility;
 
@@ -17,7 +18,6 @@ import java.util.Locale;
  * @author DavixDevelop
  */
 public class Material implements IMaterial {
-    private String resourcePath;
 
     //private String diffuseTextureName;
     private String diffuseTexturePath;
@@ -44,27 +44,13 @@ public class Material implements IMaterial {
 
     /**
      * Create new Vanilla Material from diffuse file name
-     * @param materialName The name of the material, ex: dirt, blue-bed...
-     * @param textureFile The path to the texture, ex blocks/dirt.png, entity/bed/blue.png
-     * @param resourcePath The path to the resource pack
+     * @param materialName The name of the material, ex: blocks/dirt, entity/blue-bed...
+     * @param diffuseTexturePath The path to the texture, ex blocks/dirt, entity/bed/blue
      */
-    public Material(String materialName, String textureFile, String resourcePath){
-        setResourcePath(resourcePath);
+    public Material(String materialName, String diffuseTexturePath){
         setName(CubeModelUtility.textureName(materialName));
         //Set the relative path to the diffuse texture, ex entity/bed/blue.png -> entity/bed/blue
-        setDiffuseTexturePath(textureFile.replace(".png",""));
-    }
-
-    /**
-     * Create new Vanilla Material from diffuse buffered image, and store them in memory
-     * @param materialName The name of the material, ex: dirt, blue-bed...
-     * @param textureFile The path to the texture, ex blocks/dirt.png, entity/bed/blue.png
-     * @param diffuseImage BufferedImage of the diffuse image
-     */
-    public Material(String materialName, String textureFile, BufferedImage diffuseImage){
-        setName(CubeModelUtility.textureName(materialName));
-        setDiffuseTexturePath(textureFile.replace(".png",""));
-        setDefaultDiffuseImage(diffuseImage);
+        setDiffuseTexturePath(diffuseTexturePath);
     }
 
     @Override
@@ -94,22 +80,26 @@ public class Material implements IMaterial {
             //return ImageUtility.bufferedImageToInputStream(diffuseImage);
         }
 
-        //Get the path to the diffuse texture, ex. <resourcePath>/minecraft/textures/entity/bed/blue.png
-        String assetMaterial = ImageUtility.getTexturePath(resourcePath, getDiffuseTexturePath()).toFile().toString();
+        //Get the relative path to the diffuse texture, ex. textures/entity/bed/blue.png
+        String diffusePath = ResourceLoader.getResourcePath("textures", getDiffuseTexturePath(), "png");
 
         try{
-            InputStream assetStream = new FileInputStream(assetMaterial);
+            InputStream assetStream = ResourceLoader.getResource(diffusePath);
 
-            return ImageUtility.toBuffedImage(assetStream);
+            BufferedImage bufferedImage = ImageUtility.toBuffedImage(assetStream);
 
-        }catch (FileNotFoundException ex){
-            LogUtility.Log(String.format("Could not find %s in resource path: %s", getDiffuseTexturePath(), resourcePath));
+            //Only store the default diffuse image, if the the resource can be stored in memory
+            if(defaultDiffuseImage == null && ResourceLoader.storeInMemory(diffusePath)){
+                defaultDiffuseImage = bufferedImage;
+            }
+
+            return bufferedImage;
+
+        }catch (Exception ex){
+            LogUtility.Log(String.format("Could not find %s in resources", getDiffuseTexturePath()));
             LogUtility.Log(ex.getMessage());
             return null;
         }
-
-        //InputStream assetStream = this.getClass().getClassLoader().getResourceAsStream("assets/" + assetMaterial);
-        //return ImageUtility.toBuffedImage(assetStream);
     }
 
     @Override
@@ -132,15 +122,8 @@ public class Material implements IMaterial {
 
     @Override
     public Boolean storeDiffuseImage() {
-        return resourcePath == null;
-    }
-
-    public String getResourcePath() {
-        return resourcePath;
-    }
-
-    public void setResourcePath(String resourcePath) {
-        this.resourcePath = resourcePath;
+        String diffusePath = ResourceLoader.getResourcePath("textures", getDiffuseTexturePath(), "png");
+        return ResourceLoader.storeInMemory(diffusePath);
     }
 
     @Override
@@ -274,7 +257,6 @@ public class Material implements IMaterial {
     @Override
     public void copy(IMaterial clone) {
         Material cloneMaterial = (Material) clone;
-        resourcePath = cloneMaterial.resourcePath;
 
         defaultDiffuseImage = cloneMaterial.defaultDiffuseImage;
         customDiffuseImage = cloneMaterial.customDiffuseImage;

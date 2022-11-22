@@ -5,13 +5,12 @@ import com.davixdevelop.schem2obj.cubemodels.ICubeModel;
 import com.davixdevelop.schem2obj.cubemodels.entity.LavaCubeModel;
 import com.davixdevelop.schem2obj.cubemodels.entity.WaterCubeModel;
 import com.davixdevelop.schem2obj.namespace.Namespace;
+import com.davixdevelop.schem2obj.resourceloader.ResourceLoader;
+import com.davixdevelop.schem2obj.resourceloader.ResourcePack;
 import com.davixdevelop.schem2obj.schematic.Schematic;
 import com.davixdevelop.schem2obj.util.LogUtility;
-import com.davixdevelop.schem2obj.util.ResourcePackUtility;
 import com.davixdevelop.schem2obj.wavefront.*;
 import com.davixdevelop.schem2obj.materials.IMaterial;
-import com.davixdevelop.schem2obj.materials.json.PackTemplate;
-import com.google.gson.Gson;
 
 import java.io.*;
 import java.nio.file.Files;
@@ -21,6 +20,8 @@ import java.util.*;
 
 public class SchemeToObj {
     public static void main(String[] arg) {
+
+        Date start = new Date();
 
         String schem_path = null;
         String output_path = null;
@@ -41,7 +42,7 @@ public class SchemeToObj {
                     String resourcePath = minecraftJarPath.toString();
 
                     LogUtility.Log("Loading resources from 1.12.2.jar...");
-                    if(!ResourcePackUtility.registerResourcePack(resourcePath, "Vanilla", Constants.BLOCK_MATERIALS, Constants.BLOCK_MODELS, Constants.BLOCKS_STATES)){
+                    if(!ResourceLoader.registerResourcePack(resourcePath, ResourcePack.Format.Vanilla)){
                         LogUtility.Log("Failed to read versions/1.12.2/1.12.2.jar in minecraft folder");
                         return;
                     }
@@ -101,7 +102,7 @@ public class SchemeToObj {
 
                                 LogUtility.Log("Loading resources from: " + resourcePath + " .Please wait.");
                                 //Register the material, blocks models and block states the resource pack uses
-                                if (!ResourcePackUtility.registerResourcePack(resourcePath, format, Constants.BLOCK_MATERIALS, Constants.BLOCK_MODELS, Constants.BLOCKS_STATES)) {
+                                if (!ResourceLoader.registerResourcePack(resourcePath, ResourcePack.Format.fromName(format))) {
                                     LogUtility.Log("Input resource pack isn't valid");
                                     LogUtility.Log("Using default textures instead");
                                 }
@@ -141,7 +142,12 @@ public class SchemeToObj {
             return;
         }
 
-        LogUtility.Log("Success");
+        Date end = new Date();
+        Double eclipesed = ((end.getTime()  - start.getTime()) / 1000.0) / 60.0;
+        Double minutes = Math.floor(eclipesed);
+        Double seconds = Math.floor((eclipesed - minutes) * 60);
+
+        LogUtility.Log(String.format("Success (Done in: %02d:%02d)", minutes.intValue(), seconds.intValue()));
 
 
     }

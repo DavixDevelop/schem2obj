@@ -8,8 +8,11 @@ import com.davixdevelop.schem2obj.blockstates.AdjacentBlockState;
 import com.davixdevelop.schem2obj.cubemodels.model.CubeFace;
 import com.davixdevelop.schem2obj.materials.IMaterial;
 import com.davixdevelop.schem2obj.materials.Material;
+import com.davixdevelop.schem2obj.materials.SEUSMaterial;
 import com.davixdevelop.schem2obj.models.VariantModels;
 import com.davixdevelop.schem2obj.namespace.Namespace;
+import com.davixdevelop.schem2obj.resourceloader.ResourceLoader;
+import com.davixdevelop.schem2obj.resourceloader.ResourcePack;
 import com.davixdevelop.schem2obj.util.ArrayVector;
 import com.davixdevelop.schem2obj.util.ImageUtility;
 import com.davixdevelop.schem2obj.wavefront.IWavefrontObject;
@@ -80,17 +83,7 @@ public class CubeModelUtility {
      * @param blockNamespace The namespace of the block the material uses
      */
     public static void generateOrGetMaterial(String materialPath, Namespace blockNamespace){
-        if (Constants.BLOCK_MATERIALS.containsMaterial(materialPath)) {
-            if(!Constants.BLOCK_MATERIALS.usedMaterials().contains(materialPath)){
-                //If material isn't yet used, but It's in BLOCK_MATERIALS collection, it means It's a custom material, added from a resource pack
-                //Modify the material to include the lightValue of the block
-                IMaterial material = Constants.BLOCK_MATERIALS.getMaterial(materialPath);
-                if(blockNamespace.getLightValue() != 0.0)
-                    material.setEmissionStrength(blockNamespace.getLightValue() / 16);
-                Constants.BLOCK_MATERIALS.setMaterial(materialPath, material);
-            }
-        }else {
-            Material material = new Material();
+        if (!Constants.BLOCK_MATERIALS.containsMaterial(materialPath)) {
             //ToDo: Implement this in LitBlockWavefrontObject
                         /*boolean isLit = false;
                         //Loop through the variants and check if the model root parent name is the same same as the model name
@@ -107,22 +100,35 @@ public class CubeModelUtility {
 
             //If material is a block or is an entity and doesn't contain - in it's material path
             //use the material path for the diffuse texture path
-            if(materialPath.startsWith("blocks") || (materialPath.startsWith("entity") && !materialPath.contains("-"))) {
-                material.setDiffuseTexturePath(materialPath);
 
+            IMaterial material = null;
+
+            String diffuseTexturePath = null;
+
+            if(materialPath.startsWith("blocks") || (materialPath.startsWith("entity") && !materialPath.contains("-"))) {
+                diffuseTexturePath = materialPath;
             }else if(materialPath.startsWith("entity") && materialPath.contains("-")){
                 String materialName = textureName(materialPath);
                 //If material path contains a -, it means the texture for that material is in a subfolder with the name of the entity
-                //Ex: black-bed -> diffuseTexturePath = entity/bed/black
-                material.setDiffuseTexturePath(String.format("entity/%s/%s", blockNamespace.getType(), materialName.substring(0, materialName.indexOf('-'))));
+                //Ex: black-bed -> diffuseTextureFile = entity/bed/black
+                diffuseTexturePath = String.format("entity/%s/%s", blockNamespace.getType(), materialName.substring(0, materialName.indexOf('-')));
+            }
+
+            String diffusePath = ResourceLoader.getResourcePath("textures", diffuseTexturePath,"png");
+
+            ResourcePack.Format materialFormat = ResourceLoader.getFormat(diffusePath);
+
+            switch (materialFormat){
+                case Vanilla:
+                    material = new Material(materialPath, diffuseTexturePath);
+                    break;
+                case SEUS:
+                    material = new SEUSMaterial(materialPath, diffuseTexturePath);
             }
 
             material.setEmissionStrength(blockNamespace.getLightValue());
-            material.setName(textureName(materialPath));
             Constants.BLOCK_MATERIALS.setMaterial(materialPath, material);
         }
-
-
     }
 
     /**

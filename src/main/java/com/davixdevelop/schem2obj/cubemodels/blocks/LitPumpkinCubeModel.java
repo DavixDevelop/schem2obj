@@ -8,6 +8,7 @@ import com.davixdevelop.schem2obj.cubemodels.CubeModelUtility;
 import com.davixdevelop.schem2obj.materials.IMaterial;
 import com.davixdevelop.schem2obj.materials.SEUSMaterial;
 import com.davixdevelop.schem2obj.namespace.Namespace;
+import com.davixdevelop.schem2obj.resourceloader.ResourceLoader;
 import com.davixdevelop.schem2obj.util.ArrayVector;
 import com.davixdevelop.schem2obj.util.LogUtility;
 
@@ -43,7 +44,8 @@ public class LitPumpkinCubeModel extends CubeModel {
 
         if(pumpkin_face_on instanceof SEUSMaterial){
             SEUSMaterial seusMaterial = (SEUSMaterial) pumpkin_face_on.clone();
-            if(Paths.get(seusMaterial.getResourcePath(),"assets","minecraft","textures","blocks","pumpkin_face_on.png.mcmeta").toFile().exists()){
+            String metaPath = ResourceLoader.getResourcePath("textures", "blocks/pumpkin_face_on", "png.mcmeta");
+            if(ResourceLoader.resourceExists(metaPath)){
                 if(STACK_SIZE == -1){
                     //Find out number of textures in the animation texture for pumpkin_face_on
                     try{
