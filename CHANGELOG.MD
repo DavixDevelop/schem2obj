@@ -1,3 +1,6 @@
+- [0.4](https://github.com/DavixDevelop/schem2obj/releases/tag/v0.4-alpha)
+  - Removed ResourcePackUtility, which loaded all resources into memory, created Materials, BlockModels, and BlockStates from them, and stored them in memory, regardless if they were used or not
+  - Introduced ResourceLoader that handles both built-in assets, resources in folders, and resources in zip/jar files
 - [0.3](https://github.com/DavixDevelop/schem2obj/releases/tag/v0.3-alpha)
     - Added new required parameter `-minecraftFolder` (absolute path to Minecraft installation game directory)
     - Added support for zipped resource packs
