@@ -1,0 +1,9 @@
+- [0.3](https://github.com/DavixDevelop/schem2obj/releases/tag/v0.3-alpha)
+    - Added new required parameter `-minecraftFolder` (absolute path to Minecraft installation game directory)
+    - Added support for zipped resource packs
+    - Removed Minecraft textures, models, and blockstates from resources
+- [0.2](https://github.com/DavixDevelop/schem2obj/releases/tag/v0.2-alpha)
+    - Introduced the concept of cube models, where the CubeModelFactory first converts the block models to cube models, and then another Factory (In this case WavefrontObjectFactory) exports the cube model to its format, which can then be written to a file.
+    - Removed the old wavefront-specific custom blocks in favor of the new cube model blocks and entities
+    - Added support for beds as the first tile entity
+- [0.1](https://github.com/DavixDevelop/schem2obj/releases/tag/v0.1-alpha) First alpha release of Schem2Obj. All basic blocks (that are only basic cubes), and some builtin blocks (ex, water and lava) are supported
