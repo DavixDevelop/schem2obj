@@ -23,6 +23,10 @@ public class EntityValues {
 
     }
 
+    public boolean containsKey(String key){
+        return map.containsKey(key);
+    }
+
     public static Object parseTag(Tag tag){
         switch (tag.getType()){
             case TAG_INT:
@@ -145,6 +149,10 @@ public class EntityValues {
 
     public static Long getLongValue(Object value){
         return (Long) value;
+    }
+
+    public List<Object> getList(String key) {
+        return (List<Object>) map.get(key);
     }
 
 }

@@ -134,7 +134,7 @@ public class GrassCubeModel extends BlockCubeModel {
             BufferedImage colored_side_overlay = ImageUtility.colorImage(grass_side_overlay.getDefaultDiffuseImage(), Constants.BIOME_GRASS_COLOR);
 
             //Combine the grass side and colored overlay
-            BufferedImage combinedOverlay = ImageUtility.overlayImages(grass_side.getDefaultDiffuseImage(),colored_side_overlay);
+            BufferedImage combinedOverlay = ImageUtility.overlayImage(grass_side.getDefaultDiffuseImage(),colored_side_overlay);
             grass_side.setDiffuseImage(combinedOverlay);
 
             grass_side.setSpecularHighlights(0.0);

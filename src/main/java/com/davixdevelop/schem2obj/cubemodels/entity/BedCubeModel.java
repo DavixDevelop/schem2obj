@@ -26,7 +26,7 @@ public class BedCubeModel extends TileEntityCubeModel{
         String key = getKey(color, part, facing);
 
         if(!BED_VARIANTS.containsKey(key)){
-            toObj(color, part, facing, blockNamespace);
+            toCubeModel(color, part, facing, blockNamespace);
             BED_VARIANTS.put(key, this);
         }else{
             ICubeModel variantObject = BED_VARIANTS.get(key);
@@ -40,7 +40,7 @@ public class BedCubeModel extends TileEntityCubeModel{
         return String.format("%d:%s:%s",color,part,facing);
     }
 
-    public void toObj(int color, String part, String facing, Namespace namespace){
+    public void toCubeModel(int color, String part, String facing, Namespace namespace){
 
         String bedMaterial = String.format("entity/%s-bed", Constants.META_COLORS[color]);
         CubeModelUtility.generateOrGetMaterial(bedMaterial, namespace);
@@ -67,7 +67,7 @@ public class BedCubeModel extends TileEntityCubeModel{
             bedElements = footModel.get(0).getElements().toArray(bedElements);
         }
 
-        //Convert cube to obj
+        //Convert cube to cube model
         fromCubes(String.format("%s-bed", Constants.META_COLORS[color]), false, null, rotationY, modelsMaterials, bedElements);
 
     }

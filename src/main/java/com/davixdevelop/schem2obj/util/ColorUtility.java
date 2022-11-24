@@ -5,6 +5,10 @@ import java.awt.color.ColorSpace;
 
 public class ColorUtility {
 
+    public static Double RGBtoLuminosity(Color color){
+        return  (0.2126 * color.getRed()) + (0.7152 * color.getGreen()) + (0.0722 * color.getBlue());
+    }
+
     public static void RGB2LAB(int[] rgb, double[] out){
         float[] lab = CIELab.getInstance().fromRGB(new float[]{rgb[0] / 255f, rgb[1] / 255f, rgb[2] / 255f});
 

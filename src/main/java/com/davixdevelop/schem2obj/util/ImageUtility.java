@@ -291,11 +291,59 @@ public class ImageUtility {
         }
     }
 
-    public static BufferedImage colorImage(BufferedImage bufferedImage, int color){
+    public static BufferedImage maskImage(BufferedImage image, BufferedImage image2){
+        try{
+            boolean hasOverlayAlpha = image2.getTransparency() == 3;
+            BufferedImage combinedImage = new BufferedImage(image.getWidth(), image.getHeight(), image.getType());
+
+            for(int x = 0; x < image.getWidth(); x++){
+                for(int y = 0; y < image.getHeight(); y++){
+                    final int color1 = image.getRGB(x, y);
+                    final int x1 = (x * image2.getWidth()) / image.getWidth();
+                    final int y1 = (y * image2.getHeight()) / image.getHeight();
+                    final int color2 = image2.getRGB(x1, y1);
+
+                    Color orginalColor = new Color(color1);
+                    Color maskColor = new Color(color2, hasOverlayAlpha);
+                    if(maskColor.getAlpha() != 0){
+                        //int luminosity = ColorUtility.RGBtoLuminosity(orginalColor);
+
+                        //orginalColor = new Color(Math.abs(overlayColor.getRed() - luminosity), Math.abs(overlayColor.getGreen() - luminosity), Math.abs(overlayColor.getBlue() - luminosity), orginalColor.getAlpha());
+                        combinedImage.setRGB(x, y, orginalColor.getRGB());
+                    }else
+                    {
+                        combinedImage.setRGB(x, y, maskColor.getRGB());
+                    }
+
+
+                }
+            }
+
+            return combinedImage;
+
+        }catch (Exception ex){
+            LogUtility.Log("Failed to combine images");
+            LogUtility.Log(ex.getMessage());
+            return null;
+        }
+    }
+
+    /**
+     * Color a image with the provide color
+     * @param bufferedImage The diffuse image to color
+     * @param color A Integer color
+     * @return The colored image
+     */
+    public static BufferedImage colorImage(BufferedImage bufferedImage, int color, boolean ...isMask){
 
         float multiRed = (float)(color >> 16 & 255) / 255.0f;
         float multiGreen = (float)(color >> 8 & 255) / 255.0f;
         float multiBlue = (float) (color & 255) / 255.0f;
+
+        boolean masked = false;
+
+        if(isMask.length > 0)
+            masked = isMask[0];
 
         try {
             BufferedImage coloredImage = new BufferedImage(bufferedImage.getWidth(), bufferedImage.getHeight(), bufferedImage.getType());
@@ -317,10 +365,13 @@ public class ImageUtility {
                         alpha = (float)(c >> 24 & 255);
 
                     if(alpha != 0.0f){
-                        r *= multiRed;
-                        g *= multiGreen;
-                        b *= multiBlue;
-
+                        if(masked && r == 0.0f)
+                            alpha = 0.0f;
+                        else{
+                            r *= multiRed;
+                            g *= multiGreen;
+                            b *= multiBlue;
+                        }
                     }
 
                     int new_color = (int)r << 16 | (int)g << 8 | (int)b | (int)alpha << 24;
@@ -338,9 +389,50 @@ public class ImageUtility {
         }
     }
 
-    public static BufferedImage overlayImages(BufferedImage image, BufferedImage overlay){
+    public static BufferedImage multiplyImage(BufferedImage image, BufferedImage multiplyImage){
+        try{
+            boolean hasMultiplyAlpha = multiplyImage.getTransparency() == 3;
+            BufferedImage combinedImage = new BufferedImage(image.getWidth(), image.getHeight(), image.getType());
+
+            for(int x = 0; x < image.getWidth(); x++){
+                for(int y = 0; y < image.getHeight(); y++){
+                    final int color1 = image.getRGB(x, y);
+                    final int x1 = (x * multiplyImage.getWidth()) / image.getWidth();
+                    final int y1 = (y * multiplyImage.getHeight()) / image.getHeight();
+                    final int color2 = multiplyImage.getRGB(x1, y1);
+
+                    Color orginalColor = new Color(color1);
+                    Color multiplyColor = new Color(color2, hasMultiplyAlpha);
+
+                    if(orginalColor.getAlpha() != 0 && multiplyColor.getAlpha() != 0) {
+
+                        int red = (orginalColor.getRed() * multiplyColor.getRed()) / 255;
+                        int green = (orginalColor.getGreen() * multiplyColor.getGreen()) / 255;
+                        int blue = (orginalColor.getBlue() * multiplyColor.getBlue()) / 255;
+
+                        orginalColor = new Color(ColorUtility.clipRGB(Math.abs(red)), ColorUtility.clipRGB(Math.abs(green)), ColorUtility.clipRGB(Math.abs(blue)), orginalColor.getAlpha());
+
+                        combinedImage.setRGB(x, y, orginalColor.getRGB());
+                    }else
+                    {
+                        combinedImage.setRGB(x, y, orginalColor.getRGB());
+                    }
+                }
+            }
+
+            return combinedImage;
+
+        }catch (Exception ex){
+            LogUtility.Log("Failed to color image");
+            LogUtility.Log(ex.getMessage());
+            return null;
+        }
+    }
+
+    public static BufferedImage overlayImage(BufferedImage image, BufferedImage overlay){
         try{
             boolean hasOverlayAlpha = overlay.getTransparency() == 3;
+            boolean hasImageAlpha = image.getTransparency() == 3;
             BufferedImage combinedImage = new BufferedImage(image.getWidth(), image.getHeight(), image.getType());
 
             for(int x = 0; x < image.getWidth(); x++){
@@ -350,7 +442,7 @@ public class ImageUtility {
                     final int y1 = (y * overlay.getHeight()) / image.getHeight();
                     final int color2 = overlay.getRGB(x1, y1);
 
-                    Color orginalColor = new Color(color1);
+                    Color orginalColor = new Color(color1, hasImageAlpha);
                     Color overlayColor = new Color(color2, hasOverlayAlpha);
                     if(overlayColor.getAlpha() != 0){
                         //int luminosity = ColorUtility.RGBtoLuminosity(orginalColor);

@@ -216,10 +216,8 @@ public class SchemeToObj {
                                     lavaObject.addBlock(blockNamespace);
                                     break;
                                 case "bed":
-                                    if(Constants.LOADED_SCHEMATIC.getPosZ() == 5 && Constants.LOADED_SCHEMATIC.getPosX() == 7){
-                                        String www = "2";
-                                    }
-
+                                case "standing_banner":
+                                case "wall_banner":
                                     //Get  singleton tile entity cube model from memory or create it anew every time
                                     ICubeModel entityCubeModel = Constants.CUBE_MODEL_FACTORY.fromNamespace(
                                             blockNamespace,

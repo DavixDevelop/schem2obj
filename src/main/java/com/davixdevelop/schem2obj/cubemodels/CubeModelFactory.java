@@ -2,7 +2,9 @@ package com.davixdevelop.schem2obj.cubemodels;
 
 import com.davixdevelop.schem2obj.cubemodels.blocks.*;
 import com.davixdevelop.schem2obj.cubemodels.entity.BedCubeModel;
+import com.davixdevelop.schem2obj.cubemodels.entity.StandingBannerCubeModel;
 import com.davixdevelop.schem2obj.cubemodels.entity.TileEntityCubeModel;
+import com.davixdevelop.schem2obj.cubemodels.entity.WallBannerCubeModel;
 import com.davixdevelop.schem2obj.namespace.Namespace;
 import com.davixdevelop.schem2obj.schematic.EntityValues;
 
@@ -86,6 +88,10 @@ public class CubeModelFactory {
                 return new CauldronCubeModel();
             case "bed":
                 return new BedCubeModel();
+            case "standing_banner":
+                return new StandingBannerCubeModel();
+            case "wall_banner":
+                return new WallBannerCubeModel();
             default:
                 return new BlockCubeModel();
         }

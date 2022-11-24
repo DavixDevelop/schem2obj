@@ -4,10 +4,9 @@ import com.davixdevelop.schem2obj.Constants;
 import com.davixdevelop.schem2obj.SchemeToObj;
 import com.davixdevelop.schem2obj.materials.json.PackTemplate;
 import com.davixdevelop.schem2obj.util.LogUtility;
+import com.google.gson.Gson;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.InputStream;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -106,7 +105,7 @@ public class ResourceLoader {
                     //Get input stream for pack.mcmeta
                     InputStream inputStream = new FileInputStream(packPath.toFile().toString());
                     //Get the contents of pack.mcmeta
-                    PackTemplate packMetaJson = Constants.BLOCK_MATERIALS.getPackMeta(inputStream);
+                    PackTemplate packMetaJson = getPackMeta(inputStream);
 
                     //Check that the format is in the correct format
                     if(packMetaJson.pack.pack_format.intValue() != 3){
@@ -237,7 +236,7 @@ public class ResourceLoader {
                         //Get input stream for pack.mcmeta
                         InputStream inputStream = compressedFile.getInputStream(packEntry);
                         //Get the contents of pack.mcmeta
-                        PackTemplate packMetaJson = Constants.BLOCK_MATERIALS.getPackMeta(inputStream);
+                        PackTemplate packMetaJson = getPackMeta(inputStream);
 
                         //Check that the format is in the correct format
                         if(packMetaJson.pack.pack_format.intValue() != 3){
@@ -356,4 +355,20 @@ public class ResourceLoader {
         }
     }
 
+    public static PackTemplate getPackMeta(InputStream packMetaInputStream){
+        try {
+            //Get reader for pack.mcmeta
+            Reader reader = new InputStreamReader(packMetaInputStream);
+            //Deserialize json
+            PackTemplate packMetaJson = new Gson().fromJson(reader, PackTemplate.class);
+
+            reader.close();
+
+            return packMetaJson;
+        }catch (Exception ex){
+            LogUtility.Log(ex.getMessage());
+        }
+
+        return null;
+    }
 }

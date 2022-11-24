@@ -20,7 +20,7 @@ apply plugin: 'com.github.johnrengelman.shadow'
 mainClassName = 'com.davixdevelop.schem2obj.SchemeToObj'
 
 group 'com.davixdevelop'
-version '0.4.' + ('git rev-list --count HEAD'.execute().text.trim())
+version '0.5.' + ('git rev-list --count HEAD'.execute().text.trim())
 archivesBaseName = "schem2obj"
 
 compileJava {
