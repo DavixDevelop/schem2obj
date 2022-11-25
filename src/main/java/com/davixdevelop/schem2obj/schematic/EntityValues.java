@@ -188,4 +188,22 @@ public class EntityValues {
         return null;
     }
 
+    public List<Float> getFloatList(String key){
+        List<?> rawList = getList(key);
+        List<Float> list = new ArrayList<>();
+        for(Object rawValue : rawList)
+            list.add((Float) rawValue);
+
+        return list;
+    }
+
+    public List<Double> getDoubleList(String key){
+        List<?> rawList = getList(key);
+        List<Double> list = new ArrayList<>();
+        for(Object rawValue : rawList)
+            list.add((Double) rawValue);
+
+        return list;
+    }
+
 }

@@ -412,12 +412,12 @@ public class CubeModelUtility {
      * @param position The position of the block in the space [x, y, z]
      * @param spaceSize The size of the space [width, length, height]
      */
-    public static void translateCubeModel(ICubeModel cubeModel, Integer[] position, Integer[] spaceSize){
+    public static void translateCubeModel(ICubeModel cubeModel, Double[] position, Integer[] spaceSize){
         //Value by how much to move each vert (vert + translate)
         double translateX = position[0] - (spaceSize[0].doubleValue() / 2);
         double translateY = (position[1] * -1) + ((spaceSize[1].doubleValue() / 2) - 1);
         //Double translateZ = position[2].doubleValue();// - (spaceSize[2].doubleValue());
-        Double[] translate = new Double[]{translateX, translateY, position[2].doubleValue()};
+        Double[] translate = new Double[]{translateX, translateY, position[2]};
 
 
         List<ICube> cubes = cubeModel.getCubes();
@@ -1185,6 +1185,20 @@ public class CubeModelUtility {
             materialPerOrientation.put(faceOrientation, faceMaterial);
         }
 
+        //If either x or y rotation are not square, disable rotating face orientation,
+        // use the face name to get orientation and disable cull faces
+        boolean oddAngles = false;
+
+        if(rotationX != null)
+            oddAngles = rotationX.getRot() % 90.0 != 0.0;
+
+        if(rotationY != null){
+            if(!oddAngles)
+                oddAngles = rotationY.getRot() % 90.0 != 0.0;
+        }
+
+
+
         for (String faceName : elementFaces.keySet()) {
 
             CubeElement.CubeFace face = elementFaces.get(faceName);
@@ -1194,13 +1208,14 @@ public class CubeModelUtility {
             //Get the face uv's, or set them, if It's not defined in the uv field
             List<Double[]> faceUV = setAndRotateUVFace(face, faceOrientation, to, from);
 
-            if (uvLock) {
-                if (rotationX != null) {
-                    //If face orientation is west or east rotate the uv cords by the rotation X
-                    //on the origin 0.5 0.5
-                    if (faceOrientation.equals(Orientation.WEST) || faceOrientation.equals(Orientation.EAST))
-                        rotateUV(faceUV, rotationX.getRot(), new Double[]{0.5, 0.5, 0.0});
-                    else {
+            if(!oddAngles) {
+                if (uvLock) {
+                    if (rotationX != null) {
+                        //If face orientation is west or east rotate the uv cords by the rotation X
+                        //on the origin 0.5 0.5
+                        if (faceOrientation.equals(Orientation.WEST) || faceOrientation.equals(Orientation.EAST))
+                            rotateUV(faceUV, rotationX.getRot(), new Double[]{0.5, 0.5, 0.0});
+                        else {
                         /*//Else rotate orientationCoord by closest right angle (ex, 100 -> 90)
                         ArrayVector.MatrixRotation rotation = rotationX;
 
@@ -1211,18 +1226,18 @@ public class CubeModelUtility {
                             Double offsetX = (rotationX.getRot() % 90) / 90;
                             faceUV = WavefrontUtility.offsetUV(faceUV, offsetX, 0.0);
                         }*/
-                        Double[] newOrientationCoord = new Double[]{faceOrientation.getXOffset().doubleValue(), faceOrientation.getYOffset().doubleValue(), faceOrientation.getZOffset().doubleValue()};
-                        newOrientationCoord = rotatePoint(newOrientationCoord, rotationX, new Double[]{0.0, 0.0, 0.0});
-                        faceOrientation = Orientation.getOrientation(newOrientationCoord[0].intValue(), newOrientationCoord[1].intValue(), newOrientationCoord[2].intValue());
+                            Double[] newOrientationCoord = new Double[]{faceOrientation.getXOffset().doubleValue(), faceOrientation.getYOffset().doubleValue(), faceOrientation.getZOffset().doubleValue()};
+                            newOrientationCoord = rotatePoint(newOrientationCoord, rotationX, new Double[]{0.0, 0.0, 0.0});
+                            faceOrientation = Orientation.getOrientation(newOrientationCoord[0].intValue(), newOrientationCoord[1].intValue(), newOrientationCoord[2].intValue());
+                        }
                     }
-                }
 
-                if (rotationY != null) {
-                    //If face orientation is top or down, rotate by the rotation Y
-                    //on the origin 0.5 0.5
-                    if (faceOrientation.equals(Orientation.UP) || faceOrientation.equals(Orientation.DOWN))
-                        rotateUV(faceUV, rotationY.getRot(), new Double[]{0.5, 0.5, 0.0});
-                    else {
+                    if (rotationY != null) {
+                        //If face orientation is top or down, rotate by the rotation Y
+                        //on the origin 0.5 0.5
+                        if (faceOrientation.equals(Orientation.UP) || faceOrientation.equals(Orientation.DOWN))
+                            rotateUV(faceUV, rotationY.getRot(), new Double[]{0.5, 0.5, 0.0});
+                        else {
                         /*//Else rotate orientationCoord by closest right angle (ex, 100 -> 90)
                         ArrayVector.MatrixRotation rotation = rotationY;
 
@@ -1234,31 +1249,32 @@ public class CubeModelUtility {
                             faceUV = WavefrontUtility.offsetUV(faceUV, 0.0, offsetY);
                         }*/
 
-                        Double[] newOrientationCoord = new Double[]{faceOrientation.getXOffset().doubleValue(), faceOrientation.getYOffset().doubleValue(), faceOrientation.getZOffset().doubleValue()};
-                        newOrientationCoord = rotatePoint(newOrientationCoord, rotationY, new Double[]{0.0, 0.0, 0.0});
-                        faceOrientation = Orientation.getOrientation(newOrientationCoord[0].intValue(), newOrientationCoord[1].intValue(), newOrientationCoord[2].intValue());
+                            Double[] newOrientationCoord = new Double[]{faceOrientation.getXOffset().doubleValue(), faceOrientation.getYOffset().doubleValue(), faceOrientation.getZOffset().doubleValue()};
+                            newOrientationCoord = rotatePoint(newOrientationCoord, rotationY, new Double[]{0.0, 0.0, 0.0});
+                            faceOrientation = Orientation.getOrientation(newOrientationCoord[0].intValue(), newOrientationCoord[1].intValue(), newOrientationCoord[2].intValue());
+                        }
                     }
-                }
-            }else{
-                if(rotationX != null){
-                    if(!faceOrientation.equals(Orientation.WEST) && !faceOrientation.equals(Orientation.EAST)){
-                        Double[] newOrientationCoord = new Double[]{faceOrientation.getXOffset().doubleValue(), faceOrientation.getYOffset().doubleValue(), faceOrientation.getZOffset().doubleValue()};
-                        newOrientationCoord = rotatePoint(newOrientationCoord, rotationX, new Double[]{0.0, 0.0, 0.0});
-                        faceOrientation = Orientation.getOrientation(newOrientationCoord[0].intValue(), newOrientationCoord[1].intValue(), newOrientationCoord[2].intValue());
+                } else {
+                    if (rotationX != null) {
+                        if (!faceOrientation.equals(Orientation.WEST) && !faceOrientation.equals(Orientation.EAST)) {
+                            Double[] newOrientationCoord = new Double[]{faceOrientation.getXOffset().doubleValue(), faceOrientation.getYOffset().doubleValue(), faceOrientation.getZOffset().doubleValue()};
+                            newOrientationCoord = rotatePoint(newOrientationCoord, rotationX, new Double[]{0.0, 0.0, 0.0});
+                            faceOrientation = Orientation.getOrientation(newOrientationCoord[0].intValue(), newOrientationCoord[1].intValue(), newOrientationCoord[2].intValue());
+                        }
                     }
-                }
 
-                if(rotationY != null){
-                    if(!faceOrientation.equals(Orientation.DOWN) && !faceOrientation.equals(Orientation.UP)) {
-                        Double[] newOrientationCoord = new Double[]{faceOrientation.getXOffset().doubleValue(), faceOrientation.getYOffset().doubleValue(), faceOrientation.getZOffset().doubleValue()};
-                        newOrientationCoord = rotatePoint(newOrientationCoord, rotationY, new Double[]{0.0, 0.0, 0.0});
-                        faceOrientation = Orientation.getOrientation(newOrientationCoord[0].intValue(), newOrientationCoord[1].intValue(), newOrientationCoord[2].intValue());
+                    if (rotationY != null) {
+                        if (!faceOrientation.equals(Orientation.DOWN) && !faceOrientation.equals(Orientation.UP)) {
+                            Double[] newOrientationCoord = new Double[]{faceOrientation.getXOffset().doubleValue(), faceOrientation.getYOffset().doubleValue(), faceOrientation.getZOffset().doubleValue()};
+                            newOrientationCoord = rotatePoint(newOrientationCoord, rotationY, new Double[]{0.0, 0.0, 0.0});
+                            faceOrientation = Orientation.getOrientation(newOrientationCoord[0].intValue(), newOrientationCoord[1].intValue(), newOrientationCoord[2].intValue());
+                        }
                     }
                 }
             }
 
             //Get the material of the the face
-            String faceMaterial = materialPerOrientation.get((!uvLock || materialPerOrientation.size() == 1) ? Orientation.getOrientation(faceName) : ((rotationX != null && !faceOrientation.equals(Orientation.UP) && !faceOrientation.equals(Orientation.DOWN)) || (rotationY != null && (faceOrientation.equals(Orientation.UP) || faceOrientation.equals(Orientation.DOWN))) ? faceOrientation : Orientation.getOrientation(faceName)));
+            String faceMaterial = materialPerOrientation.get(oddAngles ? faceOrientation : (!uvLock || materialPerOrientation.size() == 1) ? Orientation.getOrientation(faceName) : ((rotationX != null && !faceOrientation.equals(Orientation.UP) && !faceOrientation.equals(Orientation.DOWN)) || (rotationY != null && (faceOrientation.equals(Orientation.UP) || faceOrientation.equals(Orientation.DOWN))) ? faceOrientation : Orientation.getOrientation(faceName)));
 
             //If the face material is null, ignore the face
             //Ex, if uv lock is on, the rotation x is 270, and the cube doesn't have a south face (meaning there is no material on that orientation)
@@ -1294,7 +1310,7 @@ public class CubeModelUtility {
             }
 
 
-            boolean isCullFace = face.getCullface() != null;
+            boolean isCullFace = !oddAngles && face.getCullface() != null;
             //Get the face index from the faceOrientation
             Integer faceIndex = faceOrientation.getOrder();
 

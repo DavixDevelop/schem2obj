@@ -22,15 +22,23 @@ public class Schematic implements java.io.Serializable {
     short width;
     short length;
     short height;
+
+    int originX;
+    int originY;
+    int originZ;
+
     Map<String, EntityValues>  tileEntities;
     List<EntityValues> entities;
 
-    public Schematic(int[] blocks, int[] data, short width, short length, short height, Map<String, EntityValues>  tileEntities, List<EntityValues> entities) {
+    public Schematic(int[] blocks, int[] data, short width, short length, short height, int originX, int originY, int originZ, Map<String, EntityValues>  tileEntities, List<EntityValues> entities) {
         this.blocks = blocks;
         this.data = data;
         this.width = width;
         this.length = length;
         this.height = height;
+        this.originX = originX;
+        this.originY = originY;
+        this.originZ = originZ;
         this.tileEntities = tileEntities;
         this.entities = entities;
     }
@@ -53,6 +61,18 @@ public class Schematic implements java.io.Serializable {
 
     public short getHeight() {
         return height;
+    }
+
+    public int getOriginX() {
+        return originX;
+    }
+
+    public int getOriginY() {
+        return originY;
+    }
+
+    public int getOriginZ() {
+        return originZ;
     }
 
     public Map<String, EntityValues> getTileEntities(){
@@ -85,6 +105,10 @@ public class Schematic implements java.io.Serializable {
         short width = ((ShortTag)nbtData.get("Width")).getValue();
         short length = ((ShortTag)nbtData.get("Length")).getValue();
         short height = ((ShortTag)nbtData.get("Height")).getValue();
+
+        int offsetX = ((IntTag)nbtData.get("WEOriginX")).getValue();
+        int offsetY = ((IntTag)nbtData.get("WEOriginY")).getValue();
+        int offsetZ = ((IntTag)nbtData.get("WEOriginZ")).getValue();
 
         byte[] blockId = ((ByteArrayTag)nbtData.get("Blocks")).getValue();
         byte[] blockData = ((ByteArrayTag)nbtData.get("Data")).getValue();
@@ -165,6 +189,6 @@ public class Schematic implements java.io.Serializable {
 
         stream.close();
 
-        return new Schematic(blocks, data, width, length, height, tileEntities, entities);
+        return new Schematic(blocks, data, width, length, height, offsetX, offsetY, offsetZ, tileEntities, entities);
     }
 }

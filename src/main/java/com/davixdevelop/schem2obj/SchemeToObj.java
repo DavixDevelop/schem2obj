@@ -2,11 +2,12 @@ package com.davixdevelop.schem2obj;
 
 import com.davixdevelop.schem2obj.cubemodels.CubeModelUtility;
 import com.davixdevelop.schem2obj.cubemodels.ICubeModel;
-import com.davixdevelop.schem2obj.cubemodels.entity.LavaCubeModel;
-import com.davixdevelop.schem2obj.cubemodels.entity.WaterCubeModel;
+import com.davixdevelop.schem2obj.cubemodels.entitytile.LavaCubeModel;
+import com.davixdevelop.schem2obj.cubemodels.entitytile.WaterCubeModel;
 import com.davixdevelop.schem2obj.namespace.Namespace;
 import com.davixdevelop.schem2obj.resourceloader.ResourceLoader;
 import com.davixdevelop.schem2obj.resourceloader.ResourcePack;
+import com.davixdevelop.schem2obj.schematic.EntityValues;
 import com.davixdevelop.schem2obj.schematic.Schematic;
 import com.davixdevelop.schem2obj.util.LogUtility;
 import com.davixdevelop.schem2obj.wavefront.*;
@@ -201,7 +202,7 @@ public class SchemeToObj {
                     //ToDo: Write custom blocks (ex, Chest, Sign, Wall Sign...). Until then, ignore these blocks
                     if (blockNamespace == null || blockNamespace.getDomain().equals("builtin")){
                         if(blockNamespace != null) {
-                            switch (blockNamespace.getType()){
+                            switch (blockNamespace.getType()) {
                                 case "flowing_water":
                                 case "water":
                                     if (waterObject == null)
@@ -211,32 +212,31 @@ public class SchemeToObj {
                                     break;
                                 case "flowing_lava":
                                 case "lava":
-                                    if(lavaObject == null)
+                                    if (lavaObject == null)
                                         lavaObject = new LavaCubeModel();
 
                                     lavaObject.addBlock(blockNamespace);
                                     break;
-                                case "bed":
-                                case "standing_banner":
-                                case "wall_banner":
-                                case "standing_sign":
-                                case "wall_sign":
-                                    //Get  singleton tile entity cube model from memory or create it anew every time
-                                    ICubeModel entityCubeModel = Constants.CUBE_MODEL_FACTORY.fromNamespace(
-                                            blockNamespace,
-                                            Constants.LOADED_SCHEMATIC.getEntityValues(Constants.LOADED_SCHEMATIC.getPosX(), Constants.LOADED_SCHEMATIC.getPosY(), Constants.LOADED_SCHEMATIC.getPosZ()));
-
-                                    //Translate the singleton block to the position of the block in the space
-                                    CubeModelUtility.translateCubeModel(entityCubeModel, new Integer[]{x, z, y}, new Integer[]{width,length,height});
-
-                                    //Add it to blocks
-                                    if (exportAllBlocks)
-                                        blocks.add(entityCubeModel);
-                                    else
-                                        allBlocks.put(index, entityCubeModel);
-
-                                    continue;
                             }
+
+                            if(Constants.SupportedEntities.contains(blockNamespace.getType())){
+                                //Get  singleton tile entity cube model from memory or create it anew every time
+                                ICubeModel entityCubeModel = Constants.CUBE_MODEL_FACTORY.fromNamespace(
+                                        blockNamespace,
+                                        Constants.LOADED_SCHEMATIC.getEntityValues(Constants.LOADED_SCHEMATIC.getPosX(), Constants.LOADED_SCHEMATIC.getPosY(), Constants.LOADED_SCHEMATIC.getPosZ()));
+
+                                //Translate the singleton block to the position of the block in the space
+                                CubeModelUtility.translateCubeModel(entityCubeModel, new Double[]{(double) x, (double) z, (double) y}, new Integer[]{width,length,height});
+
+                                //Add it to blocks
+                                if (exportAllBlocks)
+                                    blocks.add(entityCubeModel);
+                                else
+                                    allBlocks.put(index, entityCubeModel);
+
+                                continue;
+                            }
+
                         }
 
                         if (!exportAllBlocks)
@@ -249,7 +249,7 @@ public class SchemeToObj {
                     ICubeModel cubeModel = Constants.CUBE_MODEL_FACTORY.fromNamespace(blockNamespace);
 
                     //Translate the singleton block to the position of the block in the space
-                    CubeModelUtility.translateCubeModel(cubeModel, new Integer[]{x, z, y}, new Integer[]{width,length,height});
+                    CubeModelUtility.translateCubeModel(cubeModel, new Double[]{(double)x, (double)z, (double)y}, new Integer[]{width,length,height});
 
                     if (exportAllBlocks)
                         blocks.add(cubeModel);
@@ -314,6 +314,8 @@ public class SchemeToObj {
 
         }
 
+
+
         if(waterObject != null){
             waterObject.finalizeCubeModel();
             blocks.add(waterObject);
@@ -325,7 +327,37 @@ public class SchemeToObj {
         }
 
 
-        //ToDo: Convert items (mob heads, chests...) to wavefront
+        //ToDo: Convert items (mob heads, chests...) to cube models
+        if(Constants.LOADED_SCHEMATIC.getEntitiesCount() > 0){
+            int entitiesCount = Constants.LOADED_SCHEMATIC.getEntitiesCount();
+            for(int entityIndex = 0; entityIndex < entitiesCount; entityIndex++){
+                Namespace entityNamespace = Constants.LOADED_SCHEMATIC.getNamespace(entityIndex);
+
+                if(entityNamespace == null)
+                    continue;
+
+                EntityValues entityValues = Constants.LOADED_SCHEMATIC.getEntityValues(entityIndex);
+
+                if(!Constants.SupportedEntities.contains(entityNamespace.getType()))
+                    continue;
+
+                //Get  singleton entity cube model from memory or create it anew every time
+                ICubeModel entityCubeModel = Constants.CUBE_MODEL_FACTORY.fromNamespace(entityNamespace,entityValues);
+
+                if(entityCubeModel != null){
+                    //Translate the singleton entity cube model to the position of the entity in the space
+                    List<Double> pos = entityValues.getDoubleList("Pos");
+
+                    double x = Math.abs(pos.get(0) - Constants.LOADED_SCHEMATIC.getOriginX() - 0.5);
+                    double y = Math.abs(pos.get(2) - Constants.LOADED_SCHEMATIC.getOriginZ() - 0.5);
+                    double z = Math.abs(pos.get(1) - Constants.LOADED_SCHEMATIC.getOriginY());
+
+                    CubeModelUtility.translateCubeModel(entityCubeModel, new Double[]{x, y, z}, new Integer[]{width,length,height});
+
+                    blocks.add(entityCubeModel);
+                }
+            }
+        }
 
         return blocks;
     }

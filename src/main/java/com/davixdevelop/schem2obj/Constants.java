@@ -6,6 +6,7 @@ import com.davixdevelop.schem2obj.cubemodels.CubeModelFactory;
 import com.davixdevelop.schem2obj.materials.MaterialCollection;
 import com.davixdevelop.schem2obj.models.IntegerString;
 import com.davixdevelop.schem2obj.namespace.BlockMapping;
+import com.davixdevelop.schem2obj.namespace.EntityMapping;
 import com.davixdevelop.schem2obj.schematic.SchematicHolder;
 
 import java.util.HashMap;
@@ -38,8 +39,15 @@ public class Constants {
         FACING_ROTATION.put("west", 180.0);
         FACING_ROTATION.put("east", 0.0);
 
-        EntityFilter.add("bed");
-        EntityFilter.add("banner");
+        EntityFolderFilter.add("bed");
+        EntityFolderFilter.add("banner");
+
+        SupportedEntities.add("minecart");
+        SupportedEntities.add("bed");
+        SupportedEntities.add("standing_banner");
+        SupportedEntities.add("wall_banner");
+        SupportedEntities.add("standing_sign");
+        SupportedEntities.add("wall_sign");
 
         BANNER_COLORS.put(0, new IntegerString("black", 1644825));
         BANNER_COLORS.put(1, new IntegerString("red",10040115));
@@ -122,6 +130,8 @@ public class Constants {
     public static final BlockStateCollection BLOCKS_STATES = new BlockStateCollection();
     public static final BlockMapping BLOCK_MAPPING = new BlockMapping();
 
+    public static final EntityMapping ENTITY_MAPPING = new EntityMapping();
+
     public static final MaterialCollection BLOCK_MATERIALS = new MaterialCollection();
     public static final CubeModelFactory CUBE_MODEL_FACTORY = new CubeModelFactory();
 
@@ -139,7 +149,8 @@ public class Constants {
 
     public static boolean IS_SNOWY = false;
 
-    public static Set<String> EntityFilter = new HashSet<>();
+    public static Set<String> EntityFolderFilter = new HashSet<>();
+    public static Set<String> SupportedEntities = new HashSet<>();
 
     public static final Double[] BLOCK_ORIGIN = new Double[] {0.5,0.5,0.5};
 

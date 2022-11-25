@@ -32,6 +32,7 @@ All basic blocks (that are only basic cubes), and some builtin blocks (ex, water
 - Beds
 - Banners (Colored and patterns)
 - Signs (ASCII and Unicode glyphs)
+- Minecarts
 
 ### Supported resource packs
 For now, only resource packs that use the SEUS or Vanilla format are supported. Beside using the textures the resource pack includes,

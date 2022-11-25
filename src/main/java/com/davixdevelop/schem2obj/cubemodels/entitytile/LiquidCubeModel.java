@@ -1,4 +1,4 @@
-package com.davixdevelop.schem2obj.cubemodels.entity;
+package com.davixdevelop.schem2obj.cubemodels.entitytile;
 
 import com.davixdevelop.schem2obj.Constants;
 import com.davixdevelop.schem2obj.Orientation;

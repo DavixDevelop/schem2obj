@@ -283,7 +283,7 @@ public class ResourceLoader {
                                 //Get the name of the entity (name of folder)
                                 String entityName = entityPath.substring(0, entityPath.indexOf("/"));
                                 //If the entity isn't supported skip it
-                                if(!Constants.EntityFilter.contains(entityName))
+                                if(!Constants.EntityFolderFilter.contains(entityName))
                                     continue;
                             }
                         }
@@ -337,7 +337,7 @@ public class ResourceLoader {
                 //Check if parent directory is entity
                 if(texture.getParentFile().getName().equals("entity")) {
                     //Skip entity textures that the program doesn't support
-                    if (!Constants.EntityFilter.contains(texture.getName()))
+                    if (!Constants.EntityFolderFilter.contains(texture.getName()))
                         return;
                 }
 

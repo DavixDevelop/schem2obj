@@ -23,8 +23,9 @@ public class BlockMapping {
         //blocks.json was generated using ExtractBlocks (https://github.com/DavixDevelop/ExtractBlocks)
         InputStream blocksStream = this.getClass().getClassLoader().getResourceAsStream("assets/minecraft/blocks.json");
 
-        //Get reader for input stream
+
         if(blocksStream != null) {
+            //Get reader for input stream
             Reader reader = new InputStreamReader(blocksStream);
             //Deserialize the JSON to a Map
             Map<String, Object> blocks = gson.fromJson(reader, new TypeToken<Map<String, Object>>(){}.getType());

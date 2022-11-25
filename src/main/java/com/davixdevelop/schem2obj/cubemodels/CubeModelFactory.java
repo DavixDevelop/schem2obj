@@ -1,7 +1,9 @@
 package com.davixdevelop.schem2obj.cubemodels;
 
 import com.davixdevelop.schem2obj.cubemodels.blocks.*;
-import com.davixdevelop.schem2obj.cubemodels.entity.*;
+import com.davixdevelop.schem2obj.cubemodels.entity.EntityCubeModel;
+import com.davixdevelop.schem2obj.cubemodels.entity.MinecartEntityCubeModel;
+import com.davixdevelop.schem2obj.cubemodels.entitytile.*;
 import com.davixdevelop.schem2obj.namespace.Namespace;
 import com.davixdevelop.schem2obj.schematic.EntityValues;
 
@@ -31,7 +33,13 @@ public class CubeModelFactory {
                 //If it does recreate it every time
                 if(((TileEntityCubeModel) block).fromNamespace(blockNamespace, entityValues[0]))
                     cubeModels.put(blockNamespace, block);
-            }else {
+            }else if(block instanceof EntityCubeModel){
+                //Only store  entity object in memory if it specifies it
+                //If it does recreate it every time
+                if(((EntityCubeModel) block).fromNamespace(blockNamespace, entityValues[0]))
+                    cubeModels.put(blockNamespace, block);
+            }
+            else {
                 //Only store object in memory if to does not have random variants (multiple variants in "variants" field)
                 //If it does recreate it every time
                 if(block.fromNamespace(blockNamespace))
@@ -66,6 +74,10 @@ public class CubeModelFactory {
 
         if(blockNamespace.getName().contains("door"))
             return new DoorCubeModel();
+
+        if(blockNamespace.getType().equals("minecart")){
+            return new MinecartEntityCubeModel();
+        }
 
         switch (blockNamespace.getName()){
             case "grass":
@@ -125,7 +137,8 @@ public class CubeModelFactory {
                 object.getName().contains("comparator") ||
                 object.getName().contains("repeater") ||
                 object.getName().equals("snow_layer") ||
-                object instanceof TileEntityCubeModel;
+                object instanceof TileEntityCubeModel ||
+                object instanceof EntityCubeModel;
     }
 
 }
