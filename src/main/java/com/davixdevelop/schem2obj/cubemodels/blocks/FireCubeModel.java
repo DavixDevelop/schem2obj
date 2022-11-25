@@ -11,6 +11,11 @@ import com.davixdevelop.schem2obj.namespace.Namespace;
 
 import java.util.ArrayList;
 
+/**
+ * The CubeModel for the Fire block
+ *
+ * @author DavixDevelop
+ */
 public class FireCubeModel extends BlockCubeModel{
     @Override
     public boolean fromNamespace(Namespace blockNamespace) {

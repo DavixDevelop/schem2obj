@@ -9,13 +9,13 @@ import java.util.stream.Collectors;
  * @author DavixDevelop
  */
 public class Namespace {
-    private String id;
-    private String domain;
-    private String name;
-    private String type;
-    private HashMap<String, String> data;
+    String id;
+    String domain;
+    String name;
+    String type;
+    HashMap<String, String> data;
 
-    private Double lightValue;
+    Double lightValue;
 
     public Namespace(String id, String domain, String name, String type, HashMap<String, String> data,Double lightValue){
         this.id = id;
@@ -70,7 +70,7 @@ public class Namespace {
 
     public Namespace clone(){
         HashMap<String, String> cloneData = new HashMap<>();
-        if(data != null || !data.isEmpty())
+        if( data != null)
             cloneData = new HashMap<>(data.entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey,Map.Entry::getValue)));
 
         return new Namespace(id, domain, name, type, cloneData, lightValue);

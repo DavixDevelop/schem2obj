@@ -11,13 +11,13 @@ import com.davixdevelop.schem2obj.util.ArrayVector;
 import java.util.HashMap;
 
 /**
- * The CubeModel for the Standing Banner Block
+ * The CubeModel for the Standing Sign block
  *
  * @author DavixDevelop
  */
-public class StandingBannerCubeModel extends BannerCubeModel {
+public class StandingSignCubeModel extends SignCubeModel{
 
-    public static HashMap<String, StandingBannerCubeModel> STANDING_BANNER_VARIANTS = new HashMap<>();
+    public static HashMap<String, StandingSignCubeModel> STANDING_SIGN_VARIANTS = new HashMap<>();
 
     @Override
     public boolean fromNamespace(Namespace blockNamespace, EntityValues entityValues) {
@@ -27,24 +27,23 @@ public class StandingBannerCubeModel extends BannerCubeModel {
 
         String key = getKey(rotationIndex);
 
-        if(STANDING_BANNER_VARIANTS.containsKey(key)){
-            ICubeModel variantObject = STANDING_BANNER_VARIANTS.get(key);
+        if(STANDING_SIGN_VARIANTS.containsKey(key)){
+            ICubeModel variantObject = STANDING_SIGN_VARIANTS.get(key);
             super.copy(variantObject);
         }else {
             toCubeModel(rotationIndex);
-            STANDING_BANNER_VARIANTS.put(key, this);
+            STANDING_SIGN_VARIANTS.put(key, this);
         }
-
 
         return false;
     }
 
     public String getKey(String rotation){
-        return String.format("%s:%s", getBannerPatternCode(), rotation);
+        return String.format("%s:%s", getSignText(), rotation);
     }
 
     public void toCubeModel(String rotation){
-        String bannerMaterial = String.format("entity/banner-%s", getBannerPatternCode());
+        String signTextMaterial = String.format("entity/sign-%s",getSignText());
 
         ArrayVector.MatrixRotation rotationY = null;
 
@@ -56,13 +55,14 @@ public class StandingBannerCubeModel extends BannerCubeModel {
             rotationY = new ArrayVector.MatrixRotation(yAngle, "Z");
 
         HashMap<String, String> modelsMaterials = new HashMap<>();
-        modelsMaterials.put("banner", bannerMaterial);
+        modelsMaterials.put("sign", "entity/sign");
+        modelsMaterials.put("front", signTextMaterial);
 
 
-        BlockModel bannerModel = Constants.BLOCK_MODELS.getBlockModel("standing_banner", "builtin").get(0);
-        CubeElement[] bannerElements = bannerModel.getElements().toArray(new CubeElement[0]);
+        BlockModel standingSingModel = Constants.BLOCK_MODELS.getBlockModel("standing_sign", "builtin").get(0);
+        CubeElement[] signElements = standingSingModel.getElements().toArray(new CubeElement[0]);
 
         //Convert cube elements to cube model
-        fromCubes(String.format("standing_banner_%s", getBannerPatternCode()), false, null, rotationY, modelsMaterials, bannerElements);
+        fromCubes(String.format("standing_sign_%s", getSignText()), false, null, rotationY, modelsMaterials, signElements);
     }
 }

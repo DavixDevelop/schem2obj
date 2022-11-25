@@ -1,7 +1,6 @@
 package com.davixdevelop.schem2obj.util;
 
 import java.awt.*;
-import java.awt.color.ColorSpace;
 
 public class ColorUtility {
 
@@ -29,9 +28,7 @@ public class ColorUtility {
         if(val > 255)
             return 255;
 
-        if(val < 0)
-            return 0;
+        return Math.max(val, 0);
 
-        return val;
     }
 }

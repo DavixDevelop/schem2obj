@@ -10,7 +10,6 @@ import com.davixdevelop.schem2obj.cubemodels.CubeModelUtility;
 import com.davixdevelop.schem2obj.cubemodels.IAdjacentCheck;
 import com.davixdevelop.schem2obj.cubemodels.ICubeModel;
 import com.davixdevelop.schem2obj.materials.IMaterial;
-import com.davixdevelop.schem2obj.models.HashedDoubleList;
 import com.davixdevelop.schem2obj.models.VariantModels;
 import com.davixdevelop.schem2obj.namespace.Namespace;
 import com.davixdevelop.schem2obj.util.ArrayVector;
@@ -22,13 +21,18 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 
+/**
+ * The CubeModel for the Redstone Wire block
+ *
+ * @author DavixDevelop
+ */
 public class RedstoneWireCubeModel extends CubeModel implements IAdjacentCheck {
-    private static AdjacentBlockState ADJACENT_REDSTONE_WIRE_STATES = new AdjacentBlockState("assets/minecraft/redstone_wire_states.json");
+    static AdjacentBlockState ADJACENT_REDSTONE_WIRE_STATES = new AdjacentBlockState("assets/minecraft/redstone_wire_states.json");
 
     //Map<key: %power:north=(side|up|none),west=(side|up|none),south=(side|up|none),east=(side|up|none) value: Stair Block Wavefront Object>
-    private static HashMap<String, RedstoneWireCubeModel> REDSTONE_WIRE_VARIANTS = new HashMap<>();
+    static HashMap<String, RedstoneWireCubeModel> REDSTONE_WIRE_VARIANTS = new HashMap<>();
 
-    private static Set<String> MODIFIED_REDSTONE_WIRE_MATERIALS = new HashSet<>();
+    static Set<String> MODIFIED_REDSTONE_WIRE_MATERIALS = new HashSet<>();
 
     private String power;
 
@@ -67,13 +71,6 @@ public class RedstoneWireCubeModel extends CubeModel implements IAdjacentCheck {
         for(int c = 0; c < variants.size(); c++)
             wireModels[c] = new VariantModels(variants.get(c), Constants.BLOCK_MODELS.getBlockModel(variants.get(c).getModel()));
 
-        HashedDoubleList vertices = new HashedDoubleList();
-        ArrayList<Double[]> normalsArray = new ArrayList<>();
-        HashedDoubleList textureCoordinates = new HashedDoubleList();
-        HashMap<String, ArrayList<ArrayList<Integer[]>>> faces = new HashMap<>();
-
-        HashMap<String, HashMap<String, ArrayList<Integer>>> boundingFaces = new HashMap<>();
-
         HashMap<String, HashMap<String, String>> modelsMaterials = CubeModelUtility.modelsToMaterials(wireModels, wireNamespace);
 
         //Loop through the models
@@ -100,7 +97,7 @@ public class RedstoneWireCubeModel extends CubeModel implements IAdjacentCheck {
 
                             new_material.setName(String.format("%s_power_%s", new_material.getName(), power));
 
-                            Integer p = Integer.valueOf(power);
+                            int p = Integer.parseInt(power);
                             new_material.setEmissionStrength((p == 0) ? 0.0 :  p / 16.0);
 
                             //Color the gray overlay with the redstone wire color
@@ -133,7 +130,7 @@ public class RedstoneWireCubeModel extends CubeModel implements IAdjacentCheck {
                 if (!elements.isEmpty()) {
 
                     //Ignore the model (m) elements, if the model has elements and a parent and the elements were already set
-                    if (generatedElements && !elements.isEmpty() && model.getParent() != null)
+                    if (generatedElements && model.getParent() != null)
                         continue;
 
                     //Only convert the first element (avoid the overlay element)
@@ -156,10 +153,12 @@ public class RedstoneWireCubeModel extends CubeModel implements IAdjacentCheck {
 
 
                     //Convert the cube to obj
-                    CubeModelUtility.convertCubeElementToCubeModel(element, uvLock, rotationX, rotationY, modelsMaterials.get(variant.getModel()), this);
+                    if(variant != null) {
+                        CubeModelUtility.convertCubeElementToCubeModel(element, uvLock, rotationX, rotationY, modelsMaterials.get(variant.getModel()), this);
 
-                    //Mark that the variant has generated elements
-                    generatedElements = true;
+                        //Mark that the variant has generated elements
+                        generatedElements = true;
+                    }
                 }
             }
         }
@@ -170,31 +169,21 @@ public class RedstoneWireCubeModel extends CubeModel implements IAdjacentCheck {
         if(y_index == 0){
             if(adjacent.getName().contains("repeater") || adjacent.getName().contains("comparator")){
                 if(orientation.equals("west") || orientation.equals("east")){
-                    if(adjacent.getData().get("facing").equals("west") || adjacent.getData().get("facing").equals("east"))
-                        return true;
-                    else
-                        return false;
+                    return adjacent.getData().get("facing").equals("west") || adjacent.getData().get("facing").equals("east");
                 }else {
-                    if(adjacent.getData().get("facing").equals("south") || adjacent.getData().get("facing").equals("north"))
-                        return true;
-                    else
-                        return false;
+                    return adjacent.getData().get("facing").equals("south") || adjacent.getData().get("facing").equals("north");
                 }
 
             }
 
-            if ((adjacent.getName().contains("redstone") && (adjacent.getName().endsWith("_wire") || adjacent.getName().endsWith("_block") || adjacent.getName().equals("_torch"))) ||
+            return (adjacent.getName().contains("redstone") && (adjacent.getName().endsWith("_wire") || adjacent.getName().endsWith("_block") || adjacent.getName().equals("_torch"))) ||
                     adjacent.getName().equals("lever") ||
                     adjacent.getName().endsWith("pressure_plate") ||
                     adjacent.getName().contains("daylight_detector") ||
-                    adjacent.getName().contains("button"))
-                return true;
+                    adjacent.getName().contains("button");
         }else {
             return adjacent.getName().equals("redstone_wire");
         }
-
-
-        return false;
     }
 
     @Override

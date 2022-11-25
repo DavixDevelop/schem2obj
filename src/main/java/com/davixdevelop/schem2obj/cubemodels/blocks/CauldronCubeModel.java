@@ -11,6 +11,11 @@ import com.davixdevelop.schem2obj.namespace.Namespace;
 
 import java.util.ArrayList;
 
+/**
+ * The CubeModel for the Cauldron block
+ *
+ * @author DavixDevelop
+ */
 public class CauldronCubeModel extends BlockCubeModel {
     @Override
     public boolean fromNamespace(Namespace blockNamespace) {

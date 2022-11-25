@@ -1,15 +1,19 @@
 package com.davixdevelop.schem2obj.materials;
 
 import java.awt.image.BufferedImage;
-import java.io.InputStream;
 import java.util.ArrayList;
 
+/**
+ * A interface for a Material
+ *
+ * @author DavixDevelop
+ */
 public interface IMaterial {
 
 
     /**
      * Get Ke value (Emission Strength)
-     * @return
+     * @return The emission strength
      */
     Double getEmissionStrength();
     void setEmissionStrength(Double value);
@@ -51,7 +55,7 @@ public interface IMaterial {
 
     /**
      * Get illum value (Illumination Model)
-     * @return
+     * @return The illumination model (ex. 2)
      */
     Integer getIlluminationModel();
 

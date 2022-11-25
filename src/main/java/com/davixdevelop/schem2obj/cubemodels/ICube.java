@@ -3,6 +3,11 @@ package com.davixdevelop.schem2obj.cubemodels;
 import com.davixdevelop.schem2obj.Orientation;
 import com.davixdevelop.schem2obj.cubemodels.model.CubeFace;
 
+/**
+ * A interface for a Cube in a CubeModel
+ *
+ * @author DavixDevelop
+ */
 public interface ICube {
     /**
      * Get all faces of the cube
@@ -28,7 +33,7 @@ public interface ICube {
     /**
      * Delete the cube face that faces the orientation
      *
-     * @param orientation
+     * @param orientation The orientation of the face to delete
      */
     void deleteFace(Orientation orientation);
 

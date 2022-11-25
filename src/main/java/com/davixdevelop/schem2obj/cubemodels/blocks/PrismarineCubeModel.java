@@ -7,6 +7,11 @@ import com.davixdevelop.schem2obj.namespace.Namespace;
 
 import java.util.HashMap;
 
+/**
+ * The CubeModel for the Prismarine block
+ *
+ * @author DavixDevelop
+ */
 public class PrismarineCubeModel extends CubeModel {
     @Override
     public boolean fromNamespace(Namespace blockNamespace) {

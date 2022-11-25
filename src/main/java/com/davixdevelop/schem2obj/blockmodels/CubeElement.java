@@ -1,8 +1,12 @@
 package com.davixdevelop.schem2obj.blockmodels;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 
+/**
+ * Represents a instance of a element, inside the elements array in a BlockModel JSON
+ *
+ * @author DavixDevelop
+ */
 public class CubeElement {
     private Double[] from;
     private Double[] to;

@@ -6,6 +6,11 @@ import com.davixdevelop.schem2obj.namespace.Namespace;
 
 import java.util.List;
 
+/**
+ * A interface for the CubeModel
+ *
+ * @author DavixDevelop
+ */
 public interface ICubeModel {
     String getName();
     HashedStringList getMaterials();

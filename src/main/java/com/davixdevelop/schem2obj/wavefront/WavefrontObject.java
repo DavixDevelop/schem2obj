@@ -1,19 +1,7 @@
 package com.davixdevelop.schem2obj.wavefront;
 
-import com.davixdevelop.schem2obj.blockmodels.BlockModel;
-import com.davixdevelop.schem2obj.blockmodels.CubeElement;
-import com.davixdevelop.schem2obj.blockstates.BlockState;
-import com.davixdevelop.schem2obj.cubemodels.CubeModelUtility;
-import com.davixdevelop.schem2obj.models.HashedDoubleList;
-import com.davixdevelop.schem2obj.models.VariantModels;
-import com.davixdevelop.schem2obj.namespace.Namespace;
-import com.davixdevelop.schem2obj.util.ArrayUtility;
-import com.davixdevelop.schem2obj.util.ArrayVector;
-
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 public class WavefrontObject implements IWavefrontObject {
     private String name;

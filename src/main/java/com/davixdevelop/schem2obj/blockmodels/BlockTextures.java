@@ -1,10 +1,13 @@
 package com.davixdevelop.schem2obj.blockmodels;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+/**
+ * Represents the textures array inside the BlockModel JSON
+ * @author DavixDevelop
+ */
 public class BlockTextures {
     private String particle;
     private HashMap<String, String> textures;

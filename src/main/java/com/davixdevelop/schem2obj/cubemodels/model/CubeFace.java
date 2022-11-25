@@ -3,31 +3,36 @@ package com.davixdevelop.schem2obj.cubemodels.model;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Represents a single face of a cube
+ *
+ * @author DavixDevelop
+ */
 public class CubeFace {
     private List<Double[]> corners;
     private List<Double[]> uv;
     private String material;
-    private Boolean cullface;
+    private Boolean cullFace;
 
     /**
      * Create new CubeFace
      * @param corners A 4 size list, containing the vertices of each corner
      * @param uv A 4 size list, containing the texture vertices of each corner
      * @param material The material of the face
-     * @param isCullface If the face can be removed
+     * @param isCullFace If the face can be removed
      */
-    public CubeFace(List<Double[]> corners, List<Double[]> uv, String material, Boolean isCullface){
+    public CubeFace(List<Double[]> corners, List<Double[]> uv, String material, Boolean isCullFace){
         this.corners = corners;
         this.uv = uv;
         this.material = material;
-        this.cullface = isCullface;
+        this.cullFace = isCullFace;
     }
 
     public CubeFace(){
         corners = new ArrayList<>();
         uv = new ArrayList<>();
         material = "";
-        cullface = false;
+        cullFace = false;
     }
 
 
@@ -42,7 +47,7 @@ public class CubeFace {
         corners = new ArrayList<>(cubeFace.corners);
         uv = new ArrayList<>(cubeFace.uv);
         material = cubeFace.material;
-        cullface = cubeFace.cullface;
+        cullFace = cubeFace.cullFace;
     }
 
     /**
@@ -51,10 +56,6 @@ public class CubeFace {
      */
     public List<Double[]> getCorners() {
         return corners;
-    }
-
-    public void setCorners(List<Double[]> corners) {
-        this.corners = corners;
     }
 
     /**
@@ -77,7 +78,7 @@ public class CubeFace {
      * Check if face can be deleted
      * @return True if face can be deleted
      */
-    public Boolean isCullface() {
-        return cullface;
+    public Boolean isCullFace() {
+        return cullFace;
     }
 }

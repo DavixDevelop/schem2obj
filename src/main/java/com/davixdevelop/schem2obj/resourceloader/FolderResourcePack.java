@@ -10,7 +10,7 @@ import java.nio.file.Paths;
 
 public class FolderResourcePack extends ResourcePack {
 
-    private String resourcePack;
+    String resourcePack;
 
     public FolderResourcePack(String resourcePack, Format format){
         this.resourcePack = resourcePack;

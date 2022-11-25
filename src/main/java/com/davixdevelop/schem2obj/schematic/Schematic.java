@@ -1,16 +1,14 @@
 package com.davixdevelop.schem2obj.schematic;
 
-import java.io.DataInput;
-import java.io.DataInputStream;
+import com.flowpowered.nbt.*;
+import com.flowpowered.nbt.stream.NBTInputStream;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import com.flowpowered.nbt.*;
-import com.flowpowered.nbt.stream.NBTInputStream;
 
 /**
  * Represents a schematic, with methods for reading.
@@ -19,13 +17,13 @@ import com.flowpowered.nbt.stream.NBTInputStream;
  *
  */
 public class Schematic implements java.io.Serializable {
-    private int[] blocks;
-    private int[] data;
-    private short width;
-    private short length;
-    private short height;
-    private Map<String, EntityValues>  tileEntities;
-    private List<EntityValues> entities;
+    int[] blocks;
+    int[] data;
+    short width;
+    short length;
+    short height;
+    Map<String, EntityValues>  tileEntities;
+    List<EntityValues> entities;
 
     public Schematic(int[] blocks, int[] data, short width, short length, short height, Map<String, EntityValues>  tileEntities, List<EntityValues> entities) {
         this.blocks = blocks;
@@ -69,16 +67,16 @@ public class Schematic implements java.io.Serializable {
      * This method read's a schematic and initializes the class object, to be used later
      * @param stream A InputStream from a schematic resource
      * @return new instance of Schematic
-     * @throws IOException
+     * @throws IOException If root tag of schematic isn't a Compound tag
      */
     public static Schematic loadSchematic(InputStream stream) throws IOException {
 
         NBTInputStream nbtInputStream = new NBTInputStream(stream);
 
-        Tag rootTag = nbtInputStream.readTag();
+        Tag<?> rootTag = nbtInputStream.readTag();
 
         if(!rootTag.getType().equals(TagType.TAG_COMPOUND))
-            throw new IOException("Doesn't start with Compund tag");
+            throw new IOException("Doesn't start with Compound tag");
 
         CompoundMap nbtData = ((CompoundTag) rootTag).getValue();
 
@@ -92,8 +90,8 @@ public class Schematic implements java.io.Serializable {
         byte[] blockData = ((ByteArrayTag)nbtData.get("Data")).getValue();
 
         boolean extras = false;
-        byte extraBlocks[] = null;
-        byte extraBlocksNibble[] = null;
+        byte[] extraBlocks = null;
+        byte[] extraBlocksNibble;
         int[] blocks = new int[blockId.length];
         int[] data = new int[blockData.length];
 
@@ -102,7 +100,7 @@ public class Schematic implements java.io.Serializable {
             extraBlocksNibble = ((ByteArrayTag)nbtData.get("AddBlocks")).getValue();
             extraBlocks = new byte[extraBlocksNibble.length * 2];
             for(int i = 0; i < extraBlocksNibble.length; i++) {
-                extraBlocks[i * 2 + 0] = (byte) ((extraBlocksNibble[i] >> 4) & 0xF);
+                extraBlocks[i * 2] = (byte) ((extraBlocksNibble[i] >> 4) & 0xF);
                 extraBlocks[i * 2 + 1] = (byte) (extraBlocksNibble[i] & 0xF);
             }
         }
@@ -121,7 +119,7 @@ public class Schematic implements java.io.Serializable {
 
         Map<String, EntityValues> tileEntities = new HashMap<>();
 
-        ListTag rawTileEntities = (ListTag)nbtData.get("TileEntities");
+        ListTag<?> rawTileEntities = (ListTag<?>)nbtData.get("TileEntities");
 
         //Loop through the entities
         for(Object tag : rawTileEntities.getValue()){
@@ -149,7 +147,7 @@ public class Schematic implements java.io.Serializable {
 
         List<EntityValues> entities = new ArrayList<>();
 
-        ListTag rawEntities = (ListTag)nbtData.get("Entities");
+        ListTag<?> rawEntities = (ListTag<?>)nbtData.get("Entities");
 
         for(Object tag : rawEntities.getValue()){
             if(tag instanceof CompoundTag){

@@ -1,7 +1,6 @@
 package com.davixdevelop.schem2obj.resourceloader;
 
 import com.davixdevelop.schem2obj.Constants;
-import com.davixdevelop.schem2obj.SchemeToObj;
 import com.davixdevelop.schem2obj.materials.json.PackTemplate;
 import com.davixdevelop.schem2obj.util.LogUtility;
 import com.google.gson.Gson;
@@ -12,7 +11,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
 import java.util.jar.JarFile;
-import java.util.regex.Matcher;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
@@ -69,7 +67,7 @@ public class ResourceLoader {
      * @param resourceType The path to the resource pack
      * @param resourceName The name of the resource, ex. blocks/dirt, entity/bed/blue, magma.json...
      * @param resourceFormat The format of the resource, ex. png, json...
-     * @return
+     * @return The path to the resource, ex. textures/blocks/magma.png
      */
     public static String getResourcePath(String resourceType, String resourceName, String resourceFormat){
         return String.format("%s/%s.%s",resourceType, resourceName, resourceFormat);
@@ -78,7 +76,7 @@ public class ResourceLoader {
     /**
      * Check if resource exists
      * @param path The path to the resource
-     * @return
+     * @return True if the resource exists, else false
      */
     public static boolean resourceExists(String path){
         return RESOURCES.containsKey(path);
@@ -108,10 +106,13 @@ public class ResourceLoader {
                     PackTemplate packMetaJson = getPackMeta(inputStream);
 
                     //Check that the format is in the correct format
-                    if(packMetaJson.pack.pack_format.intValue() != 3){
-                        LogUtility.Log(String.format("Incompatible resource pack (Pack format: %d)",packMetaJson.pack.pack_format.intValue()));
+                    if(packMetaJson != null) {
+                        if (packMetaJson.pack.pack_format.intValue() != 3) {
+                            LogUtility.Log(String.format("Incompatible resource pack (Pack format: %d)", packMetaJson.pack.pack_format.intValue()));
+                            return false;
+                        }
+                    }else
                         return false;
-                    }
                 }catch (Exception ex){
                     LogUtility.Log("Error while reading pack.mcmeta");
                     LogUtility.Log(ex.getMessage());
@@ -155,24 +156,6 @@ public class ResourceLoader {
                         if (textures != null) {
                             parseTexturesFromPackFiles(textures, textureFolderPath, resourcePackIndex);
 
-                            /*
-                            if (textureFolder.getName().equals("entity")) {
-                                for (File file : textures) {
-
-                                    if (file.isDirectory() && Constants.EntityFilter.contains(file.getName())) {
-                                        File[] entityTextures = file.listFiles();
-
-                                        //Parse all textures in the subfolder inside the entity folder
-                                        if (entityTextures != null) {
-                                            parseTexturesFromPackFiles(entityTextures, textureFolderName, resourcePackIndex, file.getName());
-                                        }
-                                    }
-                                    //ToDo: Here read the entity textures that are in the root entity folder
-                                }
-                            } else {
-
-                                parseTexturesFromPackFiles(textures, textureFolderName, resourcePackIndex);
-                            }*/
                         }
                     }
                 }
@@ -220,11 +203,18 @@ public class ResourceLoader {
                 }
             }
 
+            //Get the path to the glyph_sizes.bin file
+            Path glyphSizes = Paths.get(resourcePack, "assets","minecraft","font","glyph_sizes.bin");
+            //Check if it exist, and add it to resource
+            if(Files.exists(glyphSizes)){
+                RESOURCES.put("font/glyph_sizes.bin", resourcePackIndex);
+            }
+
             return true;
         }else{
             try {
 
-                ZipFile compressedFile = null;
+                ZipFile compressedFile;
 
                 //Check if resource pack is a zip file, else treat it as a jar file
                 if (resourcePack.endsWith(".zip")) {
@@ -239,10 +229,13 @@ public class ResourceLoader {
                         PackTemplate packMetaJson = getPackMeta(inputStream);
 
                         //Check that the format is in the correct format
-                        if(packMetaJson.pack.pack_format.intValue() != 3){
-                            LogUtility.Log(String.format("Incompatible resource pack (Pack format: %d)",packMetaJson.pack.pack_format.intValue()));
+                        if(packMetaJson != null) {
+                            if (packMetaJson.pack.pack_format.intValue() != 3) {
+                                LogUtility.Log(String.format("Incompatible resource pack (Pack format: %d)", packMetaJson.pack.pack_format.intValue()));
+                                return false;
+                            }
+                        }else
                             return false;
-                        }
                     }catch (Exception ex){
                         LogUtility.Log("Failed to read pack.mcmeta");
                         LogUtility.Log(ex.getMessage());
@@ -275,8 +268,8 @@ public class ResourceLoader {
                         //Get the type of the texture (ex. blocks/dirt.png -> blocks)
                         String textureType = assetPath.substring(0, assetPath.indexOf("/"));
 
-                        //Scan only for texture types of blocks and entities
-                        if(!textureType.equals("blocks") && !textureType.equals("entity"))
+                        //Scan only for texture types of blocks and entities and font
+                        if(!textureType.equals("blocks") && !textureType.equals("entity") && !textureType.equals("font"))
                             continue;
 
                         //Get the path to the texture (ex. textures/entity/bed/blue.png - > blue.png)
@@ -317,6 +310,11 @@ public class ResourceLoader {
                         String blockStatePath = fullPath.substring(17);
                         //Add the block state to the resources
                         RESOURCES.put(blockStatePath, resourcePackIndex);
+                        continue;
+                    }
+
+                    if(fullPath.equals("assets/minecraft/font/glyph_sizes.bin")){
+                        RESOURCES.put("font/glyph_sizes.bin", resourcePackIndex);
                     }
 
                 }
@@ -336,9 +334,12 @@ public class ResourceLoader {
         //Loop through the textures and add them to resources
         for(File texture : textures){
             if(texture.isDirectory()){
-                //Skip entity textures that the program doesn't support
-                if(!Constants.EntityFilter.contains(texture.getName()))
-                    return;
+                //Check if parent directory is entity
+                if(texture.getParentFile().getName().equals("entity")) {
+                    //Skip entity textures that the program doesn't support
+                    if (!Constants.EntityFilter.contains(texture.getName()))
+                        return;
+                }
 
                 File[] subTextures = texture.listFiles();
                 if(subTextures != null)
@@ -348,8 +349,6 @@ public class ResourceLoader {
 
                 String textureFilePath = texture.getPath().substring(textureFolderPath.length() + 1).replace("\\","/");
 
-                //String textureFilePath = (subFolder.length > 0) ? String.format("textures/%s/%s/%s", textureFolderPath, subFolder[0], texture.getName()) :
-                //        String.format("textures/%s/%s", textureFolderPath, texture.getName());
                 RESOURCES.put(textureFilePath, resourcePackIndex);
             }
         }

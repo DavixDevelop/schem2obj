@@ -19,7 +19,7 @@ public class HashedStringList {
     /**
      * Get element from the index
      * @param index Index to the String element
-     * @return
+     * @return The element at the specified index
      */
     public String get(Integer index){
         return list.get(index);
@@ -36,8 +36,8 @@ public class HashedStringList {
 
     /**
      * Put a new String element if it does not exist yet, and return the index to it
-     * @param value
-     * @return
+     * @param value A new String
+     * @return The index to the new element
      */
     public Integer put(String value){
         if(index.containsKey(value))

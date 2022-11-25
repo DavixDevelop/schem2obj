@@ -1,0 +1,23 @@
+{
+	"elements": [
+		{
+			"from": [0, 3.8171, 0],
+			"to": [1.3943, 12.1829, 16],
+			"faces": {
+				"north": {"uv": [0, 1, 0.5, 7], "texture": "#sign"},
+				"east": {"uv": [0.5, 1, 6.5, 7], "texture": "#sign"},
+				"south": {"uv": [6.5, 1, 7, 7], "texture": "#sign"},
+				"west": {"uv": [7, 1, 13, 7], "texture": "#sign", "cullface": "west"},
+				"up": {"uv": [0.5, 0, 6.5, 1], "rotation": 270, "texture": "#sign"},
+				"down": {"uv": [6.5, 0, 12.5, 1], "rotation": 270, "texture": "#sign"}
+			}
+		},
+		{
+			"from": [0, 3.8171, 0.001],
+			"to": [1.3943, 12.1829, 16.001],
+			"faces": {
+				"east": {"uv": [0, 0, 16, 16], "texture": "#front"}
+			}
+		}
+	]
+}

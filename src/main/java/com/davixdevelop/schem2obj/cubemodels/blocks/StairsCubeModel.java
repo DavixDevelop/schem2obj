@@ -8,6 +8,11 @@ import com.davixdevelop.schem2obj.namespace.Namespace;
 
 import java.util.HashMap;
 
+/**
+ * The CubeModel for all Stairs block varaints
+ *
+ * @author DavixDevelop
+ */
 public class StairsCubeModel extends BlockCubeModel implements IAdjacentCheck {
     public static AdjacentBlockState ADJACENT_STAIRS_STATES = new AdjacentBlockState("assets/minecraft/stairs_states.json");
 

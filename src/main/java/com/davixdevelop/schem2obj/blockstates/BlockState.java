@@ -11,6 +11,11 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.util.*;
 
+/**
+ * Represent a Minecraft BlockState, with methods for
+ * reading the BlockState JSON Files and getting It's objects
+ * @author DavixDevelop
+ */
 public class BlockState {
 
     private final Random RANDOM = new Random();
@@ -184,7 +189,7 @@ public class BlockState {
     }
 
     public static Variant ApplyToVariant(BlockStateTemplate.Apply apply){
-        return new Variant(apply.model, (apply.x != null) ? apply.x.doubleValue() : null, (apply.y != null) ? apply.y.doubleValue() : null, (apply.uvlock != null) ? apply.uvlock : false, (apply.weight != null) ? apply.weight.intValue() : 1);
+        return new Variant(apply.model, (apply.x != null) ? apply.x.doubleValue() : null, (apply.y != null) ? apply.y.doubleValue() : null, (apply.uvLock != null) ? apply.uvLock : false, (apply.weight != null) ? apply.weight.intValue() : 1);
     }
 
     public ArrayList<Variant> getVariants(Namespace blockNamespace){

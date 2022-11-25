@@ -8,6 +8,11 @@ import com.davixdevelop.schem2obj.namespace.Namespace;
 
 import java.util.ArrayList;
 
+/**
+ * The CubeModel for the Glass block
+ *
+ * @author DavixDevelop
+ */
 public class GlassCubeModel extends BlockCubeModel {
     @Override
     public boolean fromNamespace(Namespace blockNamespace) {

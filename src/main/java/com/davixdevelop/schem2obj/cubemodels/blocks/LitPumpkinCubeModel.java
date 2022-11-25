@@ -13,9 +13,13 @@ import com.davixdevelop.schem2obj.util.ArrayVector;
 import com.davixdevelop.schem2obj.util.LogUtility;
 
 import java.awt.image.BufferedImage;
-import java.nio.file.Paths;
 import java.util.HashMap;
 
+/**
+ * The CubeModel for the Lit Pumpkin block
+ *
+ * @author DavixDevelop
+ */
 public class LitPumpkinCubeModel extends CubeModel {
     private static boolean LIT_PUMPKIN_MATERIALS_GENERATED = false;
     private static int STACK_SIZE = -1;

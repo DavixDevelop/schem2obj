@@ -13,6 +13,11 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
 
+/**
+ * The CubeModel for the Leaves block
+ *
+ * @author DavixDevelop
+ */
 public class LeavesCubeModel extends BlockCubeModel {
     public static Set<String> MODIFIED_LEAVES_MATERIALS = new HashSet<>();
 
@@ -49,7 +54,7 @@ public class LeavesCubeModel extends BlockCubeModel {
             IMaterial leaves_material = Constants.BLOCK_MATERIALS.getMaterial(leaves_texture);
 
             //Color the leaves with the foliage color
-            leaves_material.setDiffuseImage(ImageUtility.colorImage(leaves_material.getDefaultDiffuseImage(), Constants.BIOME_FOLIAGE_COLOR));
+            leaves_material.setDiffuseImage(ImageUtility.colorImage(leaves_material.getDefaultDiffuseImage(), Constants.BIOMES_FOLIAGE_COLOR));
 
             //Set the material options for leaves
             leaves_material.setSpecularHighlights(0.0);

@@ -6,29 +6,26 @@ import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.*;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 
 public class ImageUtility {
-    public static boolean copyImageToFile(BufferedImage bufferedImage, String filePath){
+    public static void copyImageToFile(BufferedImage bufferedImage, String filePath){
         //InputStream assetStream = this.getClass().getClassLoader().getResourceAsStream("assets/" + asset);
 
         try {
             InputStream imageStream = toInputStream(bufferedImage);
 
-            return copyImageStreamToFile(imageStream, filePath);
+            copyImageStreamToFile(imageStream, filePath);
         }catch (Exception ex){
             LogUtility.Log(String.format("Could not read BufferedImage to InputStream for output image path: %s", filePath));
             LogUtility.Log(ex.getMessage());
         }
 
-        return false;
     }
 
-    public static boolean copyImageStreamToFile(InputStream imageStream, String filePath){
+    public static void copyImageStreamToFile(InputStream imageStream, String filePath){
         try {
             OutputStream outputStream = new FileOutputStream(filePath);
 
@@ -36,7 +33,7 @@ public class ImageUtility {
 
 
                 byte[] buffer = new byte[1024];
-                Integer readBytes = imageStream.read(buffer);
+                int readBytes = imageStream.read(buffer);
 
                 while(readBytes != -1){
                     outputStream.write(buffer, 0, readBytes);
@@ -47,8 +44,6 @@ public class ImageUtility {
                 outputStream.close();
 
                 imageStream.close();
-
-                return true;
 
             }catch (Exception ex){
                 LogUtility.Log(String.format("Could not read from assets for output file path: %s", filePath));
@@ -61,7 +56,6 @@ public class ImageUtility {
             LogUtility.Log(ex.getMessage());
         }
 
-        return false;
     }
 
     public static InputStream toInputStream(BufferedImage image){
@@ -93,7 +87,7 @@ public class ImageUtility {
 
     public static boolean hasAlpha(IMaterial material, List<Double[]> UV){
         try {
-            BufferedImage image = null;
+            BufferedImage image;
 
             if(material.storeDiffuseImage())
                 image = material.getDiffuseImage();
@@ -167,8 +161,8 @@ public class ImageUtility {
     /**
      * Extract the Roughness (Inverted Glossiness Red Channel), Metalness (Green Channel), Emission (Blue Channel) image from the specular texture
      * as SEUS stores Glossiness, Metalness and Emission in the the tree RGB channels in the specular texture
-     * @param specularImage
-     * @return
+     * @param specularImage The specular texture of the material
+     * @return A 3 length array of extracted PBR textures
      */
     public static BufferedImage[] extractPBRFromSpec(BufferedImage specularImage){
         try{
@@ -179,21 +173,21 @@ public class ImageUtility {
                     new BufferedImage(specularImage.getWidth(), specularImage.getHeight(), BufferedImage.TYPE_INT_ARGB)
             };
 
-            Color color = null;
-            Color rougness = null;
-            Color metalness = null;
-            Color emission = null;
+            Color color;
+            Color roughness;
+            Color metalness;
+            Color emission;
 
             for(int x = 0; x < specularImage.getWidth(); x++){
                 for(int y = 0; y < specularImage.getHeight(); y++){
                     color = new Color(specularImage.getRGB(x, y));
 
                     //Roughness is the inverse of glossiness (255 - channel value)
-                    rougness = new Color(Math.abs(255 - color.getRed()),Math.abs(255 - color.getRed()), Math.abs(255 - color.getRed()), color.getAlpha());
+                    roughness = new Color(Math.abs(255 - color.getRed()),Math.abs(255 - color.getRed()), Math.abs(255 - color.getRed()), color.getAlpha());
                     metalness = new Color(color.getGreen(), color.getGreen(), color.getGreen(), color.getAlpha());
                     emission = new Color(color.getBlue(), color.getBlue(), color.getBlue(), color.getAlpha());
 
-                    RME[0].setRGB(x, y, rougness.getRGB());
+                    RME[0].setRGB(x, y, roughness.getRGB());
                     RME[1].setRGB(x, y, metalness.getRGB());
                     RME[2].setRGB(x, y, emission.getRGB());
 
@@ -221,12 +215,12 @@ public class ImageUtility {
         try {
             BufferedImage maskedImage = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_INT_ARGB_PRE);
 
-            Color color = null;
-            Color maskColor = null;
+            Color color;
+            Color maskColor;
 
-            Integer max_alpha = -1;
-            Integer min_alpha = -1;
-            Integer values = 0;
+            int max_alpha = -1;
+            int min_alpha = -1;
+            int values = 0;
             boolean transparent = true;
             for(int y = 0; y < mask.getHeight(); y++){
                 for(int x = 0; x < mask.getWidth(); x++){
@@ -303,13 +297,10 @@ public class ImageUtility {
                     final int y1 = (y * image2.getHeight()) / image.getHeight();
                     final int color2 = image2.getRGB(x1, y1);
 
-                    Color orginalColor = new Color(color1);
+                    Color originalColor = new Color(color1);
                     Color maskColor = new Color(color2, hasOverlayAlpha);
                     if(maskColor.getAlpha() != 0){
-                        //int luminosity = ColorUtility.RGBtoLuminosity(orginalColor);
-
-                        //orginalColor = new Color(Math.abs(overlayColor.getRed() - luminosity), Math.abs(overlayColor.getGreen() - luminosity), Math.abs(overlayColor.getBlue() - luminosity), orginalColor.getAlpha());
-                        combinedImage.setRGB(x, y, orginalColor.getRGB());
+                        combinedImage.setRGB(x, y, originalColor.getRGB());
                     }else
                     {
                         combinedImage.setRGB(x, y, maskColor.getRGB());
@@ -401,22 +392,19 @@ public class ImageUtility {
                     final int y1 = (y * multiplyImage.getHeight()) / image.getHeight();
                     final int color2 = multiplyImage.getRGB(x1, y1);
 
-                    Color orginalColor = new Color(color1);
+                    Color originalColor = new Color(color1);
                     Color multiplyColor = new Color(color2, hasMultiplyAlpha);
 
-                    if(orginalColor.getAlpha() != 0 && multiplyColor.getAlpha() != 0) {
+                    if(originalColor.getAlpha() != 0 && multiplyColor.getAlpha() != 0) {
 
-                        int red = (orginalColor.getRed() * multiplyColor.getRed()) / 255;
-                        int green = (orginalColor.getGreen() * multiplyColor.getGreen()) / 255;
-                        int blue = (orginalColor.getBlue() * multiplyColor.getBlue()) / 255;
+                        int red = (originalColor.getRed() * multiplyColor.getRed()) / 255;
+                        int green = (originalColor.getGreen() * multiplyColor.getGreen()) / 255;
+                        int blue = (originalColor.getBlue() * multiplyColor.getBlue()) / 255;
 
-                        orginalColor = new Color(ColorUtility.clipRGB(Math.abs(red)), ColorUtility.clipRGB(Math.abs(green)), ColorUtility.clipRGB(Math.abs(blue)), orginalColor.getAlpha());
+                        originalColor = new Color(ColorUtility.clipRGB(Math.abs(red)), ColorUtility.clipRGB(Math.abs(green)), ColorUtility.clipRGB(Math.abs(blue)), originalColor.getAlpha());
 
-                        combinedImage.setRGB(x, y, orginalColor.getRGB());
-                    }else
-                    {
-                        combinedImage.setRGB(x, y, orginalColor.getRGB());
                     }
+                    combinedImage.setRGB(x, y, originalColor.getRGB());
                 }
             }
 
@@ -442,16 +430,13 @@ public class ImageUtility {
                     final int y1 = (y * overlay.getHeight()) / image.getHeight();
                     final int color2 = overlay.getRGB(x1, y1);
 
-                    Color orginalColor = new Color(color1, hasImageAlpha);
+                    Color originalColor = new Color(color1, hasImageAlpha);
                     Color overlayColor = new Color(color2, hasOverlayAlpha);
                     if(overlayColor.getAlpha() != 0){
-                        //int luminosity = ColorUtility.RGBtoLuminosity(orginalColor);
-
-                        //orginalColor = new Color(Math.abs(overlayColor.getRed() - luminosity), Math.abs(overlayColor.getGreen() - luminosity), Math.abs(overlayColor.getBlue() - luminosity), orginalColor.getAlpha());
-                        orginalColor = overlayColor;
+                        originalColor = overlayColor;
                     }
 
-                    combinedImage.setRGB(x, y, orginalColor.getRGB());
+                    combinedImage.setRGB(x, y, originalColor.getRGB());
                 }
             }
 
@@ -461,6 +446,35 @@ public class ImageUtility {
             LogUtility.Log("Failed to combine images");
             LogUtility.Log(ex.getMessage());
             return null;
+        }
+    }
+
+    public static BufferedImage upscaleImage(BufferedImage image, Integer xRes, Integer yRes){
+        BufferedImage upscaleImage = new BufferedImage(xRes, yRes, image.getType());
+
+        for(int x = 0; x < xRes; x++){
+            for (int y = 0; y <yRes; y++){
+                final int x1 = (x * image.getWidth()) / xRes;
+                final int y1 = (y * image.getHeight()) / yRes;
+                final int color = image.getRGB(x1, y1);
+
+                upscaleImage.setRGB(x, y, color);
+            }
+        }
+
+        return upscaleImage;
+    }
+
+    public static void insertIntoImage(BufferedImage image, BufferedImage image2, int xOffset, int yOffset){
+        int local_x = 0;
+        for(int x = xOffset; x < xOffset + image2.getWidth(); x++){
+            int local_y = 0;
+            for(int y = yOffset; y < yOffset + image2.getHeight(); y++){
+                int color = image2.getRGB(local_x, local_y);
+                image.setRGB(x, y, color);
+                local_y += 1;
+            }
+            local_x += 1;
         }
     }
 
@@ -500,11 +514,28 @@ public class ImageUtility {
         }
     }
 
+    public static boolean isTransparent(BufferedImage image){
+        boolean hasAlpha = image.getTransparency() == 3;
+
+        if(hasAlpha){
+            for(int x = 0; x < image.getWidth(); x++){
+                for(int y = 0; y < image.getHeight();y++){
+                    int color = image.getRGB(x, y);
+                    int alpha = (color >> 24 & 255);
+                    if(alpha != 0)
+                        return false;
+                }
+            }
+
+            return true;
+        }return false;
+    }
+
     /**
-     *
-     * @param source
-     * @param target
-     * @return
+     * Color match the target image with the source image
+     * @param source The source image
+     * @param target The target image
+     * @return Color matched target image
      */
     public static BufferedImage colorMatch(BufferedImage source, BufferedImage target){
         Object[] lab_source = new Object[source.getWidth() * source.getHeight()];
@@ -546,7 +577,7 @@ public class ImageUtility {
         }
 
         //Get the statistics (the mean and standard deviation for each channel) for the source and target image
-        double[] stats = ImageStatistic(lab_source, source.getHeight(), source.getWidth());
+        double[] stats = ImageStatistic(lab_source);
         double L_MeanSource = stats[0];
         double L_StdSource = stats[1];
         double a_MeanSource = stats[2];
@@ -554,7 +585,7 @@ public class ImageUtility {
         double b_MeanSource = stats[4];
         double b_StdSource = stats[5];
 
-        stats = ImageStatistic(lab_target, target.getHeight(), target.getWidth());
+        stats = ImageStatistic(lab_target);
         double L_MeanTarget = stats[0];
         double L_StdTarget = stats[1];
         double a_MeanTarget = stats[2];
@@ -608,8 +639,6 @@ public class ImageUtility {
     /**
      * Calculate the mean and standard deviation for the image data
      * @param data A flat map array of the image data, where each item is a 3 length double array consisting of values in any color space
-     * @param height The height of the image
-     * @param width The width og the image
      * @return Double array with the following items:
      *      Channel 1 mean
      *      Channel 1 standard deviation
@@ -618,7 +647,7 @@ public class ImageUtility {
      *      Channel 3 mean
      *      Channel 4 standard deviation
      */
-    private static double[] ImageStatistic(Object[] data, int height, int width){
+    private static double[] ImageStatistic(Object[] data){
         double[] stats = new double[6];
 
         //Mean deviation calculation

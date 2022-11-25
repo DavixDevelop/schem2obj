@@ -13,22 +13,21 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Represent a Minecraft Block Model, with methods for reading
- * reading the Block Model JSON Files
+ * Represent a Minecraft Block Model, with methods for
+ * reading the Block Model JSON Files and getting It's objects
  * @author DavixDevelop
- *
  */
 public class BlockModel {
-    private String name;
-    private String parent;
-    private Boolean ambientocclusion;
-    private BlockTextures textures;
-    private ArrayList<CubeElement> elements;
+    String name;
+    String parent;
+    Boolean ambientOcclusion;
+    BlockTextures textures;
+    ArrayList<CubeElement> elements;
 
-    public BlockModel(String name, String parent, Boolean ambientocclusion, BlockTextures textures, ArrayList<CubeElement> elements){
+    public BlockModel(String name, String parent, Boolean ambientOcclusion, BlockTextures textures, ArrayList<CubeElement> elements){
         this.name = name;
         this.parent = parent;
-        this.ambientocclusion = ambientocclusion;
+        this.ambientOcclusion = ambientOcclusion;
         this.textures = textures;
         this.elements = elements;
     }
@@ -40,7 +39,7 @@ public class BlockModel {
     }
 
     public Boolean getAmbientOcclusion() {
-        return ambientocclusion;
+        return ambientOcclusion;
     }
 
     public ArrayList<CubeElement> getElements() {
@@ -61,7 +60,7 @@ public class BlockModel {
      * @return the BlockModel of the JSON file
      */
     public static BlockModel readFromJson(InputStream jsonInputStream, String modelName){
-        BlockModel model = null;
+        BlockModel model;
 
         //Get reader from stream
         Reader reader = new InputStreamReader(jsonInputStream);
@@ -88,7 +87,7 @@ public class BlockModel {
             for (BlockModelTemplate.Element element : rawModel.elements) {
                 Double[] from = new Double[3];
                 Double[] to = new Double[3];
-                Boolean shade = (element.shade == null) ? false : element.shade;
+                Boolean shade = element.shade != null && element.shade;
                 HashMap<String, CubeElement.CubeFace> cubeFaces = new HashMap<>();
                 CubeElement.CubeRotation cubeRotation = null;
 
@@ -106,17 +105,10 @@ public class BlockModel {
                 to[1] = 16.0 - MC_From.get(2).doubleValue();
                 to[2] = MC_To.get(1).doubleValue();
 
-                /*for(int c = 0; c < element.from.size(); c++)
-                    from[(c == 1) ? 2 : (c == 2) ? 1 : c] = element.from.get(c).doubleValue();
-
-                for(int c = 0; c < element.to.size(); c++)
-                    to[(c == 1) ? 2 : (c == 2) ? 1 : c] = element.to.get(c).doubleValue();*/
-
                 //The reason why we call flattenArray here, is to cap the values of the cube vertices to 1.0 instead of 16.0,
                 //So that the cube's are the size of 1 meter or less, rather then 16 meters
-                //ToDo: Modify the asset's to skip this part
-                from = ArrayUtility.flattenArray(from, 16);
-                to = ArrayUtility.flattenArray(to, 16);
+                ArrayUtility.flattenArray(from, 16);
+                ArrayUtility.flattenArray(to, 16);
 
                 if(element.rotation != null){
                     Double[] origin = null;
@@ -130,7 +122,7 @@ public class BlockModel {
                         origin[0] = rawOrigin.get(0).doubleValue();
                         origin[1] = 16.0 - rawOrigin.get(2).doubleValue();
                         origin[2] = rawOrigin.get(1).doubleValue();
-                        origin = ArrayUtility.flattenArray(origin, 16);
+                        ArrayUtility.flattenArray(origin, 16);
                     }
 
                     if(element.rotation.containsKey("angle"))
@@ -159,9 +151,9 @@ public class BlockModel {
                     for(Object face : element.faces.keySet()){
                         Double[] uv = null;
                         String texture = null;
-                        String cullface = null;
+                        String cullFace = null;
                         Double rotation = null;
-                        Double tintindex = null;
+                        Double tintIndex = null;
 
                         Map<String, Object> faceValue = (Map<String, Object>) element.faces.get(face);
                         if(faceValue.containsKey("uv")){
@@ -175,54 +167,26 @@ public class BlockModel {
                             uv[2] = rawUv.get(2).doubleValue(); //x2
                             uv[3] = 16.0 - rawUv.get(1).doubleValue(); //16 - y2
 
-                            /*for(int c = 0; c < rawUv.size(); c++){
-                                uv[c] = rawUv.get(c).doubleValue();
-
-                                //Find max UV Value
-                                //if(uv[c] > MaxUVValue)
-                                //    MaxUVValue = uv[c];
-                            }*/
-
-                            //The reason why we call flattenArrayHere, is to cap the values of the cube texture coords to 1.0 instead of 16.0,
+                            //The reason why we call flattenArrayHere, is to cap the values of the cube texture cords to 1.0 instead of 16.0,
                             //So that the cube face's uv's aren't bigger than the texture bounds
-                            uv = ArrayUtility.flattenArray(uv, 16);
+                            ArrayUtility.flattenArray(uv, 16);
                         }
 
                         if(faceValue.containsKey("texture"))
                             texture = (String) faceValue.get("texture");
 
                         if(faceValue.containsKey("cullface"))
-                            cullface = (String) faceValue.get("cullface");
+                            cullFace = (String) faceValue.get("cullface");
 
                         if(faceValue.containsKey("rotation"))
                             rotation = ((Number) faceValue.get("rotation")).doubleValue();
 
                         if(faceValue.containsKey("tintindex"))
-                            tintindex = ((Number) faceValue.get("tintindex")).doubleValue();
+                            tintIndex = ((Number) faceValue.get("tintindex")).doubleValue();
 
-                        cubeFaces.put((String) face, new CubeElement.CubeFace(uv, texture, cullface, rotation, tintindex));
+                        cubeFaces.put((String) face, new CubeElement.CubeFace(uv, texture, cullFace, rotation, tintIndex));
                     }
 
-                    /*if(MaxUVValue / 16 > 1.0){
-                        Integer maxVal = ((Double)(MaxUVValue / 16.0)).intValue();
-                        MaxUVValue = maxVal.doubleValue() * 16.0;
-                    }*/
-
-                    /*
-                    //Convert faces uv's from top left, bottom right to bottom left, top right that obj uses
-                    for(String face : cubeFaces.keySet()){
-                        CubeElement.CubeFace cubeFace = cubeFaces.get(face);
-                        Double[] uv = cubeFace.getUv();
-                        if(uv != null){
-                            double bottom = uv[3];
-                            double top = uv[1];
-                            uv[1] = MaxUVValue - bottom;
-                            uv[3] = MaxUVValue - top;
-
-
-                            cubeFace.setUv(uv);
-                        }
-                    }*/
                 }
 
                 cubeElements.add(new CubeElement(from, to, shade, cubeRotation, cubeFaces));
@@ -230,7 +194,7 @@ public class BlockModel {
             }
         }
 
-        model = new BlockModel(modelName, rawModel.parent, rawModel.ambientocclusion, new BlockTextures(particle, textureVariables),cubeElements);
+        model = new BlockModel(modelName, rawModel.parent, rawModel.ambientOcclusion, new BlockTextures(particle, textureVariables),cubeElements);
         return model;
     }
 
@@ -241,7 +205,7 @@ public class BlockModel {
             cloneTextures = textures.clone();
         if(elements != null)
             cloneElements = new ArrayList<>(elements);
-        return new BlockModel(name, parent, ambientocclusion, cloneTextures, cloneElements);
+        return new BlockModel(name, parent, ambientOcclusion, cloneTextures, cloneElements);
     }
 
 }

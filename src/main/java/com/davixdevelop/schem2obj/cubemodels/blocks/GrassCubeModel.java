@@ -15,10 +15,15 @@ import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+/**
+ * The CubeModel for the Grass block
+ *
+ * @author DavixDevelop
+ */
 public class GrassCubeModel extends BlockCubeModel {
-    private static HashMap<BlockState.Variant, ICubeModel> RANDOM_VARIANTS = new HashMap<>();
-    //To mark if grass_top and grass_side was colored based on the biome grass color
-    //ToDo: Add option to choose biome colors
+    static HashMap<BlockState.Variant, ICubeModel> RANDOM_VARIANTS = new HashMap<>();
+    //To mark if grass_top and grass_side was colored based on the biomes grass color
+    //ToDo: Add option to choose biomes colors
     private static boolean NORMAL_MATERIAL_COLORED;
     //To mark if grass_top and grass_side was colored to white and was sawed as snowy_grass_top and snowy_grass_side
     private static boolean SNOWY_MATERIAL_GENERATED;
@@ -114,7 +119,7 @@ public class GrassCubeModel extends BlockCubeModel {
     }
 
     public void modifyRegularGrassMaterial(Namespace blockNamespace){
-        //Color the grass top and sides with biome grass color
+        //Color the grass top and sides with biomes grass color
         if(!NORMAL_MATERIAL_COLORED){
             CubeModelUtility.generateOrGetMaterial("blocks/grass_top", blockNamespace);
             CubeModelUtility.generateOrGetMaterial("blocks/grass_side", blockNamespace);
@@ -124,14 +129,14 @@ public class GrassCubeModel extends BlockCubeModel {
             IMaterial grass_side = Constants.BLOCK_MATERIALS.getMaterial("blocks/grass_side");
             IMaterial grass_side_overlay = Constants.BLOCK_MATERIALS.getMaterial("blocks/grass_side_overlay");
 
-            //Color the gray grass top with the biome grass color
-            BufferedImage coloredTop = ImageUtility.colorImage(grass_top.getDefaultDiffuseImage(), Constants.BIOME_GRASS_COLOR);
+            //Color the gray grass top with the biomes grass color
+            BufferedImage coloredTop = ImageUtility.colorImage(grass_top.getDefaultDiffuseImage(), Constants.BIOMES_GRASS_COLOR);
 
             //Set grass top output diffuse image to colored top
             grass_top.setDiffuseImage(coloredTop);
 
-            //Color the gray grass side overlay with the biome grass color
-            BufferedImage colored_side_overlay = ImageUtility.colorImage(grass_side_overlay.getDefaultDiffuseImage(), Constants.BIOME_GRASS_COLOR);
+            //Color the gray grass side overlay with the biomes grass color
+            BufferedImage colored_side_overlay = ImageUtility.colorImage(grass_side_overlay.getDefaultDiffuseImage(), Constants.BIOMES_GRASS_COLOR);
 
             //Combine the grass side and colored overlay
             BufferedImage combinedOverlay = ImageUtility.overlayImage(grass_side.getDefaultDiffuseImage(),colored_side_overlay);
@@ -152,7 +157,7 @@ public class GrassCubeModel extends BlockCubeModel {
     }
 
     public void modifySnowyGrassMaterial(Namespace blockNamespace){
-        //Color the grass top with biome snow color and create new copy of it
+        //Color the grass top with biomes snow color and create new copy of it
         if(!SNOWY_MATERIAL_GENERATED){
             CubeModelUtility.generateOrGetMaterial("blocks/grass_top", blockNamespace);
             IMaterial grass_top = Constants.BLOCK_MATERIALS.getMaterial("blocks/grass_top");

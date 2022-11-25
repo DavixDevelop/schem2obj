@@ -4,6 +4,11 @@ import com.davixdevelop.schem2obj.cubemodels.CubeModelFactory;
 import com.davixdevelop.schem2obj.cubemodels.ICubeModel;
 import com.davixdevelop.schem2obj.namespace.Namespace;
 
+/**
+ * The CubeModel for all slab block variants
+ *
+ * @author DavixDevelop
+ */
 public class SlabCubeModel extends BlockCubeModel{
     private String half = "";
 

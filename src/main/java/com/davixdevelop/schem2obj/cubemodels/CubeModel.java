@@ -11,6 +11,11 @@ import com.davixdevelop.schem2obj.util.ArrayVector;
 
 import java.util.*;
 
+/**
+ * Represents a CubeModel that contains one or more cube
+ *
+ * @author DavixDevelop
+ */
 public class CubeModel implements ICubeModel {
     private String name;
     private HashedStringList materials;
@@ -141,7 +146,8 @@ public class CubeModel implements ICubeModel {
 
 
                         //Convert the cube to obj
-                        CubeModelUtility.convertCubeElementToCubeModel(element, uvLock, rotationX, rotationY, modelsMaterials.get(variant.getModel()), this);
+                        if(variant != null)
+                            CubeModelUtility.convertCubeElementToCubeModel(element, uvLock, rotationX, rotationY, modelsMaterials.get(variant.getModel()), this);
                     }
 
                     //Mark that the variant has generated elements

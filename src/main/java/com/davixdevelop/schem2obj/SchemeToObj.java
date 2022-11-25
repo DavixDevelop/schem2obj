@@ -23,7 +23,7 @@ public class SchemeToObj {
 
         Date start = new Date();
 
-        String schem_path = null;
+        String scheme_path = null;
         String output_path = null;
 
         boolean exportAllBlock = false;
@@ -57,9 +57,9 @@ public class SchemeToObj {
             if(arg[2].startsWith("-i")){
                 if(arg[3].endsWith(".schematic") || arg[1].endsWith(".nbt")) {
                     if(arg[3].startsWith(".")) //If filename starts with . It's a relative path -> convert it to absolute
-                        schem_path = Paths.get(rootFolder, arg[3].substring(1)).toString();
+                        scheme_path = Paths.get(rootFolder, arg[3].substring(1)).toString();
                     else
-                        schem_path = arg[3];
+                        scheme_path = arg[3];
                 }else{
                     LogUtility.Log("Input scheme doesn't use the .schematic extension");
                     return;
@@ -129,7 +129,7 @@ public class SchemeToObj {
 
         SchemeToObj s = new SchemeToObj();
 
-        ArrayList<ICubeModel> objects = s.schemToCubeModels(schem_path, exportAllBlock);
+        ArrayList<ICubeModel> objects = s.schemeToCubeModels(scheme_path, exportAllBlock);
 
         if(objects == null || objects.isEmpty()){
             LogUtility.Log("Failed to convert schematic to OBJ");
@@ -143,24 +143,25 @@ public class SchemeToObj {
         }
 
         Date end = new Date();
-        Double eclipesed = ((end.getTime()  - start.getTime()) / 1000.0) / 60.0;
-        Double minutes = Math.floor(eclipesed);
-        Double seconds = Math.floor((eclipesed - minutes) * 60);
+        double eclipsed = ((end.getTime()  - start.getTime()) / 1000.0) / 60.0;
+        double minutes = Math.floor(eclipsed);
+        double seconds = Math.floor((eclipsed - minutes) * 60);
 
-        LogUtility.Log(String.format("Success (Done in: %02d:%02d)", minutes.intValue(), seconds.intValue()));
+        LogUtility.Log(String.format("Success (Done in: %02d:%02d)", (int) minutes, (int) seconds));
 
 
     }
 
-    public ArrayList<ICubeModel> schemToCubeModels(String schemPath, boolean exportAllBlocks){
+    public ArrayList<ICubeModel> schemeToCubeModels(String schemePath, boolean exportAllBlocks){
 
 
         try {
-            InputStream schemInput = new FileInputStream(schemPath);
+            InputStream schemeInput = new FileInputStream(schemePath);
 
             try{
                 //Read schematic
-                Schematic schematic = null; schematic = Schematic.loadSchematic(schemInput);
+                Schematic schematic;
+                schematic = Schematic.loadSchematic(schemeInput);
                 //Load schematic into LOADED_SCHEMATIC
                 Constants.LOADED_SCHEMATIC.setSchematic(schematic);
             }
@@ -180,9 +181,9 @@ public class SchemeToObj {
         //All blocks (including air -> null)
         HashMap<Integer,ICubeModel> allBlocks = new HashMap<>();
 
-        Integer width = (int) Constants.LOADED_SCHEMATIC.getWidth();
-        Integer length = (int) Constants.LOADED_SCHEMATIC.getLength();
-        Integer height = (int) Constants.LOADED_SCHEMATIC.getHeight();
+        int width = Constants.LOADED_SCHEMATIC.getWidth();
+        int length = Constants.LOADED_SCHEMATIC.getLength();
+        int height = Constants.LOADED_SCHEMATIC.getHeight();
 
         WaterCubeModel waterObject = null;
         LavaCubeModel lavaObject = null;
@@ -218,6 +219,8 @@ public class SchemeToObj {
                                 case "bed":
                                 case "standing_banner":
                                 case "wall_banner":
+                                case "standing_sign":
+                                case "wall_sign":
                                     //Get  singleton tile entity cube model from memory or create it anew every time
                                     ICubeModel entityCubeModel = Constants.CUBE_MODEL_FACTORY.fromNamespace(
                                             blockNamespace,
@@ -276,9 +279,9 @@ public class SchemeToObj {
 
                                 Orientation oppositeOrientation = faceOrientation.getOpposite();
 
-                                Integer adjacentX = x + faceOrientation.getXOffset();
-                                Integer adjacentZ = z - faceOrientation.getYOffset();
-                                Integer adjacentY = y + faceOrientation.getZOffset();
+                                int adjacentX = x + faceOrientation.getXOffset();
+                                int adjacentZ = z - faceOrientation.getYOffset();
+                                int adjacentY = y + faceOrientation.getZOffset();
 
                                 if(adjacentX >= 0 && adjacentX < width &&
                                 adjacentZ >= 0 && adjacentZ < length &&
@@ -291,53 +294,6 @@ public class SchemeToObj {
                                         object.deleteFaces(faceOrientation);
                                 }
                             }
-                            /*
-                            final Set<String> objectBoundingFaces = object.getBoundingFaces().keySet();
-
-                            if(objectBoundingFaces.isEmpty()) {
-                                blocks.add(object);
-                                continue;
-                            }
-
-                            //West block check
-                            if(x > 0)
-                                if(CubeModelUtility.checkFacing(objectBoundingFaces, object, allBlocks.get((x - 1) + (y * length + z) * width), "west", "east"))
-                                    object.deleteFaces("west");
-
-
-                            //East block check
-                            if(x + 1 < width)
-                                if(CubeModelUtility.checkFacing(objectBoundingFaces, object, allBlocks.get((x + 1) + (y* length + z) * width), "east", "west"))
-                                    object.deleteFaces("east");
-
-
-                            //North block check
-                            if(z > 0)
-                                if(CubeModelUtility.checkFacing(objectBoundingFaces, object, allBlocks.get(x + (y * length + (z - 1)) * width), "north", "south"))
-                                    object.deleteFaces("north");
-
-
-                            //South block check
-                            if(z + 1 < length)
-                                if(CubeModelUtility.checkFacing(objectBoundingFaces, object, allBlocks.get(x + (y * length + (z + 1)) * width), "south", "north"))
-                                    object.deleteFaces("south");
-
-
-                            //Up block check
-                            if(y + 1 < height)
-                                if(CubeModelUtility.checkFacing(objectBoundingFaces, object, allBlocks.get(x + ((y + 1) * length + z) * width), "up", "down"))
-                                    object.deleteFaces("up");
-
-
-                            //Down block check
-                            if(y > 0)
-                                if(CubeModelUtility.checkFacing(objectBoundingFaces, object, allBlocks.get(x + ((y - 1) * length + z) * width), "down", "up"))
-                                    object.deleteFaces("down");
-
-                            if(!object.getMaterialFaces().isEmpty()) {
-                                //Reset the normals for the object to reflect the deleted faces and add them to all normals
-                                WavefrontUtility.resetNormals(allNormals, object);
-                            }*/
 
                             blocks.add(object);
                         }
@@ -391,14 +347,14 @@ public class SchemeToObj {
             //Specify which material library to use
             f.println(String.format("mtllib %s.mtl", fileName));
 
-            //Array variable to keep track of how many vertices, texture coordinates and vertex normals were writen
+            //Array variable to keep track of how many vertices, texture coordinates and vertex normals were written
             int[] countTracker = new int[]{0,0,0};
 
             for(ICubeModel cubeModel : cubeModels){
                 IWavefrontObject object = WavefrontObjectFactory.fromCubeModel(cubeModel);
 
                 if(object != null && !object.getMaterialFaces().isEmpty()){
-                    countTracker = WavefrontUtility.writeObjectData(object, f, countTracker);
+                    WavefrontUtility.writeObjectData(object, f, countTracker);
                 }
             }
 
@@ -421,8 +377,10 @@ public class SchemeToObj {
             else{
                 //Else delete the files inside the output texture folder
                 File[] textureFiles = textureFolderOutPath.toFile().listFiles();
-                for(File textureFile : textureFiles){
-                    textureFile.delete();
+                if(textureFiles != null) {
+                    for (File textureFile : textureFiles) {
+                        textureFile.delete();
+                    }
                 }
             }
 

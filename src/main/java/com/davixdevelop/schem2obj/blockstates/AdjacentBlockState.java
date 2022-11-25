@@ -13,14 +13,19 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * A implementation based on BlockState, but for adjacent blocks
+ *
+ * @author DavixDevelop
+ */
 public class AdjacentBlockState {
 
-    private static Gson GSON = new Gson();
+    static Gson GSON = new Gson();
 
     //key: orientation of the adjacent block to the original block
     //value: list of adjacent variants
     private final HashMap<String, List<AdjacentVariant>> adjacentOrientations = new HashMap<>();
-    private List<String> checkOrder = new ArrayList<>();
+    List<String> checkOrder = new ArrayList<>();
 
     public AdjacentBlockState(String assetPath){
         readJSON(assetPath);
@@ -32,35 +37,40 @@ public class AdjacentBlockState {
             //Get input stream for adjacent block state json file from assets
             InputStream assetStream = AdjacentBlockState.class.getClassLoader().getResourceAsStream(assetPath);
 
-            //Get reader for asset stream
-            Reader assetReader = new InputStreamReader(assetStream);
+            if(assetStream != null) {
 
-            //Read the json to a map
-            Map<String, Object> adjacent = GSON.fromJson(assetReader, new TypeToken<Map<String, Object>>(){}.getType());
+                //Get reader for asset stream
+                Reader assetReader = new InputStreamReader(assetStream);
 
-            for(String orientation : adjacent.keySet()){
-                List<AdjacentVariant> orientationVariants = new ArrayList<>();
+                //Read the json to a map
+                Map<String, Object> adjacent = GSON.fromJson(assetReader, new TypeToken<Map<String, Object>>() {
+                }.getType());
 
-                Object rawVariants = adjacent.get(orientation);
-                //Check if rawVariants is list, else threat it as a object of a AdjacentVariant
-                if(rawVariants instanceof List){
-                    JsonElement variantsJson = GSON.toJsonTree(rawVariants);
-                    List<AdjacentVariant> adjacentVariants = GSON.fromJson(variantsJson, new TypeToken<List<AdjacentVariant>>(){}.getType());
-                    for(AdjacentVariant rawVariant : adjacentVariants){
+                for (String orientation : adjacent.keySet()) {
+                    List<AdjacentVariant> orientationVariants = new ArrayList<>();
+
+                    Object rawVariants = adjacent.get(orientation);
+                    //Check if rawVariants is list, else threat it as a object of a AdjacentVariant
+                    if (rawVariants instanceof List) {
+                        JsonElement variantsJson = GSON.toJsonTree(rawVariants);
+                        List<AdjacentVariant> adjacentVariants = GSON.fromJson(variantsJson, new TypeToken<List<AdjacentVariant>>() {
+                        }.getType());
+                        for (AdjacentVariant rawVariant : adjacentVariants) {
+                            //Convert the apply to either states to apply or to a list of adjacent variants
+                            convertApply(rawVariant);
+                            orientationVariants.add(rawVariant);
+                        }
+                    } else {
+                        JsonElement variantJson = GSON.toJsonTree(rawVariants);
+                        AdjacentVariant rawVariant = GSON.fromJson(variantJson, AdjacentVariant.class);
                         //Convert the apply to either states to apply or to a list of adjacent variants
                         convertApply(rawVariant);
                         orientationVariants.add(rawVariant);
                     }
-                }else{
-                    JsonElement variantJson = GSON.toJsonTree(rawVariants);
-                    AdjacentVariant rawVariant = GSON.fromJson(variantJson, AdjacentVariant.class);
-                    //Convert the apply to either states to apply or to a list of adjacent variants
-                    convertApply(rawVariant);
-                    orientationVariants.add(rawVariant);
-                }
 
-                adjacentOrientations.put(orientation, orientationVariants);
-                checkOrder.add(orientation);
+                    adjacentOrientations.put(orientation, orientationVariants);
+                    checkOrder.add(orientation);
+                }
             }
         }catch (Exception ex){
             LogUtility.Log("Error while reading adjacent block state for " + assetPath);
@@ -87,9 +97,7 @@ public class AdjacentBlockState {
             adjacentVariant.apply = variants;
         }else{
             JsonElement jsonApply = GSON.toJsonTree(adjacentVariant.apply);
-            Map<String, String> states = GSON.fromJson(jsonApply, new TypeToken<Map<String, String>>(){}.getType());
-
-            adjacentVariant.apply = states;
+            adjacentVariant.apply = GSON.fromJson(jsonApply, new TypeToken<Map<String, String>>(){}.getType());;
         }
     }
 
@@ -106,7 +114,7 @@ public class AdjacentBlockState {
 
         //Loop through them
         for(AdjacentVariant adjacentVariant : orientationVariants){
-            boolean matches = false;
+            boolean matches;
 
             if(adjacentVariant.when != null)
                 matches = matchWhen(adjacentVariant.when, originalSates);

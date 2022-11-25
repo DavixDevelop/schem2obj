@@ -1,8 +1,8 @@
 package com.davixdevelop.schem2obj.models;
 
 public class IntegerString {
-    private String stringValue;
-    private Integer integerValue;
+    String stringValue;
+    Integer integerValue;
 
     public IntegerString(String stringValue, Integer integerValue){
         this.stringValue = stringValue;

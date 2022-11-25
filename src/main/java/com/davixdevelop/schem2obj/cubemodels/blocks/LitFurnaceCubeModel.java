@@ -10,6 +10,11 @@ import com.davixdevelop.schem2obj.util.ArrayVector;
 
 import java.util.HashMap;
 
+/**
+ * The CubeModel for the Lit Furnace block
+ *
+ * @author DavixDevelop
+ */
 public class LitFurnaceCubeModel extends BlockCubeModel {
     @Override
     public boolean fromNamespace(Namespace blockNamespace) {

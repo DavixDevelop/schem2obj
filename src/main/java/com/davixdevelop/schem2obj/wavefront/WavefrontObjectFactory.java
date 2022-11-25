@@ -1,6 +1,5 @@
 package com.davixdevelop.schem2obj.wavefront;
 
-import com.davixdevelop.schem2obj.cubemodels.CubeModel;
 import com.davixdevelop.schem2obj.cubemodels.ICube;
 import com.davixdevelop.schem2obj.cubemodels.ICubeModel;
 import com.davixdevelop.schem2obj.cubemodels.model.CubeFace;
@@ -9,7 +8,6 @@ import com.davixdevelop.schem2obj.models.HashedStringList;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 
 public class WavefrontObjectFactory {
@@ -19,7 +17,7 @@ public class WavefrontObjectFactory {
         ArrayList<Double[]> normalsArray = new ArrayList<>();
         HashedDoubleList textureCoordinates = new HashedDoubleList();
         //Map of materialName and It's faces, where each face consists of an list of array indices
-        //Each indice consists of the vertex index, texture coordinate index and vertex normal index
+        //Each indices consists of the vertex index, texture coordinate index and vertex normal index
         HashMap<String, ArrayList<ArrayList<Integer[]>>> faces = new HashMap<>();
 
         HashedStringList cubeModelMaterials = cubeModel.getMaterials();

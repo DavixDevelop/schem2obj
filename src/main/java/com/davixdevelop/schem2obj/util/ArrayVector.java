@@ -26,7 +26,7 @@ public class ArrayVector {
 
     public static class MatrixRotation {
         private Double[][] matrix;
-        private Double rot;
+        Double rot;
 
         /**
          *
@@ -67,9 +67,9 @@ public class ArrayVector {
         public Double[] rotate(Double[] vector, Double w){
             if(w == null)
                 w = 1.0; //0 is vector, 1 is point
-            Double x = (vector[0] * matrix[0][0]) + (vector[1] * matrix[1][0]) + (vector[2] * matrix[2][0]) + (w * matrix[3][0]);
-            Double y = (vector[0] * matrix[0][1]) + (vector[1] * matrix[1][1]) + (vector[2] * matrix[2][1]) + (w * matrix[3][1]);
-            Double z = (vector[0] * matrix[0][2]) + (vector[1] * matrix[1][2]) + (vector[2] * matrix[2][2]) + (w * matrix[3][2]);
+            double x = (vector[0] * matrix[0][0]) + (vector[1] * matrix[1][0]) + (vector[2] * matrix[2][0]) + (w * matrix[3][0]);
+            double y = (vector[0] * matrix[0][1]) + (vector[1] * matrix[1][1]) + (vector[2] * matrix[2][1]) + (w * matrix[3][1]);
+            double z = (vector[0] * matrix[0][2]) + (vector[1] * matrix[1][2]) + (vector[2] * matrix[2][2]) + (w * matrix[3][2]);
 
             return new Double[] {x, y, z};
         }

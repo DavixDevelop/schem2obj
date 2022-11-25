@@ -27,8 +27,8 @@ public enum Orientation {
 
     /**
      * Return a orientation from a index (ex 1 - > DOWN), or from coordinates (ex. 1, 0, 0 - > WEST)
-     * @param indexOrCords
-     * @return
+     * @param indexOrCords Orientation index (ex 1 - > DOWN), or coordinates (ex. 1, 0, 0 - > WEST)
+     * @return The Orientation
      */
     public static Orientation getOrientation(Integer ...indexOrCords){
         if(indexOrCords.length == 1)

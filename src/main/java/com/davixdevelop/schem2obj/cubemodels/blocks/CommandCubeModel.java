@@ -11,6 +11,11 @@ import com.davixdevelop.schem2obj.util.ArrayVector;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+/**
+ * The CubeModel for the Command block
+ *
+ * @author DavixDevelop
+ */
 public class CommandCubeModel extends BlockCubeModel {
     @Override
     public boolean fromNamespace(Namespace blockNamespace) {

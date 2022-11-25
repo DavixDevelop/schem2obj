@@ -5,6 +5,11 @@ import com.davixdevelop.schem2obj.cubemodels.model.CubeFace;
 
 import java.util.Arrays;
 
+/**
+ * Represents a single cube in a CubeModel
+ *
+ * @author DavixDevelop
+ */
 public class Cube implements ICube {
     private Integer[] materialFaces;
     private Boolean[] generatedFaces;

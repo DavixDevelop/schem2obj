@@ -17,10 +17,18 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * The CubeModel for the Banner entity
+ * It's only responsible to create the material for the banner.
+ * For the implementation of the Wall and Standing Banner,
+ * see WallBannerCubeModel and StandingBannerCubeModel
+ *
+ * @author DavixDevelop
+ */
 public class BannerCubeModel extends TileEntityCubeModel {
 
     public static Map<String, BufferedImage> PATTERNS = new HashMap<>();
-    private static Map<String, List<String>> PATTERN_CODES = new HashMap<>();
+    public static Map<String, List<String>> PATTERN_CODES = new HashMap<>();
 
     private static boolean DEFAULT_MATERIAL_GENERATED = false;
 
@@ -44,7 +52,7 @@ public class BannerCubeModel extends TileEntityCubeModel {
         patternCodes.add(generateColoredPattern(basePattern, baseColor, baseColorIndex));
 
         if(entityValues.containsKey("Patterns")){
-            List<Object> Patterns = entityValues.getList("Patterns");
+            List<?> Patterns = entityValues.getList("Patterns");
             for(Object patternMap : Patterns){
                 if(patternMap instanceof EntityValues){
                     EntityValues patternValues = (EntityValues) patternMap;
@@ -61,16 +69,16 @@ public class BannerCubeModel extends TileEntityCubeModel {
             List<String> patterns = PATTERN_CODES.get(pattern);
 
             if(patterns.size() == patternCodes.size()){
-                boolean mathes = true;
+                boolean matches = true;
                 for(int p = 0; p < patterns.size(); p++){
                     if(!patterns.get(p).equals(patternCodes.get(p)))
                     {
-                        mathes = false;
+                        matches = false;
                         break;
                     }
                 }
 
-                if(mathes) {
+                if(matches) {
                     bannerPatternCode = pattern;
                     return true;
                 }
@@ -107,11 +115,11 @@ public class BannerCubeModel extends TileEntityCubeModel {
                 }
             }
 
-            banner_material.setName(String.format("banner-%s", patternCodesName.toString()));
+            banner_material.setName(String.format("banner-%s", patternCodesName));
             banner_material.setDiffuseImage(coloredBanner);
 
             //Put modified material into collection
-            Constants.BLOCK_MATERIALS.setMaterial(String.format("entity/banner-%s", patternCodesName.toString()), banner_material);
+            Constants.BLOCK_MATERIALS.setMaterial(String.format("entity/banner-%s", patternCodesName), banner_material);
             //Remove the base material from the used materials
             Constants.BLOCK_MATERIALS.unsetUsedMaterial(baseMaterialPath);
 

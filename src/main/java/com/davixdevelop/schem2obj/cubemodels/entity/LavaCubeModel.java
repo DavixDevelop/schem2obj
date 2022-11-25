@@ -3,6 +3,11 @@ package com.davixdevelop.schem2obj.cubemodels.entity;
 import com.davixdevelop.schem2obj.cubemodels.ICubeModel;
 import com.davixdevelop.schem2obj.namespace.Namespace;
 
+/**
+ * The CubeModel for the Lava entity
+ *
+ * @author DavixDevelop
+ */
 public class LavaCubeModel extends LiquidCubeModel{
     public LavaCubeModel(){
         super("blocks/lava_flow", "blocks/lava_still",20.0, 32.0);

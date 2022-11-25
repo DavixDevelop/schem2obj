@@ -10,6 +10,11 @@ import com.davixdevelop.schem2obj.namespace.Namespace;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+/**
+ * The CubeModel for most block that use a simple cube for It's model
+ *
+ * @author DavixDevelop
+ */
 public class BlockCubeModel extends CubeModel {
     public static HashMap<BlockState.Variant, ICubeModel> BLOCK_RANDOM_VARIANTS = new HashMap<>();
 

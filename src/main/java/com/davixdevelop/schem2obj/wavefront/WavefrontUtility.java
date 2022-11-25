@@ -1,117 +1,15 @@
 package com.davixdevelop.schem2obj.wavefront;
 
-import com.davixdevelop.schem2obj.blockmodels.CubeElement;
 import com.davixdevelop.schem2obj.cubemodels.CubeModelUtility;
 import com.davixdevelop.schem2obj.models.HashedDoubleList;
 import com.davixdevelop.schem2obj.util.ArrayVector;
 
 import java.io.PrintWriter;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Locale;
 
 public class WavefrontUtility {
-
-    /**
-     * Set the UV's of a face in a clockwise orientation
-     * @param face The face of the
-     * @param from
-     * @param to
-     * @return
-     */
-    public static ArrayList<Double[]> setAndRotateUVFace(CubeElement.CubeFace face, String orientation, Double[] from, Double[] to){
-        ArrayList<Double[]> UVFace = new ArrayList<>();
-        if(face.getUv() == null){
-            /*
-            UVFace.add(new Double[]{from[0], to[1]}); //1
-            UVFace.add(new Double[]{from[0], from[1]}); //2
-            UVFace.add(new Double[]{to[0], from[1]}); //3
-            UVFace.add(new Double[]{to[0], to[1]}); //4
-            */
-
-            switch (orientation){
-                case "up":
-                case "down":
-                    UVFace.add(new Double[]{to[0], to[1]}); //4
-                    UVFace.add(new Double[]{to[0], from[1]}); //3
-                    UVFace.add(new Double[]{from[0], from[1]}); //2
-                    UVFace.add(new Double[]{from[0], to[1]}); //1
-                    break;
-                case "north":
-                case "south":
-                    UVFace.add(new Double[]{to[0], to[2]});
-                    UVFace.add(new Double[]{to[0], from[2]});
-                    UVFace.add(new Double[]{from[0], from[2]});
-                    UVFace.add(new Double[]{from[0], to[2]});
-                case "west":
-                case "east":
-                    UVFace.add(new Double[]{to[1], to[2]});
-                    UVFace.add(new Double[]{to[1], from[2]});
-                    UVFace.add(new Double[]{from[1], from[2]});
-                    UVFace.add(new Double[]{from[1], to[2]});
-            }
-
-
-
-        }else{
-            //MC face uv is a 4 item array [x1, y1, x2, y2]
-            Double[] rawUV = face.getUv();
-
-            UVFace.add(new Double[]{rawUV[0], rawUV[1]}); //x1,y1 //1
-            UVFace.add(new Double[]{rawUV[0], rawUV[3]}); //x1,y2 //2
-            UVFace.add(new Double[]{rawUV[2], rawUV[3]}); //x2,y2 //3
-            UVFace.add(new Double[]{rawUV[2], rawUV[1]}); //x2,y1 //4
-
-
-
-            /*switch (orientation){
-                case "north":
-                    UVFace.add(defaultUV.get(1)); //2
-                    UVFace.add(defaultUV.get(0)); //1
-                    UVFace.add(defaultUV.get(3)); //4
-                    UVFace.add(defaultUV.get(2)); //3
-                case "south":
-                    UVFace.add(defaultUV.get(2)); //3
-                    UVFace.add(defaultUV.get(3)); //4
-                    UVFace.add(defaultUV.get(0)); //1
-                    UVFace.add(defaultUV.get(1)); //2
-                    break;
-                case "east":
-                    UVFace = defaultUV;
-                    break;
-                case "west":
-                case "up":
-                case "down":
-                default:
-                    UVFace = defaultUV;
-                    break;
-            }*/
-        }
-
-        //Rotate uv, to simulate rotation of texture
-        if(face.getRotation() != null){
-            //Calculate the origin of the UV face
-            Double[] faceOrigin = CubeModelUtility.getUVFaceOrigin(UVFace);
-
-            if(face.getUv() == null)
-                 CubeModelUtility.rotateUV(UVFace, (orientation.equals("south") ||  orientation.equals("north")) ? -face.getRotation() : face.getRotation(), faceOrigin);
-            else if(face.getRotation() % 90 == 0)
-                 CubeModelUtility.shiftRotateUV(UVFace, face.getRotation());
-
-        }
-
-        return UVFace;
-    }
-
-    /*public static ArrayList<Integer[]> createWavefrontFace(Map<String, Integer> VerticesIndexes, Integer[] UVIndexes, String orientation) {
-        String[] corners = CubeModelUtility.getCornerPerOrientation(orientation);
-        ArrayList<Integer[]> wvFace = new ArrayList<>();
-        //Add the indices of each vertex to the face
-        //Each Integer array represent the the index of the vertex, texture coordinate and vertex normal and
-        //[v, vt, vn]
-        for(int c = 0; c <4; c++) {
-            wvFace.add(new Integer[]{VerticesIndexes.get(corners[c]), UVIndexes[c], VerticesIndexes.get(corners[c])});
-        }
-        return  wvFace;
-    }*/
 
 
     public static void createNormals(ArrayList<Double[]> normalsArray, HashedDoubleList vertices, HashMap<String, ArrayList<ArrayList<Integer[]>>> faces){
@@ -142,7 +40,7 @@ public class WavefrontUtility {
                     Integer vertexIndex = materialFace.get(x)[0];
 
                     Double[] vn = normalsArray.get(vertexIndex);
-                    //If the vn is null, set it to face_nomal
+                    //If the vn is null, set it to face_normal
                     if (vn== null) {
                         vn = face_normal;
                     } else {
@@ -208,7 +106,7 @@ public class WavefrontUtility {
                     Double[] vn = null;
                     Double[] v = vertices.get(vertexIndex);
 
-                    //If the vn is null, set it to face_nomal
+                    //If the vn is null, set it to face_normal
                     if (!allNormals.containsKey(v)) {
                         vn = face_normal;
                     } else {
@@ -255,9 +153,8 @@ public class WavefrontUtility {
      * @param object The wavefront object to write the data
      * @param f The PrintWriter to write the data to
      * @param countTracker A 3 length integer array to keep count of all written vertices/uv's/vertex normals
-     * @return A 3 length integer array that keeps count of all written vertices/uv's/vertex normals
      */
-    public static int[] writeObjectData(IWavefrontObject object, PrintWriter f, int[] countTracker){
+    public static void writeObjectData(IWavefrontObject object, PrintWriter f, int[] countTracker){
         //Specify new object
         f.println(String.format("o %s", object.getName()));
 
@@ -295,12 +192,12 @@ public class WavefrontUtility {
                 if(face == null)
                     continue;
 
-                String faceEntry = "f";
+                StringBuilder faceEntry = new StringBuilder("f");
                 for (int x = face.size() - 1; x >= 0; x--) {
                     Integer[] indices = face.get(x);
                     //Format: vert index/texture coordinate/vert normal index
                     //Each index is calculated based on the sum of written vertices/uv/vertex normals + 1 (as in the Wavefront OBJ format indexes start with 1) + local index (ex 0)
-                    faceEntry += String.format(" %d/%d/%d", countTracker[0] + 1 + indices[0], countTracker[1] + 1 + indices[1], countTracker[2] + 1 + indices[2]);
+                    faceEntry.append(String.format(" %d/%d/%d", countTracker[0] + 1 + indices[0], countTracker[1] + 1 + indices[1], countTracker[2] + 1 + indices[2]));
                 }
                 f.println(faceEntry);
             }
@@ -316,7 +213,6 @@ public class WavefrontUtility {
         //Update size of written texture coordinates on countTracker
        countTracker[1] += uvs.size();
 
-        return countTracker;
     }
 
     /*//Create normals for object

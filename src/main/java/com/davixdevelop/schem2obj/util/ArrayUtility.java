@@ -68,8 +68,7 @@ public class ArrayUtility {
     public static Object[] splitArrayPairsToLists(ArrayList<Double[]> input, Integer size){
         ArrayList<Double[]> pair1 = new ArrayList<>();
         ArrayList<Double[]> pair2 = new ArrayList<>();
-        for(int c = 0; c < input.size(); c++){
-            Double[] array = input.get(c);
+        for (Double[] array : input) {
             Object[] pairs = splitArray(array, size);
             pair1.add((Double[]) pairs[0]);
             pair2.add((Double[]) pairs[1]);

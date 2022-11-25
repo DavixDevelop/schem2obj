@@ -1,7 +1,5 @@
 package com.davixdevelop.schem2obj.wavefront;
 
-import com.davixdevelop.schem2obj.namespace.Namespace;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 

@@ -14,17 +14,17 @@ public class CIELab extends ColorSpace {
     }
 
     @Override
-    public float[] fromCIEXYZ(float[] colorvalue) {
-        double l = f(colorvalue[1]);
+    public float[] fromCIEXYZ(float[] colorValue) {
+        double l = f(colorValue[1]);
         double L = 116.0 * l - 16.0;
-        double a = 500.0 * (f(colorvalue[0]) - l);
-        double b = 200.0 * (l - f(colorvalue[2]));
+        double a = 500.0 * (f(colorValue[0]) - l);
+        double b = 200.0 * (l - f(colorValue[2]));
         return new float[] {(float) L, (float) a, (float) b};
     }
 
     @Override
-    public float[] fromRGB(float[] rgbvalue) {
-        float[] xyz = CIEXYZ.fromRGB(rgbvalue);
+    public float[] fromRGB(float[] rgbValue) {
+        float[] xyz = CIEXYZ.fromRGB(rgbValue);
         return fromCIEXYZ(xyz);
     }
 
@@ -44,17 +44,17 @@ public class CIELab extends ColorSpace {
     }
 
     @Override
-    public float[] toCIEXYZ(float[] colorvalue) {
-        double i = (colorvalue[0] + 16.0) * (1.0 / 116.0);
-        double X = fInv(i + colorvalue[1] * (1.0 / 500.0));
+    public float[] toCIEXYZ(float[] colorValue) {
+        double i = (colorValue[0] + 16.0) * (1.0 / 116.0);
+        double X = fInv(i + colorValue[1] * (1.0 / 500.0));
         double Y = fInv(i);
-        double Z = fInv(i - colorvalue[2] * (1.0 / 200.0));
+        double Z = fInv(i - colorValue[2] * (1.0 / 200.0));
         return new float[] {(float) X, (float) Y, (float) Z};
     }
 
     @Override
-    public float[] toRGB(float[] colorvalue) {
-        float[] xyz = toCIEXYZ(colorvalue);
+    public float[] toRGB(float[] colorValue) {
+        float[] xyz = toCIEXYZ(colorValue);
         return CIEXYZ.toRGB(xyz);
     }
 

@@ -9,6 +9,11 @@ import com.davixdevelop.schem2obj.namespace.Namespace;
 
 import java.util.HashMap;
 
+/**
+ * The CubeModel for the Magma block
+ *
+ * @author DavixDevelop
+ */
 public class MagmaCubeModel extends CubeModel {
     
     @Override

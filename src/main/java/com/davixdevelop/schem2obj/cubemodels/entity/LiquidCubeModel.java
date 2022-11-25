@@ -11,11 +11,16 @@ import com.davixdevelop.schem2obj.util.ArrayVector;
 
 import java.util.*;
 
+/**
+ * The CubeModel for block liquids
+ *
+ * @author DavixDevelop
+ */
 public class LiquidCubeModel extends CubeModel {
-    private String flowableMaterial;
-    private String stillMaterial;
+    String flowableMaterial;
+    String stillMaterial;
 
-    private Boolean generatedMaterials = false;
+    Boolean generatedMaterials = false;
 
     public static double ZERO_LIQUID_LEVEL = 11.0; //Level 0
     public static double MAX_LIQUID_LEVEL = 3.1; //Level 1
@@ -32,12 +37,10 @@ public class LiquidCubeModel extends CubeModel {
 
     //A collection to store all the CornerHeights for each liquid block
     //Map<key: y axis, value: Map<key: x axis, value: Map<key: z axis, value: CornerHeights>>>
-    private Map<Integer, Map<Integer, Map<Integer, LiquidBlock>>> LiquidBlocksCollection = new HashMap<>();
+    Map<Integer, Map<Integer, Map<Integer, LiquidBlock>>> LiquidBlocksCollection = new HashMap<>();
 
-    private double still_texture_rows = 0.0;
-    private double flowing_texture_rows = 0.0;
-
-    public LiquidCubeModel(){}
+    double still_texture_rows;
+    double flowing_texture_rows;
 
     /**
      * @param flowableMaterial The name of the flowable material
@@ -63,8 +66,6 @@ public class LiquidCubeModel extends CubeModel {
         NORTH_EAST,
         NORTH_WEST
     }
-
-    public static double MAX_FLOWABLE_LEVEL = 15 / 16.0;
 
     /**
      * Add a liquid to the cube model
@@ -176,17 +177,6 @@ public class LiquidCubeModel extends CubeModel {
                 cornerHeights[x] = 16.0;
         }
 
-        /*int fullCounter = 0;
-
-        for(int c = 0; c < cornerHeights.length; c++){
-            if(cornerHeights[c].equals(16.0))
-                fullCounter += 1;
-        }
-
-        if(fullCounter == 1){
-            String w = "2";
-        }*/
-
 
         boolean hasLiquidNorth = north != null && isLiquidAdjacent(north);
         boolean hasLiquidSouth = south != null && isLiquidAdjacent(south);
@@ -219,8 +209,8 @@ public class LiquidCubeModel extends CubeModel {
 
     public void createBlock(Namespace liquidNamespace, Double[] cornerHeights, boolean hasLiquidUp, boolean hasLiquidDown, boolean hasLiquidNorth, boolean hasLiquidSouth, boolean hasLiquidEast, boolean hasLiquidWest, FLOW_DIRECTION flowDirection, int x, int y, int z){
         //Value by how much to move each vert (vert + translate)
-        Double translateX = x - (Constants.LOADED_SCHEMATIC.getWidth() / 2.0);
-        Double translateY = (z * -1.0) + ((Constants.LOADED_SCHEMATIC.getLength() / 2) - 1);
+        double translateX = x - (Constants.LOADED_SCHEMATIC.getWidth() / 2.0);
+        double translateY = (z * -1.0) + ((Constants.LOADED_SCHEMATIC.getLength() / 2.0) - 1);
         Double[] translate = new Double[]{translateX, translateY, y * 1.0};
 
         //HashMap<String, Integer> CornersIndex = new HashMap<>();
@@ -298,7 +288,6 @@ public class LiquidCubeModel extends CubeModel {
 
         //Translate the cube corners
         for(String corner : CubeCorners.keySet()){
-            int VertexIndex = 0;
 
             Double[] c = CubeCorners.get(corner);
             c = ArrayVector.add(c, translate);
@@ -422,6 +411,9 @@ public class LiquidCubeModel extends CubeModel {
             }
 
             List<Double[]> liquidCorners = new ArrayList<>();
+            if(faceCorners == null)
+                continue;
+
             for(String corner : faceCorners){
                 liquidCorners.add(CubeCorners.get(corner));
             }
@@ -482,7 +474,7 @@ public class LiquidCubeModel extends CubeModel {
      * @param liquidMatrix 2D Boolean array Array which shows if adjacent block has a liquid
      */
     public void setCornersFromAdjacentBlock(int liquidLevel, Double[] cornerHeights, Namespace adjacent, String orientation, boolean hasLiquidAdjacent, boolean hasLiquidDown, FLOW_DIRECTION flowDirection, boolean[][] liquidMatrix){
-        Double cornerHeight = null;
+        Double cornerHeight;
 
         if (!hasLiquidAdjacent) {
             //Check if adjacent block is a non block and set the corner height to default liquid level
@@ -508,20 +500,6 @@ public class LiquidCubeModel extends CubeModel {
                 //setDefaultCornerHeight(cornerHeights, cornerHeight, index);
 
             } else { //Else adjacent block is a regular block, and set corner height to default liquid level + 1
-                /*switch (liquidLevel) {
-                    case 0:
-                        cornerHeight = ZERO_LIQUID_LEVEL + 1.0;
-                        break;
-                    case 1:
-                        cornerHeight = MAX_LIQUID_LEVEL + 1.0;
-                        break;
-                    case 7:
-                        cornerHeight = MIN_LIQUID_LEVEL + 1.0;
-                        break;
-                    default:
-                        cornerHeight = (((liquidLevel - 1) * (MAX_LIQUID_LEVEL - MIN_LIQUID_LEVEL)) / 6) + 1.0;
-                        break;
-                }*/
 
                 double abscissa = liquidLevel > 0 ? -1 * liquidLevel : 0;
 
@@ -545,7 +523,7 @@ public class LiquidCubeModel extends CubeModel {
                 if (adjacent != null && isLiquidAdjacent(adjacent)) { //Check if adjacent block is liquid
 
                     int adjacentLiquidLevel = getLiquidLevel(adjacent);
-                    double intersect_abscissa = 0.0;
+                    double intersect_abscissa;
 
                     if (liquidLevel == adjacentLiquidLevel)
                         intersect_abscissa = liquidLevel != 0 ? liquidLevel * -1.0 : 0.0;
@@ -575,8 +553,6 @@ public class LiquidCubeModel extends CubeModel {
                     if (liquidLevel == adjacentLiquidLevel) {
                         if (liquidLevel != 0)
                             intersect_abscissa = (liquidLevel - 1) * -1;
-                        else
-                            intersect_abscissa = liquidLevel * -1;
                     } else {
                         intersect_abscissa = Math.floor((liquidLevel + adjacentLiquidLevel) / 2.0) * -1;
                     }
@@ -669,39 +645,10 @@ public class LiquidCubeModel extends CubeModel {
             cornerHeights[index] += height;
     }
 
-    /**
-     * Set the corner height if the adjacent block is a regular block
-     * @param cornerHeights A 4 size Double array, where each element is represents a corner (0: north west, 1: north east, 2: south east, 3: south west)
-     * @param height The height of the corner (Max 16)
-     * @param index The index of the corner in the cornerHeights (0 -> 3)
-     */
-    private void setCornerHeight(Double[] cornerHeights, Double height, int index){
-        if(cornerHeights[index] == null)
-            cornerHeights[index] = height;
-        else if(cornerHeights[index] < height)
-            cornerHeights[index] = height;
-        else if(height.equals(cornerHeights[index])){
-            cornerHeights[index] *= 2;
-        }
-    }
-
-    /**
-     * Set the corner height if the adjacent block is a non-block (air, snow layer, saplings...)
-     * @param cornerHeights A 4 size Double array, where each element is represents a corner (0: north west, 1: north east, 2: south east, 3: south west)
-     * @param height The height of the corner (Max 16)
-     * @param index The index of the corner in the cornerHeights (0 -> 3)
-     */
-    private void setDefaultCornerHeight(Double[] cornerHeights, Double height, int index){
-        if(cornerHeights[index] == null)
-            cornerHeights[index] = height;
-        else if(cornerHeights[index] < height)
-            cornerHeights[index] = height;
-    }
-
     private void setWeightedCornerHeight(Double[] cornerHeights, int index, Double ...heights){
 
         int counter = 0;
-        Double sum = 0.0;
+        double sum = 0.0;
 
         for(Double height : heights){
             if(height != null){
@@ -718,7 +665,7 @@ public class LiquidCubeModel extends CubeModel {
      * @param l Level of liquid at center
      * @param n The north adjacent block
      * @param s The south adjacent block
-     * @param w The west adjacent blokc
+     * @param w The west adjacent block
      * @param e The east adjacent block
      * @param ne The north east adjacent block
      * @param nw The north west adjacent block
@@ -727,16 +674,6 @@ public class LiquidCubeModel extends CubeModel {
      * @return The direction of the flow
      */
     private FLOW_DIRECTION getFlowDirection(int l, Namespace n, Namespace s, Namespace w, Namespace e, Namespace ne, Namespace nw, Namespace se, Namespace sw){
-        /*int nwc = getLiquidLevel(nw);
-        int nc = getLiquidLevel(n);
-        int nec = getLiquidLevel(ne);
-        int ec = getLiquidLevel(e);
-        int wc = getLiquidLevel(w);
-        int sec = getLiquidLevel(se);
-        int swc = getLiquidLevel(sw);
-        int sc = getLiquidLevel(s);*/
-
-
         //liquidMatrix of adjacent liquid levels. Ex:
         /*
         -1 -1  7
@@ -748,10 +685,6 @@ public class LiquidCubeModel extends CubeModel {
                 {getLiquidLevel(w), l, getLiquidLevel(e)},
                 {getLiquidLevel(sw), getLiquidLevel(s), getLiquidLevel(se)}
         };
-
-        if(Constants.LOADED_SCHEMATIC.getPosY() == 6 && liquidMatrix[0][1] == -1 && liquidMatrix[2][1] == 0 && liquidMatrix[1][0] == -1){ //&& liquidMatrix[1][2] == 1){
-            String ww = "2";
-        }
 
         //Loop through the matrix and inverse the liquid levels (highest value is 7 and lowest is 0)
         inverseLiquidMatrix(liquidMatrix);
@@ -806,74 +739,6 @@ public class LiquidCubeModel extends CubeModel {
                 return FLOW_DIRECTION.SOUTH_EAST;
         }
 
-        /*LinkedHashMap<FLOW_DIRECTION, Integer> directions = new LinkedHashMap<>();
-
-        //North check
-        checkAndCountDirection(directions, l, nc, FLOW_DIRECTION.SOUTH_NORTH, FLOW_DIRECTION.NORTH_SOUTH);
-
-        //North east check
-        checkAndCountDirection(directions, l, nec, FLOW_DIRECTION.SW_NE, FLOW_DIRECTION.NE_SW);
-
-        //East check
-        checkAndCountDirection(directions, l, ec, FLOW_DIRECTION.WEST_EAST, FLOW_DIRECTION.EAST_WEST);
-
-        //South east check
-        checkAndCountDirection(directions, l, sec, FLOW_DIRECTION.NW_SE, FLOW_DIRECTION.SE_NW);
-
-        //South check
-        checkAndCountDirection(directions, l, sc, FLOW_DIRECTION.NORTH_SOUTH, FLOW_DIRECTION.SOUTH_NORTH);
-
-        //South west check
-        checkAndCountDirection(directions, l, swc, FLOW_DIRECTION.NE_SW, FLOW_DIRECTION.SW_NE);
-
-        //West check
-        checkAndCountDirection(directions, l, wc, FLOW_DIRECTION.EAST_WEST, FLOW_DIRECTION.WEST_EAST);
-
-        //North west check
-        checkAndCountDirection(directions, l, nwc, FLOW_DIRECTION.SE_NW, FLOW_DIRECTION.NW_SE);
-
-
-        Integer sum = 0;
-        //Sum the count of directions
-        for(FLOW_DIRECTION direction : directions.keySet()){
-            sum += directions.get(direction);
-        }
-
-        //Get the mean and ceil it to the largest number
-        Double mean = Math.ceil(sum.doubleValue() / directions.size());
-
-        //Check if all directions counts are the mean
-        boolean equal_counts = false;
-
-        for(FLOW_DIRECTION direction : directions.keySet()){
-            if(directions.get(direction).equals(mean.intValue()))
-                equal_counts = true;
-            else{
-                equal_counts = false;
-                break;
-            }
-        }
-
-        if(!equal_counts) {
-            for (FLOW_DIRECTION direction : directions.keySet()) {
-                if (directions.get(direction).equals(mean.intValue()))
-                    return direction;
-            }
-        }else{
-            if(l == 0 && mean.intValue() == 1)
-                return FLOW_DIRECTION.STILL;
-
-            Double middle = Math.ceil(directions.size() / 2.0) - 1;
-
-            int count = 0;
-            for(FLOW_DIRECTION direction : directions.keySet()){
-                if(count == middle.intValue())
-                    return direction;
-
-                count += 1;
-            }
-        }*/
-
         return FLOW_DIRECTION.STILL;
 
     }
@@ -886,7 +751,6 @@ public class LiquidCubeModel extends CubeModel {
      * -1 -1  7
      * -1  7  6
      * -1  6  5
-     * @return inverse of liquid level matrix
      */
     private void inverseLiquidMatrix(int[][] liquidLevelMatrix){
 
@@ -976,37 +840,8 @@ public class LiquidCubeModel extends CubeModel {
     }
 
     /**
-     * Check adjacent liquid level to the original liquid and apply the default or opposite direction to the direction counter
-     * @param directions SortedMap <key: the direction, value: count of appearances>
-     * @param l The original liquid level
-     * @param al The adjacent liquid level
-     * @param d The default direction
-     * @param o The opposite direction
-     */
-    private void checkAndCountDirection(LinkedHashMap<FLOW_DIRECTION, Integer> directions, int l, int al, FLOW_DIRECTION d, FLOW_DIRECTION o){
-        if(al == -1)
-            countDirection(directions, d);
-        else if(l > al)
-            countDirection(directions, o);
-        else if(l < al)
-            countDirection(directions, d);
-    }
-
-    /**
-     * Count the number of times a direction gets added
-     * @param directions SortedMap <key: the direction, value: count of appearances>
-     * @param direction The added direction
-     */
-    private void countDirection(LinkedHashMap<FLOW_DIRECTION, Integer> directions, FLOW_DIRECTION direction){
-        if(directions.containsKey(direction)){
-            directions.put(direction, directions.get(direction) + 1);
-        }else
-            directions.put(direction, 1);
-    }
-
-    /**
      * Get liquid level of adjacent block is a liquid. If the adjacent is null or a non liquid, return -1
-     * @param adjacent
+     * @param adjacent The adjacent block
      * @return The liquid level
      */
     private int getLiquidLevel(Namespace adjacent){
@@ -1014,7 +849,7 @@ public class LiquidCubeModel extends CubeModel {
             return -1;
 
         if(isLiquidAdjacent(adjacent)) {
-            Integer l = Integer.parseInt(adjacent.getData().get("level"));
+            int l = Integer.parseInt(adjacent.getData().get("level"));
             if(l > 7)
                 l = 0;
             return l;
@@ -1036,10 +871,10 @@ public class LiquidCubeModel extends CubeModel {
                 Map<Integer, Map<Integer, LiquidBlock>> layer = LiquidBlocksCollection.get(y);
 
                 for(int x : layer.keySet()){
-                    Map<Integer, LiquidBlock> collumn = layer.get(x);
+                    Map<Integer, LiquidBlock> column = layer.get(x);
 
-                    for(int z : collumn.keySet()){
-                        LiquidBlock liquidBlock = collumn.get(z);
+                    for(int z : column.keySet()){
+                        LiquidBlock liquidBlock = column.get(z);
 
                         if(liquidBlock.isGenerated())
                             continue;
@@ -1047,8 +882,8 @@ public class LiquidCubeModel extends CubeModel {
                         //Construct the corner heights by getting the average of the sum of each corner and It's adjacent corners
                         Double[] cornerHeights = new Double[]{null, null, null, null};
 
-                        LiquidBlock north = collumn.getOrDefault(z - 1, null);
-                        LiquidBlock south = collumn.getOrDefault(z + 1, null);
+                        LiquidBlock north = column.getOrDefault(z - 1, null);
+                        LiquidBlock south = column.getOrDefault(z + 1, null);
 
                         Map<Integer, LiquidBlock> westColumn = layer.getOrDefault(x - 1, new HashMap<>());
                         LiquidBlock west = westColumn.getOrDefault(z, null);
@@ -1136,9 +971,9 @@ public class LiquidCubeModel extends CubeModel {
         Map<Integer, Map<Integer, LiquidBlock>> layer = LiquidBlocksCollection.get(layerIndex);
 
 
-        Map<Integer, LiquidBlock> collumn = layer.getOrDefault(x, new HashMap<>());
-        LiquidBlock north = collumn.getOrDefault(z - 1, null);
-        LiquidBlock south = collumn.getOrDefault(z + 1, null);
+        Map<Integer, LiquidBlock> column = layer.getOrDefault(x, new HashMap<>());
+        LiquidBlock north = column.getOrDefault(z - 1, null);
+        LiquidBlock south = column.getOrDefault(z + 1, null);
 
         Map<Integer, LiquidBlock> westernColumn = layer.getOrDefault(x - 1, new HashMap<>());
         LiquidBlock west = westernColumn.getOrDefault(z, null);
@@ -1156,24 +991,24 @@ public class LiquidCubeModel extends CubeModel {
         checkCorners[3] = south != null || southWest != null || west != null; //south_west_corner
     }
 
-    public class LiquidBlock {
-        private Namespace liquidNamespace;
+    public static class LiquidBlock {
+        Namespace liquidNamespace;
 
-        private double nw;
-        private double ne;
-        private double sw;
-        private double se;
+        double nw;
+        double ne;
+        double sw;
+        double se;
 
-        private boolean liquidUp;
-        private boolean liquidDown;
-        private boolean liquidNorth;
-        private boolean liquidSouth;
-        private boolean liquidWest;
-        private boolean liquidEast;
+        boolean liquidUp;
+        boolean liquidDown;
+        boolean liquidNorth;
+        boolean liquidSouth;
+        boolean liquidWest;
+        boolean liquidEast;
 
-        private FLOW_DIRECTION flowDirection;
+        FLOW_DIRECTION flowDirection;
 
-        private boolean generated;
+        boolean generated;
 
         public LiquidBlock(Namespace liquidNamespace, Double[] cornerHeights, boolean hasLiquidUp, boolean hasLiquidDown, boolean hasLiquidNorth, boolean hasLiquidSouth, boolean hasLiquidWest, boolean hasLiquidEast, FLOW_DIRECTION flowDirection, boolean generated){
             this.liquidNamespace = liquidNamespace;

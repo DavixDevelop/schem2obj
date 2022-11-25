@@ -8,6 +8,11 @@ import com.davixdevelop.schem2obj.namespace.Namespace;
 
 import java.util.HashMap;
 
+/**
+ * The CubeModel for the Fence block
+ *
+ * @author DavixDevelop
+ */
 public class FenceCubeModel extends BlockCubeModel implements IAdjacentCheck {
     //Map<key: %fence_name:north=true|false,south=true|false,east=true|false,west=true|false, value: Fence Cube Model>
     public static HashMap<String, FenceCubeModel> FENCE_VARIANTS = new HashMap<>();

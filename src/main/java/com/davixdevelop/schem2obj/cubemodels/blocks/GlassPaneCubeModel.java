@@ -13,6 +13,11 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 
+/**
+ * The CubeModel for the Glass Pane block
+ *
+ * @author DavixDevelop
+ */
 public class GlassPaneCubeModel extends BlockCubeModel implements IAdjacentCheck {
     //Map<key: %glass_pane_name:north=true|false,south=true|false,east=true|false,west=true|false, value: Glass Pane Cube Model>
     public static HashMap<String, GlassPaneCubeModel> GLASS_PANE_VARIANTS = new HashMap<>();

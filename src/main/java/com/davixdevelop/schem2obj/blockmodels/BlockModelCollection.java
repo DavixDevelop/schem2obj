@@ -7,13 +7,13 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 /**
- * Represent a collection of Block Model and their textures, associated with their Namespace
+ * Represent a collection of Block Models
  * @author DavixDevelop
  */
 public class BlockModelCollection {
     private static final Double[] BLOCK_ORIGIN = new Double[] {0.5, 0.5, 0.5};
 
-    private HashMap<String, BlockModel> blocksModels;
+    HashMap<String, BlockModel> blocksModels;
 
     public BlockModelCollection(){
         blocksModels = new HashMap<>();

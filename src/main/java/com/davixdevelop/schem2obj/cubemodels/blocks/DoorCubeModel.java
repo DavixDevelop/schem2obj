@@ -6,6 +6,11 @@ import com.davixdevelop.schem2obj.namespace.Namespace;
 
 import java.util.HashMap;
 
+/**
+ * The CubeModel for the Door block
+ *
+ * @author DavixDevelop
+ */
 public class DoorCubeModel extends BlockCubeModel {
     //Map<key: %door_name:facing=north|east|south|west,half=lower|upper,hinge=left|right,open=true|false,powered=true|false, value: Door Cube Model>
     public static HashMap<String, DoorCubeModel> DOOR_VARIANTS = new HashMap<>();
@@ -24,7 +29,7 @@ public class DoorCubeModel extends BlockCubeModel {
                     Constants.LOADED_SCHEMATIC.getPosZ());
             //Check if there is any block bellow
             if(lowerAdjacentBlock != null){
-                //Chekc if the block bellow is also door of the same variant
+                //Check if the block bellow is also door of the same variant
                 if(lowerAdjacentBlock.getName().equals(modifiedNamespace.getName())){
                     //Check if the block bellow is the lower part of the door
                     if(lowerAdjacentBlock.getData().get("half").equals("lower")){

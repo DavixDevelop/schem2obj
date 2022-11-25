@@ -3,13 +3,15 @@ package com.davixdevelop.schem2obj;
 import com.davixdevelop.schem2obj.blockmodels.BlockModelCollection;
 import com.davixdevelop.schem2obj.blockstates.BlockStateCollection;
 import com.davixdevelop.schem2obj.cubemodels.CubeModelFactory;
+import com.davixdevelop.schem2obj.materials.MaterialCollection;
 import com.davixdevelop.schem2obj.models.IntegerString;
 import com.davixdevelop.schem2obj.namespace.BlockMapping;
 import com.davixdevelop.schem2obj.schematic.SchematicHolder;
-import com.davixdevelop.schem2obj.materials.MaterialCollection;
 
-import java.util.*;
-import java.util.regex.Pattern;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 public class Constants {
 
@@ -95,6 +97,23 @@ public class Constants {
         PATTERNS.put("sku", new IntegerString("entity/banner/skull", 36));
         PATTERNS.put("flo", new IntegerString("entity/banner/flower", 37));
         PATTERNS.put("moj", new IntegerString("entity/banner/mojang", 37));
+
+        TEXT_COLORS.put("red_color", new IntegerString("4", 11141120));
+        TEXT_COLORS.put("red", new IntegerString("c", 16733525));
+        TEXT_COLORS.put("gold", new IntegerString("6", 16755200));
+        TEXT_COLORS.put("yellow", new IntegerString("e", 16777045));
+        TEXT_COLORS.put("dark_green", new IntegerString("2", 43520));
+        TEXT_COLORS.put("green", new IntegerString("a", 5635925));
+        TEXT_COLORS.put("aqua", new IntegerString("b", 5636095));
+        TEXT_COLORS.put("dark_aqua", new IntegerString("3", 43690));
+        TEXT_COLORS.put("dark_blue", new IntegerString("1", 170));
+        TEXT_COLORS.put("blue", new IntegerString("9", 5592575));
+        TEXT_COLORS.put("light_purple", new IntegerString("d", 16733695));
+        TEXT_COLORS.put("dark_purple", new IntegerString("5", 11141290));
+        TEXT_COLORS.put("white", new IntegerString("f", 16777215));
+        TEXT_COLORS.put("gray", new IntegerString("7", 11184810));
+        TEXT_COLORS.put("dark_grey", new IntegerString("8", 5592405));
+        TEXT_COLORS.put("black", new IntegerString("0", 0));
     }
 
     public static final SchematicHolder LOADED_SCHEMATIC = new SchematicHolder();
@@ -106,9 +125,8 @@ public class Constants {
     public static final MaterialCollection BLOCK_MATERIALS = new MaterialCollection();
     public static final CubeModelFactory CUBE_MODEL_FACTORY = new CubeModelFactory();
 
-    public static int BIOME_GRASS_COLOR = 9551193;
-    public static int BIOME_FOLIAGE_COLOR = 7842607;
-    public static int BIOME_WATER_COLOR = 4159204;
+    public static int BIOMES_GRASS_COLOR = 9551193;
+    public static int BIOMES_FOLIAGE_COLOR = 7842607;
 
     public static int SNOW_COLOR = 16316922;
 
@@ -117,13 +135,13 @@ public class Constants {
     public static Map<Integer, IntegerString> BANNER_COLORS = new HashMap<>();
     public static Map<String, IntegerString> PATTERNS = new HashMap<>();
 
+    public static Map<String, IntegerString> TEXT_COLORS = new HashMap<>();
+
     public static boolean IS_SNOWY = false;
 
     public static Set<String> EntityFilter = new HashSet<>();
 
     public static final Double[] BLOCK_ORIGIN = new Double[] {0.5,0.5,0.5};
-
-    public static Pattern TEXTURE_NAME_FROM_FILE = Pattern.compile("^(.*?)((?>_[a-z])|(?>))\\.png");
 
     //Factor to mix in "black" parts of the emission texture with the diffuse texture
     public static double EMISSION_MIX_FACTOR = 0.5;

@@ -13,6 +13,11 @@ import com.davixdevelop.schem2obj.util.ArrayVector;
 import java.util.HashMap;
 import java.util.List;
 
+/**
+ * The CubeModel for all Bed blocks
+ *
+ * @author DavixDevelop
+ */
 public class BedCubeModel extends TileEntityCubeModel{
     //Map<key: %color:part:facing, value: Bed Cube Model>
     public static HashMap<String, BedCubeModel> BED_VARIANTS = new HashMap<>();
@@ -55,7 +60,7 @@ public class BedCubeModel extends TileEntityCubeModel{
         HashMap<String,String> modelsMaterials = new HashMap<>();
         modelsMaterials.put("bed", bedMaterial);
 
-        CubeElement[] bedElements = new CubeElement[]{};
+        CubeElement[] bedElements;
 
         if(part.equals("head")){
             List<BlockModel> headModel = Constants.BLOCK_MODELS.getBlockModel("bed_head", "builtin");

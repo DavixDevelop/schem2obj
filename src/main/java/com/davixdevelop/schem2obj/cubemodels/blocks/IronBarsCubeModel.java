@@ -8,6 +8,11 @@ import com.davixdevelop.schem2obj.namespace.Namespace;
 
 import java.util.HashMap;
 
+/**
+ * The CubeModel for the Iron Bars block
+ *
+ * @author DavixDevelop
+ */
 public class IronBarsCubeModel extends BlockCubeModel implements IAdjacentCheck {
     //Map<key: %iron_bar:north=true|false,south=true|false,east=true|false,west=true|false, value: Iron Bars Cube Model>
     public static HashMap<String, IronBarsCubeModel> IRON_BARS_VARIANTS = new HashMap<>();

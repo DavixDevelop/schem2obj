@@ -9,6 +9,11 @@ import com.davixdevelop.schem2obj.namespace.Namespace;
 
 import java.util.HashMap;
 
+/**
+ * The CubeModel for the Sea Lantern block
+ *
+ * @author DavixDevelop
+ */
 public class SeaLanternCubeModel extends CubeModel {
     @Override
     public boolean fromNamespace(Namespace blockNamespace) {

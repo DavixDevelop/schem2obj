@@ -1,7 +1,7 @@
 package com.davixdevelop.schem2obj.schematic;
 
 import com.flowpowered.nbt.*;
-import org.omg.CORBA.PUBLIC_MEMBER;
+import com.google.gson.Gson;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -9,7 +9,9 @@ import java.util.List;
 import java.util.Map;
 
 public class EntityValues {
-    private Map<String, Object> map;
+    Map<String, Object> map;
+
+    static Gson GSON = new Gson();
 
     public EntityValues(){
         map = new HashMap<>();
@@ -17,7 +19,7 @@ public class EntityValues {
 
     public void parseCompoundMap(CompoundMap compoundMap){
         for(String key : compoundMap.keySet()){
-            Tag tag = compoundMap.get(key);
+            Tag<?> tag = compoundMap.get(key);
             map.put(key, parseTag(tag));
         }
 
@@ -27,12 +29,21 @@ public class EntityValues {
         return map.containsKey(key);
     }
 
-    public static Object parseTag(Tag tag){
+    public static Object parseTag(Tag<?> tag){
         switch (tag.getType()){
             case TAG_INT:
                 return ((IntTag) tag).getValue();
             case TAG_STRING:
-                return  ((StringTag) tag).getValue();
+                String value = ((StringTag)tag).getValue();
+                //If value starts with a { and end with }  It's JSON text
+                if(value.startsWith("{") & value.endsWith("}")){
+                    EntityValues entityValues = new EntityValues();
+                    Map<?, ?> values = GSON.fromJson(value, Map.class);
+                    parseJsonMap(values, entityValues);
+
+                    return entityValues;
+                }
+                return value;
             case TAG_DOUBLE:
                 return ((DoubleTag) tag).getValue();
             case TAG_FLOAT:
@@ -56,9 +67,9 @@ public class EntityValues {
             case TAG_LIST:
                 List<Object> entityValuesList = new ArrayList<>();
 
-                List listTag = ((ListTag)tag).getValue();
+                List<?> listTag = ((ListTag<?>)tag).getValue();
                 for(Object item : listTag){
-                    Tag tag1 = (Tag) item;
+                    Tag<?> tag1 = (Tag<?>) item;
                     entityValuesList.add(parseTag(tag1));
                 }
                 return entityValuesList;
@@ -66,6 +77,24 @@ public class EntityValues {
         //com.flowpowered.nbt.EndTag
 
         return null;
+    }
+
+    public static void parseJsonMap(Map<?, ?> map, EntityValues entityValues){
+        for(Object key : map.keySet()){
+            Object val = map.get(key);
+
+            if(val instanceof String)
+                entityValues.map.put((String)key, val);
+            else if(val instanceof Map){
+                EntityValues entityValues1 = new EntityValues();
+                parseJsonMap((Map<?, ?>) val, entityValues1);
+                entityValues.map.put((String)key, entityValues1);
+            }
+        }
+    }
+
+    public EntityValues getEntityValues(String key){
+        return (EntityValues)map.getOrDefault(key, new EntityValues());
     }
 
     public Integer getInteger(String key){
@@ -151,8 +180,12 @@ public class EntityValues {
         return (Long) value;
     }
 
-    public List<Object> getList(String key) {
-        return (List<Object>) map.get(key);
+    public List<?> getList(String key) {
+        Object list = map.get(key);
+        if(list instanceof List<?>){
+            return (List<?>) map.get(key);
+        }
+        return null;
     }
 
 }

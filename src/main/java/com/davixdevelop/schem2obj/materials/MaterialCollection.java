@@ -1,28 +1,21 @@
 package com.davixdevelop.schem2obj.materials;
 
 import com.davixdevelop.schem2obj.Constants;
-import com.davixdevelop.schem2obj.cubemodels.CubeModelUtility;
-import com.davixdevelop.schem2obj.materials.json.PackTemplate;
-import com.davixdevelop.schem2obj.util.ImageUtility;
-import com.davixdevelop.schem2obj.util.LogUtility;
-import com.google.gson.Gson;
 
-import java.awt.image.BufferedImage;
 import java.io.File;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.*;
-import java.util.jar.JarFile;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.regex.Matcher;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
 
+/**
+ * A collection of all materials
+ *
+ * @author DavixDevelop
+ */
 public class MaterialCollection {
-    private HashMap<String, IMaterial> materials;
-    private Set<String> usedMaterials;
+    HashMap<String, IMaterial> materials;
+    Set<String> usedMaterials;
 
     public MaterialCollection(){
         materials = new HashMap<>();
@@ -72,57 +65,6 @@ public class MaterialCollection {
      */
     public Set<String> usedMaterials(){
         return usedMaterials;
-    }
-
-    /**
-     * Parse through a list of textures file, create materials from them and store them in memory
-     * @param textures A list of textures
-     * @param textureFolderName The name of the texture folder, ex. blocks
-     * @param format The format of the resource pack, ex. SEUS
-     * @param resourcePack The path to the resource pack
-     * @param entityName Optional name of the entity texture
-     */
-    public void parseTexturesFromPackFiles(File[] textures, String textureFolderName, String format, String resourcePack, String ...entityName){
-        Matcher matcher = null;
-
-        //Loop through the textures
-        for(File texture : textures){
-
-            //Skip files that end with _n or _s if format is SEUS to skip generating the same material 3 times (one for diffuse, normal and specular texture)
-            if(format.equals("SEUS") && (texture.getName().endsWith("_n.png") || texture.getName().endsWith("_s.png")))
-                continue;
-
-            //Pattern to get texture name from png texture (example grass_n.png or grass.png -> grass)
-            matcher = Constants.TEXTURE_NAME_FROM_FILE.matcher(texture.getName());
-            if(matcher.find()){
-                String textureName = matcher.group(1);
-
-                //If texture is a block the material name is blocks/<texture name>
-                //If texture is a entity the material name is entity/<texture name>-<entity name>
-                String materialName = (entityName.length > 0) ? String.format("%s/%s-%s",textureFolderName,textureName, entityName[0]) :
-                        String.format("%s/%s",textureFolderName,textureName);
-
-                String textureFilePath = (entityName.length > 0) ? String.format("%s/%s/%s.png",textureFolderName,entityName[0],textureName) :
-                        String.format("%s/%s.png",textureFolderName,textureName);
-
-                //Create material depending on the format (SEUS, Specular, Vanilla)
-                IMaterial material = null;
-
-                switch (format){
-                    case "SEUS":
-                        //material = new SEUSMaterial(materialName, textureFilePath, resourcePack);
-                        break;
-                    case "Vanilla":
-                        //material = new Material(materialName, textureFilePath, resourcePack);
-                        break;
-                }
-
-                //Put material into memory, for later use
-                modifyOtherMaterials(material);
-                materials.put(materialName, material);
-
-            }
-        }
     }
 
     public static void modifyOtherMaterials(IMaterial material){

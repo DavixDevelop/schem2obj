@@ -5,9 +5,13 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Locale;
 
+/**
+ * A Array Double List that uses a Map to store the indexes to each element in the list
+ * @author DavixDevelop
+ */
 public class HashedDoubleList {
-    private ArrayList<Double[]> list;
-    private HashMap<String, Integer> index;
+    ArrayList<Double[]> list;
+    HashMap<String, Integer> index;
 
 
     public HashedDoubleList(){
@@ -43,14 +47,14 @@ public class HashedDoubleList {
     }
 
     private String createKey(Double... values){
-        String key = "";
+        StringBuilder key = new StringBuilder();
         boolean first = true;
         for(Double val : values){
-            key += String.format(Locale.ROOT, "%s%.6f",(first) ? "" : ":",val);
+            key.append(String.format(Locale.ROOT, "%s%.6f", (first) ? "" : ":", val));
             first = false;
         }
 
-        return key;
+        return key.toString();
     }
 
     private String getKey(Integer index){

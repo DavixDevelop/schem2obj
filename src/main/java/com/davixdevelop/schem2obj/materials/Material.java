@@ -6,15 +6,14 @@ import com.davixdevelop.schem2obj.util.ImageUtility;
 import com.davixdevelop.schem2obj.util.LogUtility;
 
 import java.awt.image.BufferedImage;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Locale;
 
-/**Default Material that only uses the defuse texture
+/**
+ * Default Material that only uses the defuse texture
  * @author DavixDevelop
  */
 public class Material implements IMaterial {
