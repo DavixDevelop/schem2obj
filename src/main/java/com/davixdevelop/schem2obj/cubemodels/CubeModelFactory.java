@@ -3,6 +3,7 @@ package com.davixdevelop.schem2obj.cubemodels;
 import com.davixdevelop.schem2obj.cubemodels.blocks.*;
 import com.davixdevelop.schem2obj.cubemodels.entity.EntityCubeModel;
 import com.davixdevelop.schem2obj.cubemodels.entity.MinecartEntityCubeModel;
+import com.davixdevelop.schem2obj.cubemodels.entity.PaintingCubeModel;
 import com.davixdevelop.schem2obj.cubemodels.entitytile.*;
 import com.davixdevelop.schem2obj.namespace.Namespace;
 import com.davixdevelop.schem2obj.schematic.EntityValues;
@@ -75,9 +76,11 @@ public class CubeModelFactory {
         if(blockNamespace.getName().contains("door"))
             return new DoorCubeModel();
 
-        if(blockNamespace.getType().equals("minecart")){
+        if(blockNamespace.getType().equals("minecart"))
             return new MinecartEntityCubeModel();
-        }
+
+        if(blockNamespace.getType().equals("painting"))
+            return new PaintingCubeModel();
 
         switch (blockNamespace.getName()){
             case "grass":

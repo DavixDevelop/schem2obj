@@ -147,7 +147,7 @@ public class ResourceLoader {
 
                     for (File textureFolder : textureFolders) {
                         //Scan for textures in blocks and entities
-                        if (!textureFolder.getName().equals("blocks") && !textureFolder.getName().equals("entity"))
+                        if (!textureFolder.getName().equals("blocks") && !textureFolder.getName().equals("entity") && !textureFolder.getName().equals("font") && !textureFolder.getName().equals("painting"))
                             continue;
 
                         File[] textures = textureFolder.listFiles();
@@ -269,7 +269,7 @@ public class ResourceLoader {
                         String textureType = assetPath.substring(0, assetPath.indexOf("/"));
 
                         //Scan only for texture types of blocks and entities and font
-                        if(!textureType.equals("blocks") && !textureType.equals("entity") && !textureType.equals("font"))
+                        if(!textureType.equals("blocks") && !textureType.equals("entity") && !textureType.equals("font") && !textureType.equals("painting"))
                             continue;
 
                         //Get the path to the texture (ex. textures/entity/bed/blue.png - > blue.png)

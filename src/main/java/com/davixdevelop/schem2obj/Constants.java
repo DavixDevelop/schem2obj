@@ -57,6 +57,7 @@ public class Constants {
         SupportedEntities.add("chest");
         SupportedEntities.add("trapped_chest");
         SupportedEntities.add("ender_chest");
+        SupportedEntities.add("painting");
 
         BANNER_COLORS.put(0, new IntegerString("black", 1644825));
         BANNER_COLORS.put(1, new IntegerString("red",10040115));

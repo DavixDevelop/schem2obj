@@ -95,7 +95,7 @@ public class CubeModelUtility {
 
             String diffuseTexturePath = null;
 
-            if(materialPath.startsWith("blocks") || (materialPath.startsWith("entity") && !materialPath.contains("-"))) {
+            if(materialPath.startsWith("blocks") || materialPath.startsWith("painting") || (materialPath.startsWith("entity") && !materialPath.contains("-"))) {
                 diffuseTexturePath = materialPath;
             }else if(materialPath.startsWith("entity") && materialPath.contains("-")){
                 String materialName = textureName(materialPath);

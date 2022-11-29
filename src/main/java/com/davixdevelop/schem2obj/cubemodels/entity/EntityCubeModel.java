@@ -5,7 +5,7 @@ import com.davixdevelop.schem2obj.cubemodels.ICubeModel;
 import com.davixdevelop.schem2obj.namespace.Namespace;
 import com.davixdevelop.schem2obj.schematic.EntityValues;
 
-public class EntityCubeModel extends CubeModel {
+public class EntityCubeModel extends CubeModel{
     public boolean fromNamespace(Namespace blockNamespace, EntityValues entityValues) {
         return false;
     }
@@ -16,5 +16,10 @@ public class EntityCubeModel extends CubeModel {
         clone.copy(this);
 
         return clone;
+    }
+
+
+    public Double[] getOrigin() {
+        return new Double[0];
     }
 }

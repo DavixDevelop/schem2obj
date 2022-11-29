@@ -2,6 +2,8 @@ package com.davixdevelop.schem2obj;
 
 import com.davixdevelop.schem2obj.cubemodels.CubeModelUtility;
 import com.davixdevelop.schem2obj.cubemodels.ICubeModel;
+import com.davixdevelop.schem2obj.cubemodels.entity.EntityCubeModel;
+import com.davixdevelop.schem2obj.cubemodels.entity.IOrigin;
 import com.davixdevelop.schem2obj.cubemodels.entitytile.LavaCubeModel;
 import com.davixdevelop.schem2obj.cubemodels.entitytile.WaterCubeModel;
 import com.davixdevelop.schem2obj.namespace.Namespace;
@@ -351,9 +353,12 @@ public class SchemeToObj {
                     //Translate the singleton entity cube model to the position of the entity in the space
                     List<Double> pos = entityValues.getDoubleList("Pos");
 
-                    double x = Math.abs(pos.get(0) - Constants.LOADED_SCHEMATIC.getOriginX() - 0.5);
-                    double y = Math.abs(pos.get(2) - Constants.LOADED_SCHEMATIC.getOriginZ() - 0.5);
-                    double z = Math.abs(pos.get(1) - Constants.LOADED_SCHEMATIC.getOriginY());
+                    //Get origin of entity
+                    Double[] entityOrigin = ((EntityCubeModel)entityCubeModel).getOrigin();
+
+                    double x = Math.abs(pos.get(0) - Constants.LOADED_SCHEMATIC.getOriginX() - entityOrigin[0]);
+                    double y = Math.abs(pos.get(2) - Constants.LOADED_SCHEMATIC.getOriginZ() - entityOrigin[1]);
+                    double z = Math.abs(pos.get(1) - Constants.LOADED_SCHEMATIC.getOriginY() - entityOrigin[2]);
 
                     CubeModelUtility.translateCubeModel(entityCubeModel, new Double[]{x, y, z}, new Integer[]{width,length,height});
 

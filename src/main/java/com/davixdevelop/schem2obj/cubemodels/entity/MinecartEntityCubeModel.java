@@ -64,4 +64,17 @@ public class MinecartEntityCubeModel extends EntityCubeModel {
         //Convert cube element to cube model
         fromCubes("minecart", false, rotationX, rotationY, modelsMaterials, cartElements);
     }
+
+    @Override
+    public Double[] getOrigin() {
+        return new Double[]{0.5, 0.5, 0.0};
+    }
+
+    @Override
+    public ICubeModel clone() {
+        ICubeModel clone = new MinecartEntityCubeModel();
+        clone.copy(this);
+
+        return clone;
+    }
 }

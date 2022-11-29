@@ -25,6 +25,8 @@ public class SkullCubeModel extends TileEntityCubeModel {
     public static HashMap<String, SkullCubeModel> SKULL_VARIANTS = new HashMap<>();
     //SkullType or Owner-ID
     public static Set<String> GENERATED_SKULLS = new HashSet<>();
+    //Map<key: Owner-ID, value: 0 -> default player head | 1 -> hd player head
+    public static Map<String, Integer> PLAYER_HEAD_TYPES = new HashMap<>();
 
     static Gson GSON = new Gson();
 
@@ -103,10 +105,14 @@ public class SkullCubeModel extends TileEntityCubeModel {
                     BufferedImage playerSkin = ImageUtility.toBuffedImage(inputStream);
                     //If ratio of image is not 1:1, use the hd variant of the player head
                     if(playerSkin != null) {
-                        if (playerSkin.getWidth() / playerSkin.getHeight() != 1)
+                        if (playerSkin.getWidth() / playerSkin.getHeight() != 1) {
                             headModelName = "hd_player_head";
-                        else
+                            PLAYER_HEAD_TYPES.put(owner.getString("Id"), 1);
+                        }
+                        else{
                             headModelName = "player_head";
+                            PLAYER_HEAD_TYPES.put(owner.getString("Id"), 0);
+                        }
                         material = owner.getString("Id");
 
                         //Ensure the default "steve" material was generated
@@ -129,6 +135,8 @@ public class SkullCubeModel extends TileEntityCubeModel {
                     }
                 }else{
                     material = owner.getString("Id");
+                    Integer playerHeadType = PLAYER_HEAD_TYPES.get(material);
+                    headModelName = playerHeadType == 0 ? "player_head" : "hd_player_head";
                 }
 
             }catch (Exception ex){
