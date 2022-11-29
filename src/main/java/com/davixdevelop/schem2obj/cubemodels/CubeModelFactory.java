@@ -110,6 +110,8 @@ public class CubeModelFactory {
                 return new StandingSignCubeModel();
             case "wall_sign":
                 return new WallSignCubeModel();
+            case "skull":
+                return new SkullCubeModel();
             default:
                 return new BlockCubeModel();
         }

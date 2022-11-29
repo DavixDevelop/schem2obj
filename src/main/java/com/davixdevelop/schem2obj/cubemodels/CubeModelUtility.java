@@ -101,7 +101,7 @@ public class CubeModelUtility {
                 String materialName = textureName(materialPath);
                 //If material path contains a -, it means the texture for that material is in a subfolder with the name of the entity
                 //Ex: black-bed -> diffuseTextureFile = entity/bed/black
-                diffuseTexturePath = String.format("entity/%s/%s", blockNamespace.getType(), materialName.substring(0, materialName.indexOf('-')));
+                diffuseTexturePath = String.format("entity/%s/%s", materialName.substring(materialName.indexOf('-') + 1), materialName.substring(0, materialName.indexOf('-')));
             }
 
             String diffusePath = ResourceLoader.getResourcePath("textures", diffuseTexturePath,"png");
@@ -407,7 +407,7 @@ public class CubeModelUtility {
     }
 
     /**
-     * Move the block in the space to the desired position
+     * Move the cube model in the space to the desired position
      * @param cubeModel The block cube model to translate
      * @param position The position of the block in the space [x, y, z]
      * @param spaceSize The size of the space [width, length, height]
@@ -419,7 +419,16 @@ public class CubeModelUtility {
         //Double translateZ = position[2].doubleValue();// - (spaceSize[2].doubleValue());
         Double[] translate = new Double[]{translateX, translateY, position[2]};
 
+        translateCubeModel(cubeModel, translate);
 
+    }
+
+    /**
+     * Move the cube model by the translate vector (X, Y, Z)
+     * @param cubeModel The block cube model to translate
+     * @param translate A 3 length Double array representing a direction vector
+     */
+    public static void translateCubeModel(ICubeModel cubeModel, Double[] translate){
         List<ICube> cubes = cubeModel.getCubes();
 
         //Loop through cubes
