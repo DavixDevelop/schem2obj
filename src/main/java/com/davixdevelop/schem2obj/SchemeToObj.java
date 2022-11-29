@@ -117,11 +117,14 @@ public class SchemeToObj {
                             if(nextArgIndex >= arg.length)
                                 break;
                         }
+                        nextArgIndex -= 1;
                     }
                     else if(arg[nextArgIndex].equals("-allBlocks"))
                         exportAllBlock = true;
                     else if(arg[nextArgIndex].equals("-snowy"))
                         Constants.IS_SNOWY = true;
+                    else if(arg[nextArgIndex].equals("-christmasChests"))
+                        Constants.CHRISTMAS_CHEST = true;
                     nextArgIndex += 1;
                 }
             }

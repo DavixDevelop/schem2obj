@@ -34,6 +34,7 @@ All basic blocks (that are only basic cubes), and some builtin blocks (ex, water
 - Signs (ASCII and Unicode glyphs)
 - Minecarts
 - Skull's & Player Heads
+- Chests (Including Christmas chests)
 
 ### Supported resource packs
 For now, only resource packs that use the SEUS or Vanilla format are supported. Beside using the textures the resource pack includes,
@@ -60,6 +61,7 @@ Optional parameters:
 - `-t` The absolute or relative path to the resource pack (folder with `pack.mcdata` or zipped resource pack)
 - `-allBlocks` If set, all blocks (including hidden) are exported
 - `-snowy` If set, only the snowy grass is generated for now
+- `-christmasChests` If set, all chests (except ender chests) use the Christmas texture
 
 > Note: Marked with (some parameter) are optional parts, and the actual inputs with <some value>. Remove the <> and () before running the command in a terminal.
 > <br>Ex with both jar, schematic and output OBJ file in same folder, and the unpacked resource pack (with the resource pack only in the SEUS or Vanilla format for now) in the .minecraft folder:<br>

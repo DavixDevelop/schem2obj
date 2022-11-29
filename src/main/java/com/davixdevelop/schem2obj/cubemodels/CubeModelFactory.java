@@ -112,6 +112,12 @@ public class CubeModelFactory {
                 return new WallSignCubeModel();
             case "skull":
                 return new SkullCubeModel();
+            case "chest":
+                return new NormalChestCubeModel();
+            case "trapped_chest":
+                return new TrappedChestCubeModel();
+            case "ender_chest":
+                return new EnderChestCubeMode();
             default:
                 return new BlockCubeModel();
         }

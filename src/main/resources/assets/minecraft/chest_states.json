@@ -1,0 +1,132 @@
+{
+  "north" : [
+    {
+      "when" : {
+        "facing" : "east"
+      },
+      "apply" : [
+        {
+          "when" : {
+            "facing" : "east"
+          },
+          "apply" : {
+            "type" : "left"
+          }
+        }
+      ]
+    },
+    {
+      "when" : {
+        "facing" : "west"
+      },
+      "apply" : [
+        {
+          "when" : {
+            "facing" : "west"
+          },
+          "apply" : {
+            "type" : "right"
+          }
+        }
+      ]
+    }
+  ],
+  "south" : [
+    {
+      "when" : {
+        "facing" : "east"
+      },
+      "apply" : [
+        {
+          "when" : {
+            "facing" : "east"
+          },
+          "apply" : {
+            "type" : "right"
+          }
+        }
+      ]
+    },
+    {
+      "when" : {
+        "facing" : "west"
+      },
+      "apply" : [
+        {
+          "when" : {
+            "facing" : "west"
+          },
+          "apply" : {
+            "type" : "left"
+          }
+        }
+      ]
+    }
+  ],
+
+  "west" : [
+    {
+      "when" : {
+        "facing" : "north"
+      },
+      "apply" : [
+        {
+          "when" : {
+            "facing" : "north"
+          },
+          "apply" : {
+            "type" : "left"
+          }
+        }
+      ]
+    },
+    {
+      "when" : {
+        "facing" : "south"
+      },
+      "apply" : [
+        {
+          "when" : {
+            "facing" : "south"
+          },
+          "apply" : {
+            "type" : "right"
+          }
+        }
+      ]
+    }
+  ],
+
+  "east" : [
+    {
+      "when" : {
+        "facing" : "north"
+      },
+      "apply" : [
+        {
+          "when" : {
+            "facing" : "north"
+          },
+          "apply" : {
+            "type" : "right"
+          }
+        }
+      ]
+    },
+    {
+      "when" : {
+        "facing" : "south"
+      },
+      "apply" : [
+        {
+          "when" : {
+            "facing" : "south"
+          },
+          "apply" : {
+            "type" : "left"
+          }
+        }
+      ]
+    }
+  ]
+}

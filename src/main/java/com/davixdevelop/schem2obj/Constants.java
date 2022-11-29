@@ -45,6 +45,7 @@ public class Constants {
         EntityFolderFilter.add("skeleton");
         EntityFolderFilter.add("creeper");
         EntityFolderFilter.add("zombie");
+        EntityFolderFilter.add("chest");
 
         SupportedEntities.add("minecart");
         SupportedEntities.add("bed");
@@ -53,6 +54,9 @@ public class Constants {
         SupportedEntities.add("standing_sign");
         SupportedEntities.add("wall_sign");
         SupportedEntities.add("skull");
+        SupportedEntities.add("chest");
+        SupportedEntities.add("trapped_chest");
+        SupportedEntities.add("ender_chest");
 
         BANNER_COLORS.put(0, new IntegerString("black", 1644825));
         BANNER_COLORS.put(1, new IntegerString("red",10040115));
@@ -167,5 +171,7 @@ public class Constants {
     };
 
     public static Map<String, Double> FACING_ROTATION = new HashMap<>();
+
+    public static boolean CHRISTMAS_CHEST = false;
 
 }
