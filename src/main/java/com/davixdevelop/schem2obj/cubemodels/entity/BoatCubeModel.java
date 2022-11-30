@@ -20,12 +20,16 @@ public class BoatCubeModel extends EntityCubeModel {
 
     public static Set<String> GENERATED_MATERIALS = new HashSet<>();
 
+    public boolean onGround = false;
+
     @Override
     public boolean fromNamespace(Namespace blockNamespace, EntityValues entityValues) {
         List<Float> rotation = entityValues.getFloatList("Rotation");
         String type = entityValues.getString("Type").replaceAll("_", "");
 
         String key = getKey(type, rotation.get(0), rotation.get(1));
+
+        onGround = entityValues.getByte("OnGround") == 1;
 
         if(BOAT_VARIANTS.containsKey(key)){
             ICubeModel variantObject = BOAT_VARIANTS.get(key);
@@ -69,7 +73,7 @@ public class BoatCubeModel extends EntityCubeModel {
 
     @Override
     public Double[] getOrigin() {
-        return new Double[]{0.5, 0.5, 0.0};
+        return new Double[]{0.5, 0.5, onGround ? 0.0 : 0.08};
     }
 
     @Override
@@ -78,5 +82,13 @@ public class BoatCubeModel extends EntityCubeModel {
         clone.copy(this);
 
         return clone;
+    }
+
+    @Override
+    public void copy(ICubeModel clone) {
+        BoatCubeModel boatClone = (BoatCubeModel) clone;
+        onGround = boatClone.onGround;
+
+        super.copy(clone);
     }
 }
