@@ -165,16 +165,12 @@ public class MaterialCollection {
             case "fire_layer_1":
                 material.setEmissionStrength(15.0 / 16.0);
             case "water_still":
-                material.setSpecularHighlights(216.75);
-                material.setSpecularColor(0.03);
-                material.setIlluminationModel(4);
-                material.setTransmissionFilter(0.465);
-                material.setTransparency(true);
             case "water_flow":
+                material.setAmbientColor(0.0);
                 material.setSpecularHighlights(216.75);
-                material.setSpecularColor(0.03);
+                material.setSpecularColor(0.5);
                 material.setIlluminationModel(4);
-                material.setTransmissionFilter(0.465);
+                material.setTransmissionFilter(0.7);
                 material.setTransparency(true);
 
 

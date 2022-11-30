@@ -36,6 +36,7 @@ All basic blocks (that are only basic cubes), and some builtin blocks (ex, water
 - Skull's & Player Heads
 - Chests (Including Christmas chests)
 - Paintings
+- Boats (All variants)
 
 ### Supported resource packs
 For now, only resource packs that use the SEUS or Vanilla format are supported. Beside using the textures the resource pack includes,

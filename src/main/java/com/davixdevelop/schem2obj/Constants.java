@@ -46,6 +46,7 @@ public class Constants {
         EntityFolderFilter.add("creeper");
         EntityFolderFilter.add("zombie");
         EntityFolderFilter.add("chest");
+        EntityFolderFilter.add("boat");
 
         SupportedEntities.add("minecart");
         SupportedEntities.add("bed");
@@ -58,6 +59,7 @@ public class Constants {
         SupportedEntities.add("trapped_chest");
         SupportedEntities.add("ender_chest");
         SupportedEntities.add("painting");
+        SupportedEntities.add("boat");
 
         BANNER_COLORS.put(0, new IntegerString("black", 1644825));
         BANNER_COLORS.put(1, new IntegerString("red",10040115));

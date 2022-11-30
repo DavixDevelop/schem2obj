@@ -1,6 +1,7 @@
 package com.davixdevelop.schem2obj.cubemodels;
 
 import com.davixdevelop.schem2obj.cubemodels.blocks.*;
+import com.davixdevelop.schem2obj.cubemodels.entity.BoatCubeModel;
 import com.davixdevelop.schem2obj.cubemodels.entity.EntityCubeModel;
 import com.davixdevelop.schem2obj.cubemodels.entity.MinecartEntityCubeModel;
 import com.davixdevelop.schem2obj.cubemodels.entity.PaintingCubeModel;
@@ -52,35 +53,20 @@ public class CubeModelFactory {
     }
 
     public static ICubeModel getType(Namespace blockNamespace){
-        if(blockNamespace.getName().contains("leaves"))
-            return new LeavesCubeModel();
-
-        if(blockNamespace.getName().contains("glass_pane"))
-            return new GlassPaneCubeModel();
-
-        if(blockNamespace.getName().contains("glass"))
-            return new GlassCubeModel();
-
         if(blockNamespace.getName().contains("slab") && !blockNamespace.getName().contains("double"))
             return new SlabCubeModel();
-
-        if(blockNamespace.getName().contains("stairs"))
-            return new StairsCubeModel();
 
         if(blockNamespace.getName().contains("fence") && !blockNamespace.getName().contains("gate"))
             return new FenceCubeModel();
 
-        if(blockNamespace.getName().contains("command_block"))
-            return new CommandCubeModel();
-
-        if(blockNamespace.getName().contains("door"))
-            return new DoorCubeModel();
-
-        if(blockNamespace.getType().equals("minecart"))
-            return new MinecartEntityCubeModel();
-
-        if(blockNamespace.getType().equals("painting"))
-            return new PaintingCubeModel();
+        switch (blockNamespace.getType()){
+            case "minecart":
+                return new MinecartEntityCubeModel();
+            case "painting":
+                return new PaintingCubeModel();
+            case "boat":
+                return new BoatCubeModel();
+        }
 
         switch (blockNamespace.getName()){
             case "grass":
@@ -121,6 +107,18 @@ public class CubeModelFactory {
                 return new TrappedChestCubeModel();
             case "ender_chest":
                 return new EnderChestCubeMode();
+            case "leaves":
+                return new LeavesCubeModel();
+            case "glass_pane":
+                return new GlassPaneCubeModel();
+            case "glass":
+                return new GlassCubeModel();
+            case "stairs":
+                return new StairsCubeModel();
+            case "command_block":
+                return new CommandCubeModel();
+            case "door":
+                return new DoorCubeModel();
             default:
                 return new BlockCubeModel();
         }

@@ -64,11 +64,11 @@ public class CubeElement {
 
     public static class CubeRotation{
         private Double[] origin;
-        private String axis;
-        private Double angle;
+        private String[] axis;
+        private Double[] angle;
         private Boolean rescale;
 
-        public CubeRotation(Double[] origin, String axis, Double angle, Boolean rescale){
+        public CubeRotation(Double[] origin, String axis[], Double angle[], Boolean rescale){
             this.origin = origin;
             this.axis = axis;
             this.angle = angle;
@@ -83,19 +83,19 @@ public class CubeElement {
             return origin;
         }
 
-        public void setAxis(String axis) {
+        public void setAxis(String[] axis) {
             this.axis = axis;
         }
 
-        public String getAxis() {
+        public String[] getAxis() {
             return axis;
         }
 
-        public void setAngle(Double angle) {
+        public void setAngle(Double[] angle) {
             this.angle = angle;
         }
 
-        public Double getAngle() {
+        public Double[] getAngle() {
             return angle;
         }
 

@@ -144,6 +144,84 @@ public class LiquidCubeModel extends CubeModel {
                     {(south_west != null && isLiquidAdjacent(south_west)), (south != null && isLiquidAdjacent(south)), (south_east != null && isLiquidAdjacent(south_east))}
             };
 
+            //Check if liquid level is 0
+            //If it is, check if each direction liquid level is -1 (block or non-block) and the opposite direction liquid level is 0
+            //If true, set the liquid level of that direction to 0 as well
+            //This is done a to enable pools of water
+            if(liquidLevel == 0){
+                //North check
+                if(!liquidMatrix[0][1] && liquidMatrix[2][1] && (north != null && !isNonBlockAdjacent(north))){
+                    if(getLiquidLevel(south) == 0)
+                        liquidMatrix[0][1] = true;
+                }
+
+                if(north == null || south == null)
+                    liquidMatrix[0][1] = true;
+
+                //South check
+                if(liquidMatrix[0][1] && !liquidMatrix[2][1] && (south != null && !isNonBlockAdjacent(south))){
+                    if(getLiquidLevel(north) == 0)
+                        liquidMatrix[2][1] = true;
+                }
+
+                if(south == null || north == null)
+                    liquidMatrix[2][1] = true;
+
+                //West check
+                if(!liquidMatrix[1][0] && liquidMatrix[1][2] && (west != null && !isNonBlockAdjacent(west))){
+                    if(getLiquidLevel(east) == 0)
+                        liquidMatrix[1][0] = true;
+                }
+
+                if(west == null || east == null)
+                    liquidMatrix[1][0] = true;
+
+                //East check
+                if(liquidMatrix[1][0] && !liquidMatrix[1][2] && (east != null && !isNonBlockAdjacent(east))){
+                    if(getLiquidLevel(west) == 0)
+                        liquidMatrix[1][2] = true;
+                }
+
+                if(east == null || west == null)
+                    liquidMatrix[1][2] = true;
+
+                //North west check
+                if(!liquidMatrix[0][0] && liquidMatrix[2][2] && (north_west != null && !isNonBlockAdjacent(north_west))){
+                    if(getLiquidLevel(south_east) == 0)
+                        liquidMatrix[0][0] = true;
+                }
+
+                if(north_west == null || south_east == null || (!isNonBlockAdjacent(north_west) && !isNonBlockAdjacent(south_east)))
+                    liquidMatrix[0][0] = true;
+
+                //South east check
+                if(liquidMatrix[0][0] && !liquidMatrix[2][2] && (south_east != null && !isNonBlockAdjacent(south_east))){
+                    if(getLiquidLevel(north_west) == 0)
+                        liquidMatrix[2][2] = true;
+                }
+
+                if(south_east == null || north_west == null || (!isNonBlockAdjacent(north_west) && !isNonBlockAdjacent(south_east)))
+                    liquidMatrix[2][2] = true;
+
+                //North east check
+                if(!liquidMatrix[0][2] && liquidMatrix[2][0] && (north_east != null && !isNonBlockAdjacent(north_east))){
+                    if(getLiquidLevel(south_west) == 0)
+                        liquidMatrix[0][2] = true;
+                }
+
+                if(north_east == null || south_west == null || (!isNonBlockAdjacent(north_east) && !isNonBlockAdjacent(south_west)))
+                    liquidMatrix[0][2] = true;
+
+                //South west check
+                if(liquidMatrix[0][2] && !liquidMatrix[2][0] && (south_west != null && !isNonBlockAdjacent(south_west))){
+                    if(getLiquidLevel(north_east) == 0)
+                        liquidMatrix[2][0] = true;
+                }
+
+                if(south_west == null || north_east == null || (!isNonBlockAdjacent(north_east) && !isNonBlockAdjacent(south_west)))
+                    liquidMatrix[2][0] = true;
+            }
+
             //Set north east corner
             //Check east block
             setCornersFromAdjacentBlock(liquidLevel, cornerHeights, east, "east", isLiquidAdjacent, hasLiquidDown, flow_direction, liquidMatrix);
@@ -182,6 +260,7 @@ public class LiquidCubeModel extends CubeModel {
         boolean hasLiquidSouth = south != null && isLiquidAdjacent(south);
         boolean hasLiquidEast = east != null && isLiquidAdjacent(east);
         boolean hasLiquidWest = west != null && isLiquidAdjacent(west);
+        hasLiquidDown = down != null && isLiquidAdjacent(down);
 
         appendLiquidBlock(new LiquidBlock(liquidNamespace, cornerHeights, hasLiquidUp, hasLiquidDown, hasLiquidNorth, hasLiquidSouth, hasLiquidWest, hasLiquidEast, flow_direction, !isLiquidAdjacent || createFullBlock), y_pos, x_pos, z_pos);
 
@@ -512,6 +591,35 @@ public class LiquidCubeModel extends CubeModel {
             }
         } else {
 
+            boolean adjacentBlockLiquid = false;
+
+            switch (orientation){
+                case "north":
+                    adjacentBlockLiquid = liquidMatrix[0][1];
+                    break;
+                case "south":
+                    adjacentBlockLiquid = liquidMatrix[2][1];
+                    break;
+                case "west":
+                    adjacentBlockLiquid = liquidMatrix[1][0];
+                    break;
+                case "east":
+                    adjacentBlockLiquid = liquidMatrix[1][2];
+                    break;
+                case "north_east":
+                    adjacentBlockLiquid = liquidMatrix[0][2];
+                    break;
+                case "north_west":
+                    adjacentBlockLiquid = liquidMatrix[0][0];
+                    break;
+                case "south_east":
+                    adjacentBlockLiquid = liquidMatrix[2][2];
+                    break;
+                case "south_west":
+                    adjacentBlockLiquid = liquidMatrix[2][0];
+                    break;
+            }
+
 
             boolean isOrientationCorner = orientation.equals("north_east") || orientation.equals("north_west") || orientation.equals("south_east") || orientation.equals("south_west");
 
@@ -520,9 +628,12 @@ public class LiquidCubeModel extends CubeModel {
                 if (isOrientationCorner)
                     abscissa += abscissa != 0 ? 0.5 : -0.5;
 
-                if (adjacent != null && isLiquidAdjacent(adjacent)) { //Check if adjacent block is liquid
+                if (adjacentBlockLiquid) { //Check if adjacent block is liquid
 
                     int adjacentLiquidLevel = getLiquidLevel(adjacent);
+                    if(adjacentLiquidLevel == -1)
+                        adjacentLiquidLevel = liquidLevel;
+
                     double intersect_abscissa;
 
                     if (liquidLevel == adjacentLiquidLevel)
@@ -545,9 +656,12 @@ public class LiquidCubeModel extends CubeModel {
                 if (isOrientationCorner)
                     abscissa += abscissa != 0 ? 0.5 : -0.5;
 
-                if (adjacent != null && isLiquidAdjacent(adjacent)) { //Check if adjacent block is liquid
+                if (adjacentBlockLiquid) { //Check if adjacent block is liquid
 
                     int adjacentLiquidLevel = getLiquidLevel(adjacent);
+                    if(adjacentLiquidLevel == -1)
+                        adjacentLiquidLevel = liquidLevel;
+
                     double intersect_abscissa = 0.0;
 
                     if (liquidLevel == adjacentLiquidLevel) {
@@ -685,6 +799,45 @@ public class LiquidCubeModel extends CubeModel {
                 {getLiquidLevel(w), l, getLiquidLevel(e)},
                 {getLiquidLevel(sw), getLiquidLevel(s), getLiquidLevel(se)}
         };
+
+        //Check if liquid level is 0
+        //If it is, check if each direction liquid level is -1 (block or no block) and the opposite direction liquid level is 0
+        //If true, set the liquid level of that direction to 0 as well
+        //This is done a to enable pools of water
+        if(l == 0){
+            //North direction
+            if(liquidMatrix[0][1] == -1 && liquidMatrix[2][1] == 0 && (n != null && !isNonBlockAdjacent(n))){
+                liquidMatrix[0][1] = 0;
+            }
+
+            if(n == null || s == null)
+                liquidMatrix[0][1] = 0;
+
+
+            //South direction
+            if(liquidMatrix[0][1] == 0 && liquidMatrix[2][1] == -1 && (s != null && !isNonBlockAdjacent(s))){
+                liquidMatrix[2][1] = 0;
+            }
+
+            if(s == null || n == null)
+                liquidMatrix[2][1] = 0;
+
+            //West direction
+            if(liquidMatrix[1][0] == -1 && liquidMatrix[1][2] == 0 && (w != null && !isNonBlockAdjacent(w))){
+                liquidMatrix[1][0] = 0;
+            }
+
+            if(w == null || e == null)
+                liquidMatrix[1][0] = 0;
+
+            //East direction
+            if(liquidMatrix[1][0] == 0 && liquidMatrix[1][2] == -1 && (e != null && !isNonBlockAdjacent(e))){
+                liquidMatrix[1][2] = 0;
+            }
+
+            if(e == null || w == null)
+                liquidMatrix[1][2] = 0;
+        }
 
         //Loop through the matrix and inverse the liquid levels (highest value is 7 and lowest is 0)
         inverseLiquidMatrix(liquidMatrix);

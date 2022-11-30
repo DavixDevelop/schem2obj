@@ -3,7 +3,6 @@ package com.davixdevelop.schem2obj;
 import com.davixdevelop.schem2obj.cubemodels.CubeModelUtility;
 import com.davixdevelop.schem2obj.cubemodels.ICubeModel;
 import com.davixdevelop.schem2obj.cubemodels.entity.EntityCubeModel;
-import com.davixdevelop.schem2obj.cubemodels.entity.IOrigin;
 import com.davixdevelop.schem2obj.cubemodels.entitytile.LavaCubeModel;
 import com.davixdevelop.schem2obj.cubemodels.entitytile.WaterCubeModel;
 import com.davixdevelop.schem2obj.namespace.Namespace;
@@ -212,6 +211,10 @@ public class SchemeToObj {
                                 case "water":
                                     if (waterObject == null)
                                         waterObject = new WaterCubeModel();
+
+                                    if(z == 15 && y == 4){
+                                        String w = "2";
+                                    }
 
                                     waterObject.addBlock(blockNamespace);
                                     break;

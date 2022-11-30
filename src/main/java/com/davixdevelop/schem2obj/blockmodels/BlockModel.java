@@ -4,6 +4,7 @@ import com.davixdevelop.schem2obj.blockmodels.json.BlockModelTemplate;
 import com.davixdevelop.schem2obj.util.ArrayUtility;
 import com.google.gson.Gson;
 
+import javax.swing.*;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
@@ -112,8 +113,8 @@ public class BlockModel {
 
                 if(element.rotation != null){
                     Double[] origin = null;
-                    String axis = null;
-                    Double angle = null;
+                    List<String> axis = null;
+                    List<Double> angle = null;
                     Boolean rescale = false;
 
                     if(element.rotation.containsKey("origin")){
@@ -125,23 +126,37 @@ public class BlockModel {
                         ArrayUtility.flattenArray(origin, 16);
                     }
 
-                    if(element.rotation.containsKey("angle"))
-                        angle = (Double) element.rotation.get("angle");
-
-                    if(element.rotation.containsKey("axis")) {
-                        axis = element.rotation.get("axis").toString().toUpperCase();
-                        if(axis.equals("Z")) {
-                            axis = "Y";
-                            angle *= -1;
+                    if(element.rotation.containsKey("angle")) {
+                        angle = new ArrayList<>();
+                        Object rawAngle = element.rotation.get("angle");
+                        if(rawAngle instanceof Double)
+                            angle.add((Double) rawAngle);
+                        else if(rawAngle instanceof String){
+                            String[] angles = ((String)rawAngle).split("\\|");
+                            for(int a = 0; a < angles.length; a++){
+                                angle.add(Double.parseDouble(angles[a]));
+                            }
                         }
-                        else if(axis.equals("Y"))
-                            axis = "Z";
+                    }
+
+                    if(angle != null) {
+                        if (element.rotation.containsKey("axis")) {
+                            axis = new ArrayList<>();
+                            String[] axsis = element.rotation.get("axis").toString().toUpperCase().split("\\|");
+                            for (int a = 0; a < axsis.length; a++) {
+                                if (axsis[a].equals("Z")) {
+                                    axis.add("Y");
+                                    angle.set(a, angle.get(a) * -1.0);
+                                } else if (axsis[a].equals("Y"))
+                                    axis.add("Z");
+                            }
+                        }
                     }
 
                     if(element.rotation.containsKey("rescale"))
                         rescale = (Boolean) element.rotation.get("rescale");
 
-                    cubeRotation = new CubeElement.CubeRotation(origin, axis, angle, rescale);
+                    cubeRotation = new CubeElement.CubeRotation(origin, (axis != null) ? axis.toArray(new String[]{}) : null, (angle != null) ? angle.toArray(new Double[]{}) : null, rescale);
                 }
 
                 if(element.faces != null){
