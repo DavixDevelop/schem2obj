@@ -337,7 +337,7 @@ public class ResourceLoader {
                 if(texture.getParentFile().getName().equals("entity")) {
                     //Skip entity textures that the program doesn't support
                     if (!Constants.EntityFolderFilter.contains(texture.getName()))
-                        return;
+                        continue;
                 }
 
                 File[] subTextures = texture.listFiles();
