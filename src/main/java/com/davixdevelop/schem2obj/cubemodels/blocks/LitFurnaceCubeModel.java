@@ -9,6 +9,8 @@ import com.davixdevelop.schem2obj.namespace.Namespace;
 import com.davixdevelop.schem2obj.util.ArrayVector;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 /**
  * The CubeModel for the Lit Furnace block
@@ -17,12 +19,12 @@ import java.util.HashMap;
  */
 public class LitFurnaceCubeModel extends BlockCubeModel {
     @Override
-    public boolean fromNamespace(Namespace blockNamespace) {
+    public boolean fromNamespace(Namespace namespace) {
         //Get the BlockState for the lit furnace
-        BlockState blockState = Constants.BLOCKS_STATES.getBlockState(blockNamespace.getName());
+        BlockState blockState = Constants.BLOCKS_STATES.getBlockState(namespace.getType());
 
         //Get the variant of the lit furnace
-        BlockState.Variant variant = blockState.getVariants(blockNamespace).get(0);
+        BlockState.Variant variant = blockState.getVariants(namespace).get(0);
 
         ArrayVector.MatrixRotation rotationY = null;
 
@@ -35,9 +37,9 @@ public class LitFurnaceCubeModel extends BlockCubeModel {
 
         HashMap<String,String> modelsMaterials = new HashMap<>();
 
-        CubeModelUtility.generateOrGetMaterial("blocks/furnace_top", blockNamespace);
-        CubeModelUtility.generateOrGetMaterial("blocks/furnace_front_on", blockNamespace);
-        CubeModelUtility.generateOrGetMaterial("blocks/furnace_side", blockNamespace);
+        CubeModelUtility.generateOrGetMaterial("blocks/furnace_top", namespace);
+        CubeModelUtility.generateOrGetMaterial("blocks/furnace_front_on", namespace);
+        CubeModelUtility.generateOrGetMaterial("blocks/furnace_side", namespace);
 
         modelsMaterials.put("top","blocks/furnace_top");
         modelsMaterials.put("front","blocks/furnace_front_on");
@@ -63,16 +65,25 @@ public class LitFurnaceCubeModel extends BlockCubeModel {
                 cubeOrientable);
 
         //Convert cube to obj
-        fromCubes(blockNamespace.getName(), false, null, rotationY, modelsMaterials, cube);
+        fromCubes(namespace.getType(), false, null, rotationY, modelsMaterials, cube);
 
         return true;
     }
 
     @Override
-    public ICubeModel clone() {
+    public ICubeModel duplicate() {
         ICubeModel clone = new LitFurnaceCubeModel();
         clone.copy(this);
 
         return clone;
+    }
+
+    @Override
+    public Map<String, Object> getKey(Namespace namespace) {
+        Map<String, Object> key = new LinkedHashMap<>();
+        key.put("BlockName", namespace.getType());
+        key.put("facing", namespace.getDefaultBlockState().getData("facing"));
+
+        return key;
     }
 }

@@ -16,12 +16,12 @@ public class LavaCubeModel extends LiquidCubeModel{
 
     @Override
     public boolean isLiquidAdjacent(Namespace adjacent) {
-        return (adjacent.getName().equals("lava")) ||
-                (adjacent.getName().equals("flowing_lava"));
+        return (adjacent.getType().equals("lava")) ||
+                (adjacent.getType().equals("flowing_lava"));
     }
 
     @Override
-    public ICubeModel clone() {
+    public ICubeModel duplicate() {
         ICubeModel clone = new LavaCubeModel();
         clone.copy(this);
 

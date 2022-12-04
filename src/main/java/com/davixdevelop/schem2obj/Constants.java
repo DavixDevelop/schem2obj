@@ -5,8 +5,7 @@ import com.davixdevelop.schem2obj.blockstates.BlockStateCollection;
 import com.davixdevelop.schem2obj.cubemodels.CubeModelFactory;
 import com.davixdevelop.schem2obj.materials.MaterialCollection;
 import com.davixdevelop.schem2obj.models.IntegerString;
-import com.davixdevelop.schem2obj.namespace.BlockMapping;
-import com.davixdevelop.schem2obj.namespace.EntityMapping;
+import com.davixdevelop.schem2obj.namespace.NamespaceMapping;
 import com.davixdevelop.schem2obj.schematic.SchematicHolder;
 
 import java.util.HashMap;
@@ -60,6 +59,7 @@ public class Constants {
         SupportedEntities.add("ender_chest");
         SupportedEntities.add("painting");
         SupportedEntities.add("boat");
+        SupportedEntities.add("item_frame");
 
         BANNER_COLORS.put(0, new IntegerString("black", 1644825));
         BANNER_COLORS.put(1, new IntegerString("red",10040115));
@@ -140,9 +140,7 @@ public class Constants {
 
     public static final BlockModelCollection BLOCK_MODELS = new BlockModelCollection();
     public static final BlockStateCollection BLOCKS_STATES = new BlockStateCollection();
-    public static final BlockMapping BLOCK_MAPPING = new BlockMapping();
-
-    public static final EntityMapping ENTITY_MAPPING = new EntityMapping();
+    public static final NamespaceMapping NAMESPACE_MAPPING = new NamespaceMapping();
 
     public static final MaterialCollection BLOCK_MATERIALS = new MaterialCollection();
     public static final CubeModelFactory CUBE_MODEL_FACTORY = new CubeModelFactory();

@@ -7,6 +7,8 @@ import com.davixdevelop.schem2obj.models.VariantModels;
 import com.davixdevelop.schem2obj.namespace.Namespace;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 /**
  * The CubeModel for the Glass block
@@ -15,12 +17,12 @@ import java.util.ArrayList;
  */
 public class GlassCubeModel extends BlockCubeModel {
     @Override
-    public boolean fromNamespace(Namespace blockNamespace) {
+    public boolean fromNamespace(Namespace namespace) {
         //Get BlockState for the glass block
-        BlockState blockState = Constants.BLOCKS_STATES.getBlockState(blockNamespace.getName());
+        BlockState blockState = Constants.BLOCKS_STATES.getBlockState(namespace.getDefaultBlockState().getName());
 
         //Get the variant for the glass block
-        ArrayList<BlockState.Variant> variants = blockState.getVariants(blockNamespace);
+        ArrayList<BlockState.Variant> variants = blockState.getVariants(namespace);
 
         VariantModels[] glassModel = new VariantModels[variants.size()];
 
@@ -30,12 +32,20 @@ public class GlassCubeModel extends BlockCubeModel {
 
 
         //Modify the glass materials if they were not yet modified
-        GlassPaneCubeModel.modifyGlassMaterials(glassModel, blockNamespace);
+        GlassPaneCubeModel.modifyGlassMaterials(glassModel, namespace);
 
         //Generate the cube model for the glass pane variant
-        fromVariantModel(blockNamespace.getName(), blockNamespace, glassModel);
+        fromVariantModel(namespace.getDefaultBlockState().getName(), namespace, glassModel);
 
         return true;
+    }
+
+    @Override
+    public Map<String, Object> getKey(Namespace namespace) {
+        Map<String, Object> key = new LinkedHashMap<>();
+        key.put("BlockName", namespace.getDefaultBlockState().getName());
+
+        return key;
     }
 
     @Override
@@ -45,7 +55,7 @@ public class GlassCubeModel extends BlockCubeModel {
     }
 
     @Override
-    public ICubeModel clone() {
+    public ICubeModel duplicate() {
         ICubeModel clone = new GlassCubeModel();
         clone.copy(this);
 

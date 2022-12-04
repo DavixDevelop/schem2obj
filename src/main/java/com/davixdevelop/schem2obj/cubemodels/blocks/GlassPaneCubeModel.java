@@ -9,9 +9,7 @@ import com.davixdevelop.schem2obj.materials.IMaterial;
 import com.davixdevelop.schem2obj.models.VariantModels;
 import com.davixdevelop.schem2obj.namespace.Namespace;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 /**
  * The CubeModel for the Glass Pane block
@@ -19,40 +17,32 @@ import java.util.Set;
  * @author DavixDevelop
  */
 public class GlassPaneCubeModel extends BlockCubeModel implements IAdjacentCheck {
-    //Map<key: %glass_pane_name:north=true|false,south=true|false,east=true|false,west=true|false, value: Glass Pane Cube Model>
-    public static HashMap<String, GlassPaneCubeModel> GLASS_PANE_VARIANTS = new HashMap<>();
     public static Set<String> MODIFIED_GLASS_MATERIALS = new HashSet<>();
 
     @Override
-    public boolean fromNamespace(Namespace blockNamespace) {
+    public boolean fromNamespace(Namespace namespace) {
+        //Convert namespace to cube model
+        super.baseConvert(namespace);
+        return true;
+    }
 
-        Namespace modifiedNamespace = blockNamespace.clone();
+    @Override
+    public Map<String, Object> getKey(Namespace namespace) {
+        Map<String, Object> key = new LinkedHashMap<>();
+        key.put("BlockName", namespace.getDefaultBlockState().getName());
 
-        CubeModelUtility.getAdjacentNamespace_NSWE(modifiedNamespace, this);
+        CubeModelUtility.getAdjacentNamespace_NSWE(namespace, this);
+        CubeModelUtility.getKey_NSWE(key, namespace);
 
-        String key =  CubeModelUtility.getKey_NSWE(modifiedNamespace);
-
-        //Check if variant is already in memory
-        //Else generate it and store it
-        if(GLASS_PANE_VARIANTS.containsKey(key)){
-            ICubeModel glass_pane_clone = GLASS_PANE_VARIANTS.get(key).clone();
-            copy(glass_pane_clone);
-        }else{
-            //Convert modified namespace to cube model
-            super.baseConvert(modifiedNamespace);
-            //Store it in memory for later use
-            GLASS_PANE_VARIANTS.put(key, this);
-        }
-
-        return false;
+        return key;
     }
 
     @Override
     public boolean checkCollision(Namespace adjacentBlock, int y_index, String orientation){
-        if(adjacentBlock.getName().contains("glass_pane"))
+        if(adjacentBlock.getType().contains("glass_pane"))
             return true;
 
-        if(adjacentBlock.getName().equals("glowstone") || adjacentBlock.getName().equals("sea_lantern"))
+        if(adjacentBlock.getType().equals("glowstone") || adjacentBlock.getType().equals("sea_lantern"))
             return false;
 
         if(adjacentBlock.getDomain().equals("builtin"))
@@ -106,7 +96,7 @@ public class GlassPaneCubeModel extends BlockCubeModel implements IAdjacentCheck
     }
 
     @Override
-    public ICubeModel clone() {
+    public ICubeModel duplicate() {
         ICubeModel clone = new GlassPaneCubeModel();
         clone.copy(this);
 

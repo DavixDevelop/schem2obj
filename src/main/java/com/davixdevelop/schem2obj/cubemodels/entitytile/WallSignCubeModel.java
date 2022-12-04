@@ -9,6 +9,8 @@ import com.davixdevelop.schem2obj.schematic.EntityValues;
 import com.davixdevelop.schem2obj.util.ArrayVector;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 /**
  * The CubeModel for the Wall Sign block
@@ -20,25 +22,21 @@ public class WallSignCubeModel extends SignCubeModel{
     public static HashMap<String, WallSignCubeModel> WALL_SIGN_VARIANTS = new HashMap<>();
 
     @Override
-    public boolean fromNamespace(Namespace blockNamespace, EntityValues entityValues) {
-        super.fromNamespace(blockNamespace, entityValues);
-
-        String facing = blockNamespace.getData("facing");
-        String key = getKey(facing);
-
-        if(WALL_SIGN_VARIANTS.containsKey(key)){
-            ICubeModel variantObject = WALL_SIGN_VARIANTS.get(key);
-            super.copy(variantObject);
-        }else {
-            toCubeModel(facing);
-            WALL_SIGN_VARIANTS.put(key, this);
-        }
-
-        return false;
+    public boolean fromNamespace(Namespace blockNamespace) {
+        toCubeModel(blockNamespace.getDefaultBlockState().getData("facing"));
+        return true;
     }
 
-    public String getKey(String facing){
-        return String.format("%s:%s", getSignText(), facing);
+    @Override
+    public Map<String, Object> getKey(Namespace namespace) {
+        super.fromNamespace(namespace);
+
+        Map<String, Object> key = new LinkedHashMap<>();
+        key.put("EntityTile", namespace.getType());
+        key.put("signText", getSignText());
+        key.put("facing", namespace.getDefaultBlockState().getData("facing"));
+
+        return key;
     }
 
     public void toCubeModel(String facing){
@@ -61,5 +59,13 @@ public class WallSignCubeModel extends SignCubeModel{
 
         //Convert cube elements to cube model
         fromCubes(String.format("wall_sign_%s", getSignText()), false, null, rotationY, modelsMaterials, signElements);
+    }
+
+    @Override
+    public ICubeModel duplicate() {
+        ICubeModel clone = new WallSignCubeModel();
+        clone.copy(this);
+
+        return clone;
     }
 }

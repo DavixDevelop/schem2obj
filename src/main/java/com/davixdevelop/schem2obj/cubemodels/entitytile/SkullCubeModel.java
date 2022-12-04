@@ -31,32 +31,34 @@ public class SkullCubeModel extends TileEntityCubeModel {
     static Gson GSON = new Gson();
 
     @Override
-    public boolean fromNamespace(Namespace blockNamespace, EntityValues entityValues) {
-
-        String key = getKey(blockNamespace, entityValues);
-
-        if(SKULL_VARIANTS.containsKey(key)){
-            ICubeModel variantObject = SKULL_VARIANTS.get(key);
-            copy(variantObject);
-        }else{
-            toCubeModel(blockNamespace, entityValues);
-            SKULL_VARIANTS.put(key, this);
-        }
-
-        return false;
+    public boolean fromNamespace(Namespace blockNamespace) {
+        toCubeModel(blockNamespace);
+        return true;
     }
 
-    public String getKey(Namespace namespace, EntityValues entityValues){
-        String key = String.format("%s:%d:%d",namespace.getData("facing"), entityValues.getByte("Rot"),entityValues.getByte("SkullType"));
-        if(entityValues.containsKey("Owner")){
-            EntityValues owner = entityValues.getEntityValues("Owner");
-            key = String.format("%s:%s",key, owner.getString("Id"));
+    @Override
+    public Map<String, Object> getKey(Namespace namespace) {
+        EntityValues entityValues = namespace.getCustomData();
+        Map<String, Object> key = new LinkedHashMap<>();
+        key.put("EntityTile", namespace.getType());
+        key.put("facing", namespace.getDefaultBlockState().getData("facing"));
+        key.put("Rot", entityValues.getByte("Rot"));
+        key.put("SkullType", entityValues.getByte("SkullType"));
+        if(entityValues.containsKey("Owner") || entityValues.containsKey("SkullOwner"))
+        {
+            EntityValues owner = entityValues.getEntityValues(entityValues.containsKey("Owner") ? "Owner" : "SkullOwner");
+            key.put("OwnerID", owner.getString("Id"));
         }
+
         return key;
     }
 
-    public void toCubeModel(Namespace namespace, EntityValues entityValues){
+    public void toCubeModel(Namespace namespace){
+        EntityValues entityValues = namespace.getCustomData();
         boolean isPlayerHead = entityValues.containsKey("Owner");
+        if(!isPlayerHead)
+            isPlayerHead = entityValues.containsKey("SkullOwner");
+
         byte skullType = entityValues.getByte("SkullType");
 
         String headModelName;
@@ -82,7 +84,7 @@ public class SkullCubeModel extends TileEntityCubeModel {
         if(isPlayerHead){
             try{
                 //Get the "Owner" tag from the tile entity
-                EntityValues owner = entityValues.getEntityValues("Owner");
+                EntityValues owner = entityValues.getEntityValues(entityValues.containsKey("Owner") ? "Owner" : "SkullOwner");
                 //Check if material wasn't generated yet for the player head
                 if(!GENERATED_SKULLS.contains(owner.getString("Id"))) {
                     //Get the properties of the owner
@@ -120,7 +122,7 @@ public class SkullCubeModel extends TileEntityCubeModel {
                             CubeModelUtility.generateOrGetMaterial("entity/steve", namespace);
 
                         //Get copy of "steve" material, set the id of the owner to It's name, as set the player skin diffuse image to it
-                        IMaterial player_skin_material = Constants.BLOCK_MATERIALS.getMaterial("entity/steve").clone();
+                        IMaterial player_skin_material = Constants.BLOCK_MATERIALS.getMaterial("entity/steve").duplicate();
                         player_skin_material.setName(material);
                         player_skin_material.setDiffuseImage(playerSkin);
 
@@ -155,19 +157,19 @@ public class SkullCubeModel extends TileEntityCubeModel {
         }
 
         int Rot = entityValues.getByte("Rot");
-        String facing = namespace.getData("facing");
+        String facing = namespace.getDefaultBlockState().getData("facing");
         switch (facing){
             case "east":
                 Rot = 4;
                 break;
             case "north":
-                Rot = 7;
+                Rot = 0;
                 break;
             case "west":
                 Rot = 12;
                 break;
             case "south":
-                Rot = 0;
+                Rot = 8;
                 break;
         }
 
@@ -186,43 +188,54 @@ public class SkullCubeModel extends TileEntityCubeModel {
         //Convert cube elements to cube model
         fromCubes(String.format("skull-%s", material), false, null, rotationY, modelsMaterials, headElements);
 
-        Double[] translate = null;
+        if(namespace.getDisplayMode().equals(Namespace.DISPLAY_MODE.BLOCK)) {
 
-        //If skull faces down, translate it up
-        if(facing.equals("down")){
-            if(skullType != 5){
-                //Skull type is a regular cube
-                translate = new Double[]{0.0, 0.0, 8 / 16.0};
-            }else{
-                //Skull type is ender dragon
-                translate = new Double[]{0.0, 0.0, 4 / 16.0};
+            Double[] translate = null;
+
+            //If skull faces down, translate it up
+            if (facing.equals("down")) {
+                if (skullType != 5) {
+                    //Skull type is a regular cube
+                    translate = new Double[]{0.0, 0.0, 8 / 16.0};
+                } else {
+                    //Skull type is ender dragon
+                    translate = new Double[]{0.0, 0.0, 4 / 16.0};
+                }
+            } else if (!facing.equals("up")) {
+                //If it doesn't face up, translate it in the direction of the facing
+
+                Double offset = 0.0;
+
+                if (skullType != 5) {
+                    //Skull type is a regular cube
+                    offset = 4.17555614108 / 16;
+                    translate = new Double[]{0.0, 0.0, 4 / 16.0};
+                } else {
+                    //Skull type is ender dragon
+                    offset = 3.55 / 16;
+                    translate = new Double[]{0.0, 0.0, 2 / 16.0};
+                }
+
+                Orientation orientation = Orientation.getOrientation(facing);
+                Integer yOffset = orientation.getYOffset();
+                if (yOffset != 0)
+                    translate[1] = yOffset * offset * -1;
+
+                Integer xOffset = orientation.getXOffset();
+                if (xOffset != 0)
+                    translate[0] = xOffset * offset * -1;
             }
-        }else if(!facing.equals("up")){
-            //If it doesn't face up, translate it in the direction of the facing
 
-            Double offset = 0.0;
-
-            if(skullType != 5){
-                //Skull type is a regular cube
-                offset = 4.17555614108 / 16;
-                translate = new Double[]{0.0, 0.0, 4 / 16.0};
-            }else{
-                //Skull type is ender dragon
-                offset = 3.55 / 16;
-                translate = new Double[]{0.0, 0.0, 2 / 16.0};
-            }
-
-            Orientation orientation = Orientation.getOrientation(facing);
-            Integer yOffset = orientation.getYOffset();
-            if(yOffset != 0)
-                translate[1] = yOffset * offset * -1;
-
-            Integer xOffset = orientation.getXOffset();
-            if(xOffset != 0)
-                translate[0] = xOffset * offset * -1;
+            if (translate != null)
+                CubeModelUtility.translateCubeModel(this, translate);
         }
+    }
 
-        if(translate != null)
-            CubeModelUtility.translateCubeModel(this, translate);
+    @Override
+    public ICubeModel duplicate() {
+        ICubeModel clone = new SkullCubeModel();
+        clone.copy(this);
+
+        return clone;
     }
 }

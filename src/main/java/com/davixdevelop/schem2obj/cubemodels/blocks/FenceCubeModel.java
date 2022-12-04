@@ -7,6 +7,8 @@ import com.davixdevelop.schem2obj.cubemodels.ICubeModel;
 import com.davixdevelop.schem2obj.namespace.Namespace;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 /**
  * The CubeModel for the Fence block
@@ -18,36 +20,28 @@ public class FenceCubeModel extends BlockCubeModel implements IAdjacentCheck {
     public static HashMap<String, FenceCubeModel> FENCE_VARIANTS = new HashMap<>();
 
     @Override
-    public boolean fromNamespace(Namespace blockNamespace) {
+    public boolean fromNamespace(Namespace namespace) {
+        //Convert namespace to cube model
+        super.baseConvert(namespace);
+        return true;
+    }
 
-        Namespace modifiedNamespace = blockNamespace.clone();
+    @Override
+    public Map<String, Object> getKey(Namespace namespace) {
+        Map<String, Object> key = new LinkedHashMap<>();
+        key.put("BlockName", namespace.getDefaultBlockState().getName());
+        CubeModelUtility.getAdjacentNamespace_NSWE(namespace, this);
+        CubeModelUtility.getKey_NSWE(key, namespace);
 
-        CubeModelUtility.getAdjacentNamespace_NSWE(modifiedNamespace, this);
-
-        String key = CubeModelUtility.getKey_NSWE(modifiedNamespace);
-
-        //Check if variant is already in memory
-        //Else generate it and store it
-        if(FENCE_VARIANTS.containsKey(key)){
-            ICubeModel fence_clone = FENCE_VARIANTS.get(key).clone();
-            copy(fence_clone);
-
-        }else{
-            //Convert modified namespace to cube model
-            super.baseConvert(modifiedNamespace);
-            //Store it in memory for later use
-            FENCE_VARIANTS.put(key, this);
-        }
-
-        return false;
+        return key;
     }
 
     @Override
     public boolean checkCollision(Namespace adjacentBlock, int y_index, String orientation){
-        if(adjacentBlock.getName().contains("fence") && !adjacentBlock.getName().contains("gate"))
+        if(adjacentBlock.getType().contains("fence") && !adjacentBlock.getType().contains("gate"))
             return true;
 
-        if(adjacentBlock.getName().equals("glowstone") || adjacentBlock.getName().equals("sea_lantern"))
+        if(adjacentBlock.getType().equals("glowstone") || adjacentBlock.getType().equals("sea_lantern"))
             return false;
 
         if(adjacentBlock.getDomain().equals("builtin"))
@@ -63,7 +57,7 @@ public class FenceCubeModel extends BlockCubeModel implements IAdjacentCheck {
     }
 
     @Override
-    public ICubeModel clone() {
+    public ICubeModel duplicate() {
         ICubeModel clone = new FenceCubeModel();
         clone.copy(this);
 

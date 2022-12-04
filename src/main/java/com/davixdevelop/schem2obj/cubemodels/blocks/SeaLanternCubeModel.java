@@ -4,10 +4,13 @@ import com.davixdevelop.schem2obj.Constants;
 import com.davixdevelop.schem2obj.blockmodels.CubeElement;
 import com.davixdevelop.schem2obj.cubemodels.CubeModel;
 import com.davixdevelop.schem2obj.cubemodels.CubeModelUtility;
+import com.davixdevelop.schem2obj.cubemodels.ICubeModel;
 import com.davixdevelop.schem2obj.materials.IMaterial;
 import com.davixdevelop.schem2obj.namespace.Namespace;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 /**
  * The CubeModel for the Sea Lantern block
@@ -16,10 +19,10 @@ import java.util.HashMap;
  */
 public class SeaLanternCubeModel extends CubeModel {
     @Override
-    public boolean fromNamespace(Namespace blockNamespace) {
+    public boolean fromNamespace(Namespace namespace) {
 
         HashMap<String,String> modelsMaterials = new HashMap<>();
-        CubeModelUtility.generateOrGetMaterial("blocks/sea_lantern", blockNamespace);
+        CubeModelUtility.generateOrGetMaterial("blocks/sea_lantern", namespace);
         modelsMaterials.put("all", "blocks/sea_lantern");
 
         HashMap<String, CubeElement.CubeFace> cubeFaces = new HashMap<>();
@@ -44,8 +47,16 @@ public class SeaLanternCubeModel extends CubeModel {
         //Convert cube to obj
         fromCubes("sea_lantern", false, null, null, modelsMaterials, cube);
 
-        modifySeaLanternMaterial(blockNamespace);
+        modifySeaLanternMaterial(namespace);
         return true;
+    }
+
+    @Override
+    public Map<String, Object> getKey(Namespace namespace) {
+        Map<String, Object> key = new LinkedHashMap<>();
+        key.put("BlockName", namespace.getType());
+
+        return key;
     }
 
     public void modifySeaLanternMaterial(Namespace blockNamespace){
@@ -55,5 +66,13 @@ public class SeaLanternCubeModel extends CubeModel {
         sea_lantern_material.setSpecularHighlights(178.5);
         sea_lantern_material.setSpecularColor(0.14);
         sea_lantern_material.setIlluminationModel(2);
+    }
+
+    @Override
+    public ICubeModel duplicate() {
+        ICubeModel clone = new SeaLanternCubeModel();
+        clone.copy(this);
+
+        return clone;
     }
 }

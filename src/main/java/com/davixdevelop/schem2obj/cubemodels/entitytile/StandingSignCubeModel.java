@@ -9,6 +9,8 @@ import com.davixdevelop.schem2obj.schematic.EntityValues;
 import com.davixdevelop.schem2obj.util.ArrayVector;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 /**
  * The CubeModel for the Standing Sign block
@@ -20,26 +22,21 @@ public class StandingSignCubeModel extends SignCubeModel{
     public static HashMap<String, StandingSignCubeModel> STANDING_SIGN_VARIANTS = new HashMap<>();
 
     @Override
-    public boolean fromNamespace(Namespace blockNamespace, EntityValues entityValues) {
-        super.fromNamespace(blockNamespace, entityValues);
-
-        String rotationIndex = blockNamespace.getData("rotation");
-
-        String key = getKey(rotationIndex);
-
-        if(STANDING_SIGN_VARIANTS.containsKey(key)){
-            ICubeModel variantObject = STANDING_SIGN_VARIANTS.get(key);
-            super.copy(variantObject);
-        }else {
-            toCubeModel(rotationIndex);
-            STANDING_SIGN_VARIANTS.put(key, this);
-        }
-
-        return false;
+    public boolean fromNamespace(Namespace blockNamespace) {
+        toCubeModel(blockNamespace.getDefaultBlockState().getData("rotation"));
+        return true;
     }
 
-    public String getKey(String rotation){
-        return String.format("%s:%s", getSignText(), rotation);
+    @Override
+    public Map<String, Object> getKey(Namespace namespace) {
+        super.fromNamespace(namespace);
+
+        Map<String, Object> key = new LinkedHashMap<>();
+        key.put("EntityTile", namespace.getType());
+        key.put("signText", getSignText());
+        key.put("rotation", namespace.getDefaultBlockState().getData("rotation"));
+
+        return key;
     }
 
     public void toCubeModel(String rotation){
@@ -64,5 +61,13 @@ public class StandingSignCubeModel extends SignCubeModel{
 
         //Convert cube elements to cube model
         fromCubes(String.format("standing_sign_%s", getSignText()), false, null, rotationY, modelsMaterials, signElements);
+    }
+
+    @Override
+    public ICubeModel duplicate() {
+        ICubeModel clone = new StandingSignCubeModel();
+        clone.copy(this);
+
+        return clone;
     }
 }

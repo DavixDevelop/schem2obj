@@ -33,7 +33,7 @@ public class BlockTextures {
         this.textures = textures;
     }
 
-    public BlockTextures clone(){
+    public BlockTextures duplicate(){
         HashMap<String, String> newTextures = new HashMap<>();
         if(textures != null){
             newTextures = new HashMap<>(textures.entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue)));

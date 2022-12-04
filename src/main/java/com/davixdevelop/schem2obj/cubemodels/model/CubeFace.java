@@ -1,6 +1,7 @@
 package com.davixdevelop.schem2obj.cubemodels.model;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -36,7 +37,7 @@ public class CubeFace {
     }
 
 
-    public CubeFace clone(){
+    public CubeFace duplicate(){
         CubeFace cloneFace = new CubeFace();
         cloneFace.copy(this);
 
@@ -44,8 +45,20 @@ public class CubeFace {
     }
 
     public void copy(CubeFace cubeFace){
-        corners = new ArrayList<>(cubeFace.corners);
-        uv = new ArrayList<>(cubeFace.uv);
+        corners = new ArrayList<>();
+        for(Double[] v : cubeFace.corners) {
+            Double[] newVertex = new Double[v.length];
+            newVertex = Arrays.copyOf(v, v.length);
+            corners.add(newVertex);
+        }
+
+        uv = new ArrayList<>();
+        for(Double[] u : cubeFace.uv) {
+            Double[] newUV = new Double[u.length];
+            newUV = Arrays.copyOf(u, u.length);
+            uv.add(newUV);
+        }
+
         material = cubeFace.material;
         cullFace = cubeFace.cullFace;
     }

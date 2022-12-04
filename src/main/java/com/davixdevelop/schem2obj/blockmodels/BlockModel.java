@@ -24,13 +24,15 @@ public class BlockModel {
     Boolean ambientOcclusion;
     BlockTextures textures;
     ArrayList<CubeElement> elements;
+    BlockDisplay.DisplayItem fixedDisplay;
 
-    public BlockModel(String name, String parent, Boolean ambientOcclusion, BlockTextures textures, ArrayList<CubeElement> elements){
+    public BlockModel(String name, String parent, Boolean ambientOcclusion, BlockTextures textures, ArrayList<CubeElement> elements, BlockDisplay.DisplayItem fixedDisplay){
         this.name = name;
         this.parent = parent;
         this.ambientOcclusion = ambientOcclusion;
         this.textures = textures;
         this.elements = elements;
+        this.fixedDisplay = fixedDisplay;
     }
 
     //public String getName() { return name; }
@@ -55,6 +57,10 @@ public class BlockModel {
         this.elements = elements;
     }
 
+    public BlockDisplay.DisplayItem getFixedDisplay() {
+        return fixedDisplay;
+    }
+
     /**
      * This methods reads a JSON Block Model file and returns a BlockModel
      * @param jsonInputStream The InputStream of the JSON Block Model File
@@ -72,6 +78,7 @@ public class BlockModel {
         String particle = null;
 
         ArrayList<CubeElement> cubeElements = new ArrayList<>();
+        BlockDisplay.DisplayItem fixedDisplay = null;
 
         if(rawModel.textures != null){
             for(Object key : rawModel.textures.keySet()){
@@ -209,18 +216,34 @@ public class BlockModel {
             }
         }
 
-        model = new BlockModel(modelName, rawModel.parent, rawModel.ambientOcclusion, new BlockTextures(particle, textureVariables),cubeElements);
+        if(rawModel.display != null && rawModel.display.fixed != null){
+            BlockDisplay.DisplayItem rawFixedDisplay = rawModel.display.fixed;
+            fixedDisplay = new BlockDisplay.DisplayItem();
+            if(rawFixedDisplay.rotation != null)
+                fixedDisplay.rotation = new Double[]{rawFixedDisplay.rotation[0], rawFixedDisplay.rotation[2] * -1.0, rawFixedDisplay.rotation[1]};
+            if(rawFixedDisplay.translation != null)
+                fixedDisplay.translation = new Double[]{rawFixedDisplay.translation[0] / 16.0, rawFixedDisplay.translation[2] / 16.0, rawFixedDisplay.translation[1] / 16.0};
+            if(rawFixedDisplay.scale != null)
+                fixedDisplay.scale = new Double[]{rawFixedDisplay.scale[0], rawFixedDisplay.scale[2], rawFixedDisplay.scale[1]};
+        }
+
+        model = new BlockModel(modelName, rawModel.parent, rawModel.ambientOcclusion, new BlockTextures(particle, textureVariables),cubeElements, fixedDisplay);
         return model;
     }
 
-    public BlockModel clone(){
+
+    public BlockModel duplicate(){
         BlockTextures cloneTextures = null;
         ArrayList<CubeElement> cloneElements = new ArrayList<>();
         if(textures != null)
-            cloneTextures = textures.clone();
+            cloneTextures = textures.duplicate();
         if(elements != null)
-            cloneElements = new ArrayList<>(elements);
-        return new BlockModel(name, parent, ambientOcclusion, cloneTextures, cloneElements);
+        {
+            for(CubeElement element : elements){
+                cloneElements.add(element.duplicate());
+            }
+        }
+        return new BlockModel(name, parent, ambientOcclusion, cloneTextures, cloneElements, fixedDisplay);
     }
 
 }

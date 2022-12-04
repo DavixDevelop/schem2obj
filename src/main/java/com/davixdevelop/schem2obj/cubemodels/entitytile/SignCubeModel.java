@@ -42,7 +42,9 @@ public class SignCubeModel extends TileEntityCubeModel {
     Integer bitmapYRes;
 
     @Override
-    public boolean fromNamespace(Namespace blockNamespace, EntityValues entityValues) {
+    public boolean fromNamespace(Namespace namespace) {
+        EntityValues entityValues = namespace.getCustomData();
+
         EntityValues Text1 = entityValues.getEntityValues("Text1");
         EntityValues Text2 = entityValues.getEntityValues("Text2");
         EntityValues Text3 = entityValues.getEntityValues("Text3");
@@ -90,8 +92,8 @@ public class SignCubeModel extends TileEntityCubeModel {
 
             //Create new material for text
             String signMaterialPath = "entity/sign";
-            CubeModelUtility.generateOrGetMaterial(signMaterialPath, blockNamespace);
-            IMaterial sign_text_material = Constants.BLOCK_MATERIALS.getMaterial(signMaterialPath).clone();
+            CubeModelUtility.generateOrGetMaterial(signMaterialPath, namespace);
+            IMaterial sign_text_material = Constants.BLOCK_MATERIALS.getMaterial(signMaterialPath).duplicate();
 
             sign_text_material.setName(String.format("sign-%s", key));
             sign_text_material.setDiffuseImage(diffuseImage);

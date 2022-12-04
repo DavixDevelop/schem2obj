@@ -10,6 +10,8 @@ import com.davixdevelop.schem2obj.models.VariantModels;
 import com.davixdevelop.schem2obj.namespace.Namespace;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 /**
  * The CubeModel for the Fire block
@@ -18,12 +20,12 @@ import java.util.ArrayList;
  */
 public class FireCubeModel extends BlockCubeModel{
     @Override
-    public boolean fromNamespace(Namespace blockNamespace) {
+    public boolean fromNamespace(Namespace namespace) {
         //Get the BlockState for the fire
-        BlockState blockState = Constants.BLOCKS_STATES.getBlockState(blockNamespace.getName());
+        BlockState blockState = Constants.BLOCKS_STATES.getBlockState(namespace.getType());
 
         //Get the multipart variants of fire
-        ArrayList<BlockState.Variant> variants = blockState.getVariants(blockNamespace);
+        ArrayList<BlockState.Variant> variants = blockState.getVariants(namespace);
 
         VariantModels[] fireModels = new VariantModels[variants.size()];
 
@@ -61,9 +63,17 @@ public class FireCubeModel extends BlockCubeModel{
             fireModels[v] = new VariantModels(models.getVariant(), blockModels);
         }
 
-        fromVariantModel(blockNamespace.getName(), blockNamespace, fireModels);
+        fromVariantModel(namespace.getType(), namespace, fireModels);
 
         return false;
+    }
+
+    @Override
+    public Map<String, Object> getKey(Namespace namespace) {
+        Map<String, Object> key = new LinkedHashMap<>();
+        key.put("BlockName", namespace.getType());
+
+        return key;
     }
 
     @Override
@@ -72,7 +82,7 @@ public class FireCubeModel extends BlockCubeModel{
     }
 
     @Override
-    public ICubeModel clone() {
+    public ICubeModel duplicate() {
         ICubeModel clone = new FireCubeModel();
         clone.copy(this);
 

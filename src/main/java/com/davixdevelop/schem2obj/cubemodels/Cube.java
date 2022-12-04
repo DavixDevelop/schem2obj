@@ -60,12 +60,17 @@ public class Cube implements ICube {
         return materialFaces;
     }
 
+    @Override
+    public void setMaterialFace(Integer faceIndex, Integer materialIndex) {
+        materialFaces[faceIndex] = materialIndex;
+    }
+
     public void deleteFace(Orientation orientation) {
         generatedFaces[orientation.getOrder()] = false;
     }
 
     @Override
-    public ICube clone() {
+    public ICube duplicate() {
         Cube cubeClone = new Cube();
         cubeClone.copy(this);
 
@@ -85,7 +90,7 @@ public class Cube implements ICube {
         for (int x = 0; x < 6; x++) {
             CubeFace face = cloneCube.cubeFaces[x];
             if (face != null)
-                cubeFaces[x] = face.clone();
+                cubeFaces[x] = face.duplicate();
         }
     }
 }

@@ -10,12 +10,7 @@ public class EnderChestCubeMode extends ChestCubeModel {
     }
 
     @Override
-    public boolean fromNamespace(Namespace blockNamespace, EntityValues entityValues) {
-        return super.fromNamespace(blockNamespace, entityValues);
-    }
-
-    @Override
-    public ICubeModel clone() {
+    public ICubeModel duplicate() {
         ICubeModel clone = new EnderChestCubeMode();
         clone.copy(this);
 

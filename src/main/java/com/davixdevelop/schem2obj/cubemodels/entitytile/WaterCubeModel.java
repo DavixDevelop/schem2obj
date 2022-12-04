@@ -16,12 +16,12 @@ public class WaterCubeModel extends LiquidCubeModel {
 
     @Override
     public boolean isLiquidAdjacent(Namespace adjacent) {
-        return (adjacent.getName().equals("water")) ||
-                (adjacent.getName().equals("flowing_water"));
+        return (adjacent.getType().equals("water")) ||
+                (adjacent.getType().equals("flowing_water"));
     }
 
     @Override
-    public ICubeModel clone() {
+    public ICubeModel duplicate() {
         ICubeModel clone = new WaterCubeModel();
         clone.copy(this);
 

@@ -1,3 +1,16 @@
+- [0.5](https://github.com/DavixDevelop/schem2obj/releases/tag/v0.5-alpha)
+  - Added support for following Tile entities: 
+      - Banners (Colored and patterned)
+      - Signs (ASCII and Unicode glyphs)
+      - Skulls (Vanilla skulls and player heads)
+      - Chests (All variants, including Christmas chests)
+  - Added support for following Entities:
+      - Minecart
+      - Paintings
+      - Boats (All variants)
+      - Item Frames (Including holding items (all supported blocks & entities))
+  - Overhauled namespace system (to support item frames)
+  - Removed old block & entities namespace system
 - [0.4](https://github.com/DavixDevelop/schem2obj/releases/tag/v0.4-alpha)
   - Removed ResourcePackUtility, which loaded all resources into memory, created Materials, BlockModels, and BlockStates from them, and stored them in memory, regardless if they were used or not
   - Introduced ResourceLoader that handles both built-in assets, resources in folders, and resources in zip/jar files

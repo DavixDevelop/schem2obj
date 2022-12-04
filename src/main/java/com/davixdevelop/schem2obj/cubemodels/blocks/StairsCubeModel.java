@@ -6,56 +6,32 @@ import com.davixdevelop.schem2obj.cubemodels.IAdjacentCheck;
 import com.davixdevelop.schem2obj.cubemodels.ICubeModel;
 import com.davixdevelop.schem2obj.namespace.Namespace;
 
-import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 /**
- * The CubeModel for all Stairs block varaints
+ * The CubeModel for all Stairs block variants
  *
  * @author DavixDevelop
  */
 public class StairsCubeModel extends BlockCubeModel implements IAdjacentCheck {
     public static AdjacentBlockState ADJACENT_STAIRS_STATES = new AdjacentBlockState("assets/minecraft/stairs_states.json");
 
-    //Map<key: %stair variant:facing=orientation (ex. east),half=top|bottom,shape=straight|outer(or inner)_left(or right), value: Stair Cube Model>
-    public static HashMap<String, StairsCubeModel> STAIRS_BLOCK_VARIANTS = new HashMap<>();
-
     private String half;
     private String facing;
     private String shape;
 
     @Override
-    public boolean fromNamespace(Namespace blockNamespace) {
-        half = blockNamespace.getData().get("half");
-
-        Namespace modifiedNamespace = blockNamespace.clone();
-
-        //Get modified namespace depending on the adjacent block states
-        CubeModelUtility.getAdjacentNamespace_AdjacentState(blockNamespace, modifiedNamespace, ADJACENT_STAIRS_STATES, this);
-
-        shape = modifiedNamespace.getData().get("shape");
-        facing = modifiedNamespace.getData().get("facing");
-
-        //Create key for variant
-        String key = getKey(modifiedNamespace);
-
-        //Check if variant of stairs is already in memory
-        if(STAIRS_BLOCK_VARIANTS.containsKey(key)){
-            ICubeModel stairs_copy = STAIRS_BLOCK_VARIANTS.get(key).clone();
-            copy(stairs_copy);
-        }else{
-            //Convert modified namespace to cube model
-            super.baseConvert(modifiedNamespace);
-            //Store it in memory for later use
-            STAIRS_BLOCK_VARIANTS.put(key, this);
-        }
-
-        return false;
+    public boolean fromNamespace(Namespace namespace) {
+        //Convert namespace to cube model
+        super.baseConvert(namespace);
+        return true;
     }
 
     @Override
     public boolean checkCollision(Namespace adjacentBlock, int y_index, String orientation){
-        if(adjacentBlock.getName().contains("stairs")){
-            return half.equals(adjacentBlock.getData().get("half"));
+        if(adjacentBlock.getType().contains("stairs")){
+            return half.equals(adjacentBlock.getDefaultBlockState().getData("half"));
         }
 
         return false;
@@ -75,16 +51,25 @@ public class StairsCubeModel extends BlockCubeModel implements IAdjacentCheck {
         return false;
     }
 
-    private String getKey(Namespace stairsNamespace){
-        return String.format("%s:facing=%s,half=%s,shape=%s",
-                stairsNamespace.getName(),
-                stairsNamespace.getData().get("facing"),
-                stairsNamespace.getData().get("half"),
-                stairsNamespace.getData().get("shape"));
+    @Override
+    public Map<String, Object> getKey(Namespace namespace) {
+        half = namespace.getDefaultBlockState().getData("half");
+        //Get modified namespace depending on the adjacent block states
+        CubeModelUtility.getAdjacentNamespace_AdjacentState(namespace, ADJACENT_STAIRS_STATES, this);
+        shape = namespace.getDefaultBlockState().getData("shape");
+        facing = namespace.getDefaultBlockState().getData("facing");
+
+        Map<String, Object> key = new LinkedHashMap<>();
+        key.put("BlockName", namespace.getDefaultBlockState().getName());
+        key.put("facing", namespace.getDefaultBlockState().getData("facing"));
+        key.put("half", namespace.getDefaultBlockState().getData("half"));
+        key.put("shape", namespace.getDefaultBlockState().getData("shape"));
+
+        return key;
     }
 
     @Override
-    public ICubeModel clone() {
+    public ICubeModel duplicate() {
         ICubeModel clone = new StairsCubeModel();
         clone.copy(this);
 

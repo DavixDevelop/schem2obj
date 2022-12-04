@@ -192,12 +192,12 @@ public class BlockState {
         return new Variant(apply.model, (apply.x != null) ? apply.x.doubleValue() : null, (apply.y != null) ? apply.y.doubleValue() : null, (apply.uvLock != null) ? apply.uvLock : false, (apply.weight != null) ? apply.weight.intValue() : 1);
     }
 
-    public ArrayList<Variant> getVariants(Namespace blockNamespace){
+    public ArrayList<Variant> getVariants(Namespace namespace){
         ArrayList<Variant> blockVariants = new ArrayList<>();
         Set<Integer> variantIndexes = new HashSet<>();
 
         //Get the actual properties of the block
-        HashMap<String, String> blockProps = blockNamespace.getData();
+        Map<String, String> blockProps = namespace.getDefaultBlockState().getData();
 
         //Check if block uses variants
         //Else get the models the block uses from variantMultiKeys
@@ -207,8 +207,8 @@ public class BlockState {
 
             String isSeamless = null;
 
-            if(blockNamespace.getData().containsKey("seamless")){
-                HashMap<String, String> data = blockNamespace.getData();
+            if(namespace.getDefaultBlockState().getData().containsKey("seamless")){
+                Map<String, String> data = namespace.getDefaultBlockState().getData();
 
                 isSeamless = data.get("seamless");
 
@@ -219,7 +219,7 @@ public class BlockState {
 
                 data.remove("seamless");
 
-                blockNamespace.setData(data);
+                namespace.getDefaultBlockState().setData(data);
 
             }
 
@@ -335,7 +335,7 @@ public class BlockState {
      * @param currentVariantIndexes The list of current variants (to prevent duplicates)
      * @return An list of multipart variant indexes from the variantMultiKeys key
      */
-    private void getVariantIndexesFromBlockProps(Object multiPartKey, Map<String, String>  whenProps, HashMap<String, String> blockProps, Set<Integer> currentVariantIndexes){
+    private void getVariantIndexesFromBlockProps(Object multiPartKey, Map<String, String>  whenProps, Map<String, String> blockProps, Set<Integer> currentVariantIndexes){
         //Loop through the actual properties of the block
 
         boolean matches = false;

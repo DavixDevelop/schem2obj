@@ -229,7 +229,7 @@ public class SEUSMaterial extends Material {
     }
 
     @Override
-    public IMaterial clone() {
+    public IMaterial duplicate() {
         SEUSMaterial seusMaterial = new SEUSMaterial();
         seusMaterial.copy(this);
 

@@ -137,7 +137,7 @@ public interface IMaterial {
      * Return a deep copy of the material
      * @return The deep copy of the material
      */
-    IMaterial clone();
+    IMaterial duplicate();
     /**
      * Create deep copy from clone
      * @param clone The cloned material

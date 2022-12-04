@@ -8,7 +8,10 @@ import com.davixdevelop.schem2obj.namespace.Namespace;
 import com.davixdevelop.schem2obj.schematic.EntityValues;
 import com.davixdevelop.schem2obj.util.ArrayVector;
 
+import javax.swing.*;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 /**
  * The CubeModel for the Standing Banner Block
@@ -16,44 +19,39 @@ import java.util.HashMap;
  * @author DavixDevelop
  */
 public class StandingBannerCubeModel extends BannerCubeModel {
-
-    public static HashMap<String, StandingBannerCubeModel> STANDING_BANNER_VARIANTS = new HashMap<>();
+    @Override
+    public boolean fromNamespace(Namespace namespace) {
+        toCubeModel(namespace);
+        return true;
+    }
 
     @Override
-    public boolean fromNamespace(Namespace blockNamespace, EntityValues entityValues) {
-        super.fromNamespace(blockNamespace, entityValues);
+    public Map<String, Object> getKey(Namespace namespace) {
+        super.fromNamespace(namespace);
 
-        String rotationIndex = blockNamespace.getData("rotation");
+        Map<String, Object> key = new LinkedHashMap<>();
+        key.put("EntityTile", namespace.getType());
+        key.put("bannerCode", getBannerPatternCode());
+        key.put("rotation", namespace.getDefaultBlockState().getData("rotation"));
 
-        String key = getKey(rotationIndex);
-
-        if(STANDING_BANNER_VARIANTS.containsKey(key)){
-            ICubeModel variantObject = STANDING_BANNER_VARIANTS.get(key);
-            super.copy(variantObject);
-        }else {
-            toCubeModel(rotationIndex);
-            STANDING_BANNER_VARIANTS.put(key, this);
-        }
-
-
-        return false;
+        return key;
     }
 
-    public String getKey(String rotation){
-        return String.format("%s:%s", getBannerPatternCode(), rotation);
-    }
-
-    public void toCubeModel(String rotation){
+    public void toCubeModel(Namespace namespace){
         String bannerMaterial = String.format("entity/banner-%s", getBannerPatternCode());
 
         ArrayVector.MatrixRotation rotationY = null;
 
-        int rot = Integer.parseInt(rotation);
+        if(namespace.getDisplayMode().equals(Namespace.DISPLAY_MODE.BLOCK)) {
+            int rot = Integer.parseInt(namespace.getDefaultBlockState().getData("rotation"));
 
-        double yAngle = (360 / 16.0) * rot;
+            double yAngle = (360 / 16.0) * rot;
 
-        if(yAngle > 0.0)
-            rotationY = new ArrayVector.MatrixRotation(yAngle, "Z");
+            if (yAngle > 0.0)
+                rotationY = new ArrayVector.MatrixRotation(yAngle, "Z");
+        }
+        else
+            rotationY = new ArrayVector.MatrixRotation(180.0, "Z");
 
         HashMap<String, String> modelsMaterials = new HashMap<>();
         modelsMaterials.put("banner", bannerMaterial);
@@ -64,5 +62,13 @@ public class StandingBannerCubeModel extends BannerCubeModel {
 
         //Convert cube elements to cube model
         fromCubes(String.format("standing_banner_%s", getBannerPatternCode()), false, null, rotationY, modelsMaterials, bannerElements);
+    }
+
+    @Override
+    public ICubeModel duplicate() {
+        ICubeModel clone = new StandingBannerCubeModel();
+        clone.copy(this);
+
+        return clone;
     }
 }

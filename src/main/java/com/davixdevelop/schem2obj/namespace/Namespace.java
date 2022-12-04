@@ -1,7 +1,8 @@
 package com.davixdevelop.schem2obj.namespace;
 
-import java.util.HashMap;
-import java.util.Map;
+import com.davixdevelop.schem2obj.schematic.EntityValues;
+
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -11,78 +12,124 @@ import java.util.stream.Collectors;
 public class Namespace {
     String id;
     String domain;
-    String name;
     String type;
-    HashMap<String, String> data;
 
-    Double lightValue;
+    Map<Integer, BlockStateNamespace> blockStates;
+    List<String> validTileEntityKeys;
+    EntityValues defaultTileEntityValues;
 
-    public Namespace(String id, String domain, String name, String type, HashMap<String, String> data,Double lightValue){
+    Integer defaultMetaID;
+
+    Integer stockMetaID;
+    EntityValues customData;
+
+    DISPLAY_MODE displayMode;
+
+    public Namespace(String id, String domain, String type, Map<Integer, BlockStateNamespace> blockStates, Integer defaultMetaID, List<String> validTileEntityKeys, EntityValues defaultTileEntityValues) {
         this.id = id;
         this.domain = domain;
-        this.name = name;
         this.type = type;
-        this.data = data;
-        this.lightValue = lightValue;
+        this.blockStates = blockStates;
+        this.validTileEntityKeys = validTileEntityKeys;
+        this.defaultMetaID = defaultMetaID;
+        this.stockMetaID = defaultMetaID;
+
+        this.defaultTileEntityValues = defaultTileEntityValues;
+
+        displayMode = DISPLAY_MODE.BLOCK;
     }
 
     public String getId() {
         return id;
     }
 
-    public void setDomain(String domain) {
-        this.domain = domain;
-    }
-
     public String getDomain() {
         return domain;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getName() {
-        return name;
     }
 
     public String getType() {
         return type;
     }
 
-    public HashMap<String, String> getData() {
-        return data;
+    public BlockStateNamespace getDefaultBlockState() {
+        if(blockStates.containsKey(defaultMetaID))
+            return blockStates.get(defaultMetaID);
+        else
+            return blockStates.get(stockMetaID);
     }
 
-    public String getData(String key) {
-        return data.get(key);
+    public void setDefaultBlockState(Integer defaultMetaID){
+        this.defaultMetaID = defaultMetaID;
     }
 
-    public void setData(HashMap<String, String> data) {
-        this.data = data;
+    public void setCustomData(EntityValues customData) {
+        this.customData = customData;
     }
 
-    public void setData(String key, String value) {this.data.put(key, value);}
-
-    public Double getLightValue() {
-        return lightValue;
+    public EntityValues getCustomData() {
+        return customData;
     }
 
-    public Namespace clone(){
-        HashMap<String, String> cloneData = new HashMap<>();
-        if( data != null)
-            cloneData = new HashMap<>(data.entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey,Map.Entry::getValue)));
+    public Set<Integer> getMetaIDS(){
+        return blockStates.keySet();
+    }
 
-        return new Namespace(id, domain, name, type, cloneData, lightValue);
+    public List<String> getValidEntityKeys() {
+        return validTileEntityKeys;
+    }
+
+    public EntityValues getDefaultEntityValues() {
+        return defaultTileEntityValues;
     }
 
     /**
-     * Copy the a map of state to the namespace data
-     * @param namespace The namespace to copy to
-     * @param states A map of state to copy from
+     * Return the resource path the namespace.
+     * If the namespace has no blockstates, this is the type,
+     * else return the name of the blockstate (variant).
+     * @return The resource path to this namespace
      */
-    public static void copyStatesToNamespace(Namespace namespace, Map<String, String> states){
-        for(String prop : states.keySet())
-            namespace.getData().put(prop, states.get(prop));
+    public String getResource(){
+        if(blockStates.keySet().isEmpty())
+            return type;
+        else
+            if(blockStates.containsKey(defaultMetaID))
+                return blockStates.get(defaultMetaID).name;
+            else
+                return blockStates.get(stockMetaID).name;
+    }
+
+    public DISPLAY_MODE getDisplayMode() {
+        return displayMode;
+    }
+
+    public void setDisplayMode(DISPLAY_MODE displayMode) {
+        this.displayMode = displayMode;
+    }
+
+    public Namespace duplicate(){
+        Map<Integer, BlockStateNamespace> cloneBlockstates = new LinkedHashMap<>();
+        for(Integer metaID : blockStates.keySet()){
+            cloneBlockstates.put(metaID, blockStates.get(metaID).duplicate());
+        }
+
+        EntityValues defaultEntityTileValues = new EntityValues();
+        if(!defaultTileEntityValues.isEmpty())
+            defaultEntityTileValues = defaultTileEntityValues.duplicate();
+
+        Namespace clone = new Namespace(id, domain, type, cloneBlockstates, defaultMetaID, new ArrayList<>(validTileEntityKeys), defaultEntityTileValues);
+        clone.stockMetaID = stockMetaID;
+        if(customData != null)
+        {
+            clone.customData = customData.duplicate();
+        }
+
+        clone.displayMode = DISPLAY_MODE.valueOf(displayMode.toString());
+
+        return clone;
+    }
+
+    public enum DISPLAY_MODE{
+        BLOCK,
+        FIXED
     }
 }

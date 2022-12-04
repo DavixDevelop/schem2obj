@@ -1,5 +1,8 @@
 package com.davixdevelop.schem2obj.blockmodels;
 
+import com.davixdevelop.schem2obj.util.ArrayUtility;
+
+import java.util.Arrays;
 import java.util.HashMap;
 
 /**
@@ -13,6 +16,14 @@ public class CubeElement {
     private Boolean shade;
     private CubeRotation rotation;
     private HashMap<String, CubeFace> faces;
+
+    protected CubeElement duplicate() {
+        HashMap<String, CubeFace> cloneFaces = new HashMap<>();
+        for(String face : faces.keySet()){
+            cloneFaces.put(face, faces.get(face).duplicate());
+        }
+        return new CubeElement(ArrayUtility.cloneArray(from), ArrayUtility.cloneArray(to), shade, rotation != null ? rotation.duplicate() : null, cloneFaces);
+    }
 
     public CubeElement(Double[] from, Double[] to, Boolean shade, CubeRotation rotation, HashMap<String, CubeFace> faces){
         this.from = from;
@@ -68,11 +79,15 @@ public class CubeElement {
         private Double[] angle;
         private Boolean rescale;
 
-        public CubeRotation(Double[] origin, String axis[], Double angle[], Boolean rescale){
+        public CubeRotation(Double[] origin, String[] axis, Double[] angle, Boolean rescale){
             this.origin = origin;
             this.axis = axis;
             this.angle = angle;
             this.rescale = rescale;
+        }
+
+        public CubeRotation duplicate(){
+            return new CubeRotation(ArrayUtility.cloneArray(origin), axis != null ? Arrays.copyOf(axis, axis.length) : null, ArrayUtility.cloneArray(angle), rescale);
         }
 
         public void setOrigin(Double[] origin) {
@@ -162,5 +177,12 @@ public class CubeElement {
         public Double getTintindex() {
             return tintindex;
         }
+
+        public CubeFace duplicate(){
+            return new CubeFace(ArrayUtility.cloneArray(uv), texture, cullface, rotation, tintindex);
+        }
     }
+
+
+
 }

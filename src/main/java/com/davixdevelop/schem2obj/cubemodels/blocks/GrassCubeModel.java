@@ -7,13 +7,15 @@ import com.davixdevelop.schem2obj.cubemodels.CubeModelUtility;
 import com.davixdevelop.schem2obj.cubemodels.ICubeModel;
 import com.davixdevelop.schem2obj.materials.IMaterial;
 import com.davixdevelop.schem2obj.namespace.Namespace;
+import com.davixdevelop.schem2obj.schematic.EntityValues;
 import com.davixdevelop.schem2obj.util.ArrayVector;
 import com.davixdevelop.schem2obj.util.ImageUtility;
 import com.davixdevelop.schem2obj.util.LogUtility;
 
 import java.awt.image.BufferedImage;
-import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 /**
  * The CubeModel for the Grass block
@@ -21,7 +23,6 @@ import java.util.HashMap;
  * @author DavixDevelop
  */
 public class GrassCubeModel extends BlockCubeModel {
-    static HashMap<BlockState.Variant, ICubeModel> RANDOM_VARIANTS = new HashMap<>();
     //To mark if grass_top and grass_side was colored based on the biomes grass color
     //ToDo: Add option to choose biomes colors
     private static boolean NORMAL_MATERIAL_COLORED;
@@ -29,49 +30,49 @@ public class GrassCubeModel extends BlockCubeModel {
     private static boolean SNOWY_MATERIAL_GENERATED;
 
     @Override
-    public boolean fromNamespace(Namespace blockNamespace) {
+    public boolean fromNamespace(Namespace namespace) {
+        EntityValues customData = namespace.getCustomData();
+        BlockState.Variant variant = (BlockState.Variant) customData.get("variant");
 
-        Namespace grassNamespace = blockNamespace.clone();
+        if(namespace.getDefaultBlockState().getData("snowy").equals("false"))
+        {
+            //Color the regular grass material
+            modifyRegularGrassMaterial(namespace);
+            createNormalVariant(namespace, variant);
+        }else{
+            //Color the snowy grass material
+            modifySnowyGrassMaterial(namespace);
+            createSnowyVariant(namespace, variant);
+        }
+
+        return true;
+    }
+
+    @Override
+    public Map<String, Object> getKey(Namespace namespace) {
 
         //Check if the above block is a snow layer
         Namespace aboveBlock = Constants.LOADED_SCHEMATIC.getNamespace(Constants.LOADED_SCHEMATIC.getPosX(), Constants.LOADED_SCHEMATIC.getPosY() + 1, Constants.LOADED_SCHEMATIC.getPosZ());
         if(aboveBlock != null){
-            if(aboveBlock.getName().equals("snow_layer"))
-                grassNamespace.setData("snowy", "true");
+            if(aboveBlock.getType().equals("snow_layer"))
+                namespace.getDefaultBlockState().setData("snowy", "true");
         }
 
-        BlockState blockState = Constants.BLOCKS_STATES.getBlockState(grassNamespace.getName());
+        BlockState blockState = Constants.BLOCKS_STATES.getBlockState(namespace.getType());
 
-        ArrayList<BlockState.Variant> variants = blockState.getVariants(grassNamespace);
+        BlockState.Variant variant = blockState.getVariants(namespace).get(0);
 
+        Map<String, Object> key = new LinkedHashMap<>();
+        key.put("BlockName", namespace.getType());
+        key.put("snowy", namespace.getDefaultBlockState().getData("snowy"));
+        key.put("variant", variant);
 
+        //Put the variant into the namespace custom data
+        EntityValues customData = new EntityValues();
+        customData.put("variant", variant);
+        namespace.setCustomData(customData);
 
-        if(grassNamespace.getData().get("snowy").equals("false") && blockState.isRandomVariants()){
-            //Color the regular grass material
-            modifyRegularGrassMaterial(grassNamespace);
-
-            if(!RANDOM_VARIANTS.containsKey(variants.get(0)))
-            {
-                createNormalVariant(grassNamespace, variants.get(0));
-                RANDOM_VARIANTS.put(variants.get(0), this);
-            }else{
-                ICubeModel variantObject = RANDOM_VARIANTS.get(variants.get(0));
-                super.copy(variantObject);
-            }
-        }else{
-            //Color the snowy grass material
-            modifySnowyGrassMaterial(grassNamespace);
-
-            if(!RANDOM_VARIANTS.containsKey(variants.get(0))){
-                createSnowyVariant(grassNamespace, variants.get(0));
-                RANDOM_VARIANTS.put(variants.get(0), this);
-            }else{
-                ICubeModel snowyVariant = RANDOM_VARIANTS.get(variants.get(0));
-                super.copy(snowyVariant);
-            }
-        }
-
-        return false;
+        return key;
     }
 
     public void createSnowyVariant(Namespace blockNamespace, BlockState.Variant randomVariant){
@@ -163,7 +164,7 @@ public class GrassCubeModel extends BlockCubeModel {
             IMaterial grass_top = Constants.BLOCK_MATERIALS.getMaterial("blocks/grass_top");
 
 
-            Constants.BLOCK_MATERIALS.setMaterial("blocks/snowy_grass_top", grass_top.clone());
+            Constants.BLOCK_MATERIALS.setMaterial("blocks/snowy_grass_top", grass_top.duplicate());
 
             CubeModelUtility.generateOrGetMaterial("blocks/grass_side_snowed", blockNamespace);
             IMaterial snowy_grass_side = Constants.BLOCK_MATERIALS.getMaterial("blocks/grass_side_snowed");
@@ -188,5 +189,13 @@ public class GrassCubeModel extends BlockCubeModel {
 
             SNOWY_MATERIAL_GENERATED = true;
         }
+    }
+
+    @Override
+    public ICubeModel duplicate() {
+        ICubeModel clone = new GrassCubeModel();
+        clone.copy(this);
+
+        return clone;
     }
 }

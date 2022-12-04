@@ -16,10 +16,7 @@ import com.davixdevelop.schem2obj.util.ArrayVector;
 import com.davixdevelop.schem2obj.util.ImageUtility;
 
 import java.awt.image.BufferedImage;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 /**
  * The CubeModel for the Redstone Wire block
@@ -28,50 +25,30 @@ import java.util.Set;
  */
 public class RedstoneWireCubeModel extends CubeModel implements IAdjacentCheck {
     static AdjacentBlockState ADJACENT_REDSTONE_WIRE_STATES = new AdjacentBlockState("assets/minecraft/redstone_wire_states.json");
-
-    //Map<key: %power:north=(side|up|none),west=(side|up|none),south=(side|up|none),east=(side|up|none) value: Stair Block Wavefront Object>
-    static HashMap<String, RedstoneWireCubeModel> REDSTONE_WIRE_VARIANTS = new HashMap<>();
-
     static Set<String> MODIFIED_REDSTONE_WIRE_MATERIALS = new HashSet<>();
 
     private String power;
 
     @Override
-    public boolean fromNamespace(Namespace blockNamespace) {
-        power = blockNamespace.getData().get("power");
+    public boolean fromNamespace(Namespace namespace) {
+        //Convert modified namespace to cube model
+        toCubeModel(namespace);
 
-        Namespace modifiedNamespace = blockNamespace.clone();
-
-        //Get modified namespace depending on the adjacent block states
-        CubeModelUtility.getAdjacentNamespace_AdjacentState(blockNamespace, modifiedNamespace, ADJACENT_REDSTONE_WIRE_STATES, this);
-
-        //Create key for variant
-        String key = getKey(modifiedNamespace);
-
-        //Check if variant of stairs is already in memory
-        if (REDSTONE_WIRE_VARIANTS.containsKey(key)) {
-            ICubeModel redstone_wire_copy = REDSTONE_WIRE_VARIANTS.get(key).clone();
-            copy(redstone_wire_copy);
-        } else {
-            //Convert modified namespace to cube model
-            toCubeModel(modifiedNamespace);
-            REDSTONE_WIRE_VARIANTS.put(key, this);
-        }
-
-        return false;
+        return true;
     }
 
-    private void toCubeModel(Namespace wireNamespace) {
-        setName(wireNamespace.getName());
 
-        BlockState blockState = Constants.BLOCKS_STATES.getBlockState(wireNamespace.getName());
-        ArrayList<BlockState.Variant> variants = blockState.getVariants(wireNamespace);
+    private void toCubeModel(Namespace namespace) {
+        setName(namespace.getDefaultBlockState().getName());
+
+        BlockState blockState = Constants.BLOCKS_STATES.getBlockState(namespace.getDefaultBlockState().getName());
+        ArrayList<BlockState.Variant> variants = blockState.getVariants(namespace);
 
         VariantModels[] wireModels = new VariantModels[variants.size()];
         for(int c = 0; c < variants.size(); c++)
             wireModels[c] = new VariantModels(variants.get(c), Constants.BLOCK_MODELS.getBlockModel(variants.get(c).getModel()));
 
-        HashMap<String, HashMap<String, String>> modelsMaterials = CubeModelUtility.modelsToMaterials(wireModels, wireNamespace);
+        HashMap<String, HashMap<String, String>> modelsMaterials = CubeModelUtility.modelsToMaterials(wireModels, namespace);
 
         //Loop through the models
         for (String rootModel : modelsMaterials.keySet()) {
@@ -91,7 +68,7 @@ public class RedstoneWireCubeModel extends CubeModel implements IAdjacentCheck {
                         String newTextureName = String.format("%s_power_%s", textureName, power);
                         if (!MODIFIED_REDSTONE_WIRE_MATERIALS.contains(newTextureName)) {
 
-                            Constants.BLOCK_MATERIALS.setMaterial(newTextureName, Constants.BLOCK_MATERIALS.getMaterial(textureName).clone());
+                            Constants.BLOCK_MATERIALS.setMaterial(newTextureName, Constants.BLOCK_MATERIALS.getMaterial(textureName).duplicate());
 
                             IMaterial new_material = Constants.BLOCK_MATERIALS.getMaterial(newTextureName);
 
@@ -167,22 +144,22 @@ public class RedstoneWireCubeModel extends CubeModel implements IAdjacentCheck {
     @Override
     public boolean checkCollision(Namespace adjacent, int y_index, String orientation) {
         if(y_index == 0){
-            if(adjacent.getName().contains("repeater") || adjacent.getName().contains("comparator")){
+            if(adjacent.getType().contains("repeater") || adjacent.getType().contains("comparator")){
                 if(orientation.equals("west") || orientation.equals("east")){
-                    return adjacent.getData().get("facing").equals("west") || adjacent.getData().get("facing").equals("east");
+                    return adjacent.getDefaultBlockState().getData().get("facing").equals("west") || adjacent.getDefaultBlockState().getData().get("facing").equals("east");
                 }else {
-                    return adjacent.getData().get("facing").equals("south") || adjacent.getData().get("facing").equals("north");
+                    return adjacent.getDefaultBlockState().getData().get("facing").equals("south") || adjacent.getDefaultBlockState().getData().get("facing").equals("north");
                 }
 
             }
 
-            return (adjacent.getName().contains("redstone") && (adjacent.getName().endsWith("_wire") || adjacent.getName().endsWith("_block") || adjacent.getName().equals("_torch"))) ||
-                    adjacent.getName().equals("lever") ||
-                    adjacent.getName().endsWith("pressure_plate") ||
-                    adjacent.getName().contains("daylight_detector") ||
-                    adjacent.getName().contains("button");
+            return (adjacent.getType().contains("redstone") && (adjacent.getType().endsWith("_wire") || adjacent.getType().endsWith("_block") || adjacent.getType().endsWith("_torch"))) ||
+                    adjacent.getType().equals("lever") ||
+                    adjacent.getType().endsWith("pressure_plate") ||
+                    adjacent.getType().contains("daylight_detector") ||
+                    adjacent.getType().contains("button");
         }else {
-            return adjacent.getName().equals("redstone_wire");
+            return adjacent.getType().equals("redstone_wire");
         }
     }
 
@@ -191,17 +168,27 @@ public class RedstoneWireCubeModel extends CubeModel implements IAdjacentCheck {
         return false;
     }
 
-    private String getKey(Namespace wireNamespace) {
-        return String.format("%s:north=%s,west=%s,south=%s,east=%s",
-                power,
-                wireNamespace.getData().get("north"),
-                wireNamespace.getData().get("west"),
-                wireNamespace.getData().get("south"),
-                wireNamespace.getData().get("east"));
+    @Override
+    public Map<String, Object> getKey(Namespace namespace) {
+        Map<String, Object> key = new LinkedHashMap<>();
+
+        power = namespace.getDefaultBlockState().getData().get("power");
+        //Get modified namespace depending on the adjacent block states
+        CubeModelUtility.getAdjacentNamespace_AdjacentState(namespace, ADJACENT_REDSTONE_WIRE_STATES, this);
+
+
+        key.put("BlockName", namespace.getType());
+        key.put("power", namespace.getDefaultBlockState().getData("power"));
+        key.put("north", namespace.getDefaultBlockState().getData("north"));
+        key.put("south", namespace.getDefaultBlockState().getData("south"));
+        key.put("west", namespace.getDefaultBlockState().getData("west"));
+        key.put("east", namespace.getDefaultBlockState().getData("east"));
+
+        return key;
     }
 
     @Override
-    public ICubeModel clone() {
+    public ICubeModel duplicate() {
         ICubeModel clone = new RedstoneWireCubeModel();
         clone.copy(this);
 

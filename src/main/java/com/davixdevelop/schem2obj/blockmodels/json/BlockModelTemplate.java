@@ -1,5 +1,7 @@
 package com.davixdevelop.schem2obj.blockmodels.json;
 
+import com.davixdevelop.schem2obj.blockmodels.BlockDisplay;
+
 import java.util.List;
 import java.util.Map;
 
@@ -7,6 +9,8 @@ import java.util.Map;
  * @author DavixDevelop
  */
 public class BlockModelTemplate {
+    public BlockDisplay display;
+
     public String parent;
     public Boolean ambientOcclusion;
     public Map<?, ?> textures;
@@ -19,4 +23,5 @@ public class BlockModelTemplate {
         public Map<?, ?> rotation;
         public Map<?, ?> faces;
     }
+
 }

@@ -246,7 +246,7 @@ public class Material implements IMaterial {
     }
 
     @Override
-    public IMaterial clone() {
+    public IMaterial duplicate() {
         Material material = new Material();
         material.copy(this);
 

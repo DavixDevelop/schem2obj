@@ -3,10 +3,7 @@ package com.davixdevelop.schem2obj.schematic;
 import com.flowpowered.nbt.*;
 import com.google.gson.Gson;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class EntityValues {
     Map<String, Object> map;
@@ -15,6 +12,31 @@ public class EntityValues {
 
     public EntityValues(){
         map = new HashMap<>();
+    }
+
+    public void put(String key, Object value){
+        map.put(key, value);
+    }
+
+    public Object get(String key){
+        return map.get(key);
+    }
+
+    public Set<String> keySet(){
+        return map.keySet();
+    }
+
+    public void parseMap(Map<String, Object> map1){
+        for(String key : map1.keySet()){
+            Object item = map1.get(key);
+            if(item instanceof Map<?, ?>){
+                Map<String, Object> map2 = (Map<String, Object>) item;
+                EntityValues entityValues = new EntityValues();
+                entityValues.parseMap(map2);
+                map.put(key, entityValues);
+            }else
+                map.put(key, item);
+        }
     }
 
     public void parseCompoundMap(CompoundMap compoundMap){
@@ -104,6 +126,8 @@ public class EntityValues {
     public static Integer getIntegerValue(Object value){
         if(value instanceof Byte)
             return ((Byte)value) & 0xFF;
+        else if(value instanceof Short)
+            return ((Short)value).intValue();
 
         return (Integer)value;
     }
@@ -121,7 +145,10 @@ public class EntityValues {
     }
 
     public static String getStringValue(Object value){
-        return (String)value;
+        if(value instanceof Short)
+            return ((Short)value).toString();
+
+        return value.toString();
     }
 
     public Double getDouble(String key){
@@ -145,6 +172,13 @@ public class EntityValues {
     }
 
     public static Byte getByteValue(Object value){
+        if(value instanceof Short)
+            return ((Short)value).byteValue();
+        if(value instanceof Double)
+            return ((Double)value).byteValue();
+        if(value instanceof Integer)
+            return ((Integer)value).byteValue();
+
         return (Byte) value;
     }
 
@@ -177,6 +211,8 @@ public class EntityValues {
     }
 
     public static Long getLongValue(Object value){
+        if(value instanceof Short)
+            return ((Short)value).longValue();
         return (Long) value;
     }
 
@@ -204,6 +240,27 @@ public class EntityValues {
             list.add((Double) rawValue);
 
         return list;
+    }
+
+    public EntityValues duplicate(){
+        EntityValues entityValues = new EntityValues();
+        Map<String, Object> cloneMap = new LinkedHashMap<>();
+        for(String key : map.keySet()){
+            Object item = map.get(key);
+            if(item instanceof EntityValues){
+                EntityValues entityValues1 = (EntityValues) item;
+                cloneMap.put(key, entityValues1.duplicate());
+            }else
+                cloneMap.put(key, item);
+        }
+
+        entityValues.map = cloneMap;
+
+        return entityValues;
+    }
+
+    public boolean isEmpty(){
+        return map.isEmpty();
     }
 
 }

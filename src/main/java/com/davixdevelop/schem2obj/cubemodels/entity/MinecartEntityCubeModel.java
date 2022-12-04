@@ -10,34 +10,33 @@ import com.davixdevelop.schem2obj.schematic.EntityValues;
 import com.davixdevelop.schem2obj.util.ArrayVector;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 public class MinecartEntityCubeModel extends EntityCubeModel {
-    public static HashMap<String, MinecartEntityCubeModel> MINECART_ROTATIONS = new HashMap<>();
 
     public boolean MINECART_MATERIAL_GENERATED = false;
 
     @Override
-    public boolean fromNamespace(Namespace blockNamespace, EntityValues entityValues) {
+    public boolean fromNamespace(Namespace namespace) {
+        EntityValues entityValues = namespace.getCustomData();
 
         List<Float> rotation = entityValues.getFloatList("Rotation");
-
-        String key = getKey(rotation.get(0), rotation.get(1));
-
-        if(MINECART_ROTATIONS.containsKey(key)){
-            ICubeModel variantObject = MINECART_ROTATIONS.get(key);
-            super.copy(variantObject);
-        }else {
-            toCubeModel(blockNamespace, rotation.get(1), rotation.get(0));
-            MINECART_ROTATIONS.put(key, this);
-        }
+        toCubeModel(namespace, rotation.get(1), rotation.get(0));
 
 
-        return false;
+        return true;
     }
 
-    public String getKey(Float x, Float y){
-        return String.format("%f:%f", x, y);
+    @Override
+    public Map<String, Object> getKey(Namespace namespace) {
+        EntityValues entityValues = namespace.getCustomData();
+        Map<String, Object> key = new LinkedHashMap<>();
+        key.put("EntityName", "minecart");
+        key.put("Rotation", entityValues.getFloatList("Rotation"));
+
+        return key;
     }
 
     public void toCubeModel(Namespace namespace, Float x, Float y){
@@ -71,7 +70,7 @@ public class MinecartEntityCubeModel extends EntityCubeModel {
     }
 
     @Override
-    public ICubeModel clone() {
+    public ICubeModel duplicate() {
         ICubeModel clone = new MinecartEntityCubeModel();
         clone.copy(this);
 

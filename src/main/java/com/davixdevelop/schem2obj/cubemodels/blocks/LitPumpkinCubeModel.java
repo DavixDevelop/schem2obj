@@ -5,6 +5,7 @@ import com.davixdevelop.schem2obj.blockmodels.CubeElement;
 import com.davixdevelop.schem2obj.blockstates.BlockState;
 import com.davixdevelop.schem2obj.cubemodels.CubeModel;
 import com.davixdevelop.schem2obj.cubemodels.CubeModelUtility;
+import com.davixdevelop.schem2obj.cubemodels.ICubeModel;
 import com.davixdevelop.schem2obj.materials.IMaterial;
 import com.davixdevelop.schem2obj.materials.SEUSMaterial;
 import com.davixdevelop.schem2obj.namespace.Namespace;
@@ -14,6 +15,8 @@ import com.davixdevelop.schem2obj.util.LogUtility;
 
 import java.awt.image.BufferedImage;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 /**
  * The CubeModel for the Lit Pumpkin block
@@ -25,12 +28,12 @@ public class LitPumpkinCubeModel extends CubeModel {
     private static int STACK_SIZE = -1;
 
     @Override
-    public boolean fromNamespace(Namespace blockNamespace) {
+    public boolean fromNamespace(Namespace namespace) {
         //Get BlockState for the lit_pumpkin
-        BlockState blockState = Constants.BLOCKS_STATES.getBlockState(blockNamespace.getName());
+        BlockState blockState = Constants.BLOCKS_STATES.getBlockState(namespace.getType());
 
         //Get the variant for the lit pumpkin block
-        BlockState.Variant variant = blockState.getVariants(blockNamespace).get(0);
+        BlockState.Variant variant = blockState.getVariants(namespace).get(0);
 
         ArrayVector.MatrixRotation rotationY = null;
         //Check if variant need's to be rotated
@@ -38,7 +41,7 @@ public class LitPumpkinCubeModel extends CubeModel {
             rotationY = new ArrayVector.MatrixRotation(variant.getY(), "Z");
 
         HashMap<String,String> modelsMaterials = new HashMap<>();
-        modifyLitPumpkinMaterials(blockNamespace);
+        modifyLitPumpkinMaterials(namespace);
 
         modelsMaterials.put("front", "blocks/pumpkin_face_on");
         modelsMaterials.put("top", "blocks/lit_pumpkin_top");
@@ -47,7 +50,7 @@ public class LitPumpkinCubeModel extends CubeModel {
         IMaterial pumpkin_face_on = Constants.BLOCK_MATERIALS.getMaterial("blocks/pumpkin_face_on");
 
         if(pumpkin_face_on instanceof SEUSMaterial){
-            SEUSMaterial seusMaterial = (SEUSMaterial) pumpkin_face_on.clone();
+            SEUSMaterial seusMaterial = (SEUSMaterial) pumpkin_face_on.duplicate();
             String metaPath = ResourceLoader.getResourcePath("textures", "blocks/pumpkin_face_on", "png.mcmeta");
             if(ResourceLoader.resourceExists(metaPath)){
                 if(STACK_SIZE == -1){
@@ -96,8 +99,8 @@ public class LitPumpkinCubeModel extends CubeModel {
             CubeModelUtility.generateOrGetMaterial("blocks/pumpkin_side", blockNamespace);
             CubeModelUtility.generateOrGetMaterial("blocks/pumpkin_top", blockNamespace);
 
-            IMaterial pumpkin_side = Constants.BLOCK_MATERIALS.getMaterial("blocks/pumpkin_side").clone();
-            IMaterial pumpkin_top = Constants.BLOCK_MATERIALS.getMaterial("blocks/pumpkin_top").clone();
+            IMaterial pumpkin_side = Constants.BLOCK_MATERIALS.getMaterial("blocks/pumpkin_side").duplicate();
+            IMaterial pumpkin_top = Constants.BLOCK_MATERIALS.getMaterial("blocks/pumpkin_top").duplicate();
             IMaterial pumpkin_face_on = Constants.BLOCK_MATERIALS.getMaterial("blocks/pumpkin_face_on");
 
             pumpkin_side.setName("lit_pumpkin_side");
@@ -129,5 +132,22 @@ public class LitPumpkinCubeModel extends CubeModel {
 
             LIT_PUMPKIN_MATERIALS_GENERATED = true;
         }
+    }
+
+    @Override
+    public Map<String, Object> getKey(Namespace namespace) {
+        Map<String, Object> key = new LinkedHashMap<>();
+        key.put("BlockName", namespace.getType());
+        key.put("facing", namespace.getDefaultBlockState().getData("facing"));
+
+        return key;
+    }
+
+    @Override
+    public ICubeModel duplicate() {
+        ICubeModel clone = new LitPumpkinCubeModel();
+        clone.copy(this);
+
+        return clone;
     }
 }

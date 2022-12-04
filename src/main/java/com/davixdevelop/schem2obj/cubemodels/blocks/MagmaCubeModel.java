@@ -4,10 +4,13 @@ import com.davixdevelop.schem2obj.Constants;
 import com.davixdevelop.schem2obj.blockmodels.CubeElement;
 import com.davixdevelop.schem2obj.cubemodels.CubeModel;
 import com.davixdevelop.schem2obj.cubemodels.CubeModelUtility;
+import com.davixdevelop.schem2obj.cubemodels.ICubeModel;
 import com.davixdevelop.schem2obj.materials.IMaterial;
 import com.davixdevelop.schem2obj.namespace.Namespace;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 /**
  * The CubeModel for the Magma block
@@ -17,9 +20,9 @@ import java.util.HashMap;
 public class MagmaCubeModel extends CubeModel {
     
     @Override
-    public boolean fromNamespace(Namespace blockNamespace) {
+    public boolean fromNamespace(Namespace namespace) {
         HashMap<String,String> modelsMaterials = new HashMap<>();
-        CubeModelUtility.generateOrGetMaterial("blocks/magma", blockNamespace);
+        CubeModelUtility.generateOrGetMaterial("blocks/magma", namespace);
         modelsMaterials.put("all", "blocks/magma");
 
         HashMap<String, CubeElement.CubeFace> cubeFaces = new HashMap<>();
@@ -44,7 +47,7 @@ public class MagmaCubeModel extends CubeModel {
         //Convert cube to obj
         fromCubes("magma", false,null,null,modelsMaterials,cube);
 
-        modifyMagmaMaterial(blockNamespace);
+        modifyMagmaMaterial(namespace);
         return true;
     }
 
@@ -56,5 +59,21 @@ public class MagmaCubeModel extends CubeModel {
         magma.setSpecularColor(0.0);
         magma.setEmissionStrength(0.0894427);
         magma.setIlluminationModel(2);
+    }
+
+    @Override
+    public Map<String, Object> getKey(Namespace namespace) {
+        Map<String, Object> key = new LinkedHashMap<>();
+        key.put("BlockName", namespace.getType());
+
+        return key;
+    }
+
+    @Override
+    public ICubeModel duplicate() {
+        ICubeModel clone = new MagmaCubeModel();
+        clone.copy(this);
+
+        return clone;
     }
 }

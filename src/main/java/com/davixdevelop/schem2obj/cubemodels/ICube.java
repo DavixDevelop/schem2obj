@@ -25,10 +25,17 @@ public interface ICube {
     Boolean[] getGeneratedFaces();
 
     /**
-     * Get a list of material indexes per face
+     * Get a array of material indexes per face
      * @return A 6 length array of material indexes per face (See Orientation.DIRECTIONS for order of faces)
      */
     Integer[] getMaterialFaces();
+
+    /**
+     * Set material index per face
+     * @param faceIndex The index to the face (See Orientation.DIRECTIONS for order of faces)
+     * @param materialIndex The index to the material in the cube
+     */
+    void setMaterialFace(Integer faceIndex, Integer materialIndex);
 
     /**
      * Delete the cube face that faces the orientation
@@ -42,7 +49,7 @@ public interface ICube {
      *
      * @return The deep copy of the Cube
      */
-    ICube clone();
+    ICube duplicate();
 
     /**
      * Create deep copy from clone

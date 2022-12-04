@@ -4,6 +4,7 @@ import com.davixdevelop.schem2obj.Orientation;
 import com.davixdevelop.schem2obj.blockmodels.BlockModel;
 import com.davixdevelop.schem2obj.blockmodels.CubeElement;
 import com.davixdevelop.schem2obj.blockstates.BlockState;
+import com.davixdevelop.schem2obj.cubemodels.model.CubeFace;
 import com.davixdevelop.schem2obj.models.HashedStringList;
 import com.davixdevelop.schem2obj.models.VariantModels;
 import com.davixdevelop.schem2obj.namespace.Namespace;
@@ -58,6 +59,33 @@ public class CubeModel implements ICubeModel {
     }
 
     @Override
+    public void appendCubeModel(ICubeModel model) {
+        HashedStringList newMaterialsList =  model.getMaterials();
+        //key: material index of model to append, value: material index of appended material
+        HashMap<Integer, Integer> materialMap = new LinkedHashMap<>();
+        List<String> newMaterials = newMaterialsList.toList();
+        for(int index = 0; index < newMaterials.size(); index++)
+            materialMap.put(index, materials.put(newMaterials.get(index)));
+
+        //Loop through the cubes, update the indexes, and add it to the cube model
+        List<ICube> modelCube = model.getCubes();
+        for(ICube cube : modelCube) {
+            Integer[] materialFaces = cube.getMaterialFaces();
+            for (int index = 0; index < materialFaces.length; index++) {
+                if (materialFaces[index] != null)
+                    cube.setMaterialFace(index, materialMap.get(materialFaces[index]));
+            }
+
+            addCube(cube);
+        }
+    }
+
+    @Override
+    public Map<String, Object> getKey(Namespace namespace) {
+        return null;
+    }
+
+    @Override
     public List<ICube> getCubes() {
         return cubes;
     }
@@ -72,7 +100,7 @@ public class CubeModel implements ICubeModel {
     }
 
     @Override
-    public ICubeModel clone() {
+    public ICubeModel duplicate() {
         CubeModel cubeModel = new CubeModel();
         cubeModel.copy(this);
 
@@ -83,10 +111,10 @@ public class CubeModel implements ICubeModel {
     public void copy(ICubeModel clone) {
         CubeModel cubeClone = (CubeModel) clone;
         name = cubeClone.name;
-        materials = cubeClone.materials.clone();
+        materials = cubeClone.materials.duplicate();
         cubes = new ArrayList<>();
         for(ICube cube : cubeClone.cubes){
-            cubes.add(cube.clone());
+            cubes.add(cube.duplicate());
         }
 
     }

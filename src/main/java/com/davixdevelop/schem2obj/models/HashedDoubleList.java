@@ -1,5 +1,7 @@
 package com.davixdevelop.schem2obj.models;
 
+import com.davixdevelop.schem2obj.util.ArrayUtility;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -24,7 +26,7 @@ public class HashedDoubleList {
     }
 
     public int put(Double... values){
-        list.add(values.clone());
+        list.add(ArrayUtility.cloneArray(values));
         index.put(createKey(values), list.size() - 1);
 
         return list.size() - 1;

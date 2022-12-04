@@ -30,13 +30,14 @@ All basic blocks (that are only basic cubes), and some builtin blocks (ex, water
 
 ### Supported entities
 - Beds
-- Banners (Colored and patterns)
+- Banners (Colored and patterned)
 - Signs (ASCII and Unicode glyphs)
-- Minecarts
+- Minecart
 - Skull's & Player Heads
 - Chests (Including Christmas chests)
 - Paintings
 - Boats (All variants)
+- Item Frames (Including holding items (all supported blocks & entities))
 
 ### Supported resource packs
 For now, only resource packs that use the SEUS or Vanilla format are supported. Beside using the textures the resource pack includes,

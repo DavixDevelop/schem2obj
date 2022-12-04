@@ -10,6 +10,8 @@ import com.davixdevelop.schem2obj.models.VariantModels;
 import com.davixdevelop.schem2obj.namespace.Namespace;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 /**
  * The CubeModel for the Cauldron block
@@ -18,15 +20,15 @@ import java.util.ArrayList;
  */
 public class CauldronCubeModel extends BlockCubeModel {
     @Override
-    public boolean fromNamespace(Namespace blockNamespace) {
-        BlockState blockState = Constants.BLOCKS_STATES.getBlockState(blockNamespace.getName());
-        ArrayList<BlockState.Variant> variants = blockState.getVariants(blockNamespace);
+    public boolean fromNamespace(Namespace namespace) {
+        BlockState blockState = Constants.BLOCKS_STATES.getBlockState(namespace.getType());
+        ArrayList<BlockState.Variant> variants = blockState.getVariants(namespace);
         BlockState.Variant variant = variants.get(0);
 
         VariantModels[] variantModels = new VariantModels[1];
         variantModels[0] = new VariantModels(variant, Constants.BLOCK_MODELS.getBlockModel(variant.getModel()));
 
-        if(!blockNamespace.getData().get("level").equals("0")){
+        if(!namespace.getDefaultBlockState().getData("level").equals("0")){
             VariantModels models = variantModels[0];
 
             ArrayList<BlockModel> blockModels = models.getModels();;
@@ -64,13 +66,22 @@ public class CauldronCubeModel extends BlockCubeModel {
             variantModels[0] = new VariantModels(models.getVariant(), blockModels);
         }
 
-        fromVariantModel(blockNamespace.getName(), blockNamespace, variantModels);
+        fromVariantModel(namespace.getType(), namespace, variantModels);
 
-        return false;
+        return true;
     }
 
     @Override
-    public ICubeModel clone() {
+    public Map<String, Object> getKey(Namespace namespace) {
+        Map<String, Object> key = new LinkedHashMap<>();
+        key.put("BlockName", namespace.getType());
+        key.put("level", namespace.getDefaultBlockState().getData("level"));
+
+        return key;
+    }
+
+    @Override
+    public ICubeModel duplicate() {
         ICubeModel clone = new CauldronCubeModel();
         clone.copy(this);
 

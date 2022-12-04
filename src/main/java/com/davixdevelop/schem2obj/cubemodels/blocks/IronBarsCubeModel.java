@@ -7,6 +7,8 @@ import com.davixdevelop.schem2obj.cubemodels.ICubeModel;
 import com.davixdevelop.schem2obj.namespace.Namespace;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 /**
  * The CubeModel for the Iron Bars block
@@ -14,40 +16,33 @@ import java.util.HashMap;
  * @author DavixDevelop
  */
 public class IronBarsCubeModel extends BlockCubeModel implements IAdjacentCheck {
-    //Map<key: %iron_bar:north=true|false,south=true|false,east=true|false,west=true|false, value: Iron Bars Cube Model>
-    public static HashMap<String, IronBarsCubeModel> IRON_BARS_VARIANTS = new HashMap<>();
+    @Override
+    public boolean fromNamespace(Namespace namespace) {
+        Namespace modifiedNamespace = namespace.duplicate();
+        CubeModelUtility.getAdjacentNamespace_NSWE(modifiedNamespace, this);
+        //Convert modified namespace to cube model
+        super.baseConvert(modifiedNamespace);
+
+        return true;
+    }
 
     @Override
-    public boolean fromNamespace(Namespace blockNamespace) {
-
-        Namespace modifiedNamespace = blockNamespace.clone();
-
+    public Map<String, Object> getKey(Namespace namespace) {
+        Map<String, Object> key = new LinkedHashMap<>();
+        key.put("BlockName", namespace.getType());
+        Namespace modifiedNamespace = namespace.duplicate();
         CubeModelUtility.getAdjacentNamespace_NSWE(modifiedNamespace, this);
+        CubeModelUtility.getKey_NSWE(key, modifiedNamespace);
 
-        String key = CubeModelUtility.getKey_NSWE(modifiedNamespace);
-
-        //Check if variant is already in memory
-        //Else generate it and store it
-        if(IRON_BARS_VARIANTS.containsKey(key)){
-            ICubeModel iron_bars_clone = IRON_BARS_VARIANTS.get(key).clone();
-            copy(iron_bars_clone);
-
-        }else{
-            //Convert modified namespace to cube model
-            super.baseConvert(modifiedNamespace);
-            //Store it in memory for later use
-            IRON_BARS_VARIANTS.put(key, this);
-        }
-
-        return false;
+        return key;
     }
 
     @Override
     public boolean checkCollision(Namespace adjacentBlock, int y_index, String orientation){
-        if(adjacentBlock.getName().contains("iron_bars") || adjacentBlock.getName().contains("glass_pane"))
+        if(adjacentBlock.getType().contains("iron_bars") || adjacentBlock.getType().contains("glass_pane"))
             return true;
 
-        if(adjacentBlock.getName().equals("glowstone") || adjacentBlock.getName().equals("sea_lantern"))
+        if(adjacentBlock.getType().equals("glowstone") || adjacentBlock.getType().equals("sea_lantern"))
             return false;
 
         if(adjacentBlock.getDomain().equals("builtin"))
@@ -63,7 +58,7 @@ public class IronBarsCubeModel extends BlockCubeModel implements IAdjacentCheck 
     }
 
     @Override
-    public ICubeModel clone() {
+    public ICubeModel duplicate() {
         ICubeModel clone = new IronBarsCubeModel();
         clone.copy(this);
 

@@ -517,9 +517,9 @@ public class LiquidCubeModel extends CubeModel {
      * @return True if adjacent block is a non block, else false
      */
     public boolean isNonBlockAdjacent(Namespace adjacent){
-        return (adjacent.getName().equals("air")) ||
+        return (adjacent.getType().equals("air")) ||
                 (adjacent.getType().equals("carpet")) ||
-                (adjacent.getName().equals("end_rod")) ||
+                (adjacent.getType().equals("end_rod")) ||
                 (adjacent.getType().equals("sapling")) ||
                 (adjacent.getType().equals("double_plant")) ||
                 (adjacent.getType().contains("_flower")) ||
@@ -1002,7 +1002,7 @@ public class LiquidCubeModel extends CubeModel {
             return -1;
 
         if(isLiquidAdjacent(adjacent)) {
-            int l = Integer.parseInt(adjacent.getData().get("level"));
+            int l = Integer.parseInt(adjacent.getDefaultBlockState().getData().get("level"));
             if(l > 7)
                 l = 0;
             return l;

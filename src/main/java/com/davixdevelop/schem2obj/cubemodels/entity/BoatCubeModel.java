@@ -9,41 +9,39 @@ import com.davixdevelop.schem2obj.namespace.Namespace;
 import com.davixdevelop.schem2obj.schematic.EntityValues;
 import com.davixdevelop.schem2obj.util.ArrayVector;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 public class BoatCubeModel extends EntityCubeModel {
-    //Map<key: type:xRot:yRot, value: Boat Cube Model Object
-    public static HashMap<String, BoatCubeModel> BOAT_VARIANTS = new HashMap<>();
 
     public static Set<String> GENERATED_MATERIALS = new HashSet<>();
 
     public boolean onGround = false;
 
     @Override
-    public boolean fromNamespace(Namespace blockNamespace, EntityValues entityValues) {
+    public boolean fromNamespace(Namespace namespace) {
+        //Get entity values from custom data of namespace
+        EntityValues entityValues = namespace.getCustomData();
+
         List<Float> rotation = entityValues.getFloatList("Rotation");
         String type = entityValues.getString("Type").replaceAll("_", "");
 
-        String key = getKey(type, rotation.get(0), rotation.get(1));
-
         onGround = entityValues.getByte("OnGround") == 1;
 
-        if(BOAT_VARIANTS.containsKey(key)){
-            ICubeModel variantObject = BOAT_VARIANTS.get(key);
-            copy(variantObject);
-        }else {
-            toCubeModel(blockNamespace, type, rotation.get(0), rotation.get(1));
-            BOAT_VARIANTS.put(key, this);
-        }
+        toCubeModel(namespace, type, rotation.get(0), rotation.get(1));
 
-        return false;
+        return true;
     }
 
-    public String getKey(String type, Float y, Float x){
-        return String.format("%s:%f:%f", type, x, y);
+    @Override
+    public Map<String, Object> getKey(Namespace namespace) {
+        EntityValues entityValues = namespace.getCustomData();
+        Map<String, Object> key = new LinkedHashMap<>();
+        key.put("EntityName", "boat");
+        key.put("Type", entityValues.getString("Type"));
+        key.put("Rotation", entityValues.getFloatList("Rotation"));
+
+
+        return key;
     }
 
     public void toCubeModel(Namespace namespace, String type, Float y, Float x){
@@ -77,7 +75,7 @@ public class BoatCubeModel extends EntityCubeModel {
     }
 
     @Override
-    public ICubeModel clone() {
+    public ICubeModel duplicate() {
         ICubeModel clone = new BoatCubeModel();
         clone.copy(this);
 

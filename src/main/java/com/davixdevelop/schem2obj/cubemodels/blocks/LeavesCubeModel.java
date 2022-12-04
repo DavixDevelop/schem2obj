@@ -9,9 +9,7 @@ import com.davixdevelop.schem2obj.models.VariantModels;
 import com.davixdevelop.schem2obj.namespace.Namespace;
 import com.davixdevelop.schem2obj.util.ImageUtility;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 /**
  * The CubeModel for the Leaves block
@@ -22,12 +20,12 @@ public class LeavesCubeModel extends BlockCubeModel {
     public static Set<String> MODIFIED_LEAVES_MATERIALS = new HashSet<>();
 
     @Override
-    public boolean fromNamespace(Namespace blockNamespace) {
+    public boolean fromNamespace(Namespace namespace) {
         //Get BlockState for the leaves block
-        BlockState blockState = Constants.BLOCKS_STATES.getBlockState(blockNamespace.getName());
+        BlockState blockState = Constants.BLOCKS_STATES.getBlockState(namespace.getDefaultBlockState().getName());
 
         //Get the variant for the glass block
-        ArrayList<BlockState.Variant> variants = blockState.getVariants(blockNamespace);
+        ArrayList<BlockState.Variant> variants = blockState.getVariants(namespace);
 
         VariantModels[] leavesModels = new VariantModels[variants.size()];
 
@@ -37,10 +35,10 @@ public class LeavesCubeModel extends BlockCubeModel {
 
 
         //Modify the leaves materials if they were not yet modified
-        modifyLeavesMaterials(leavesModels, blockNamespace);
+        modifyLeavesMaterials(leavesModels, namespace);
 
         //Generate the cube model for the leaves block variant
-        fromVariantModel(blockNamespace.getName(), blockNamespace, leavesModels);
+        fromVariantModel(namespace.getDefaultBlockState().getName(), namespace, leavesModels);
 
         return true;
     }
@@ -68,10 +66,18 @@ public class LeavesCubeModel extends BlockCubeModel {
     }
 
     @Override
-    public ICubeModel clone() {
+    public ICubeModel duplicate() {
         ICubeModel clone = new LeavesCubeModel();
         clone.copy(this);
 
         return clone;
+    }
+
+    @Override
+    public Map<String, Object> getKey(Namespace namespace) {
+        Map<String, Object> key = new LinkedHashMap<>();
+        key.put("BlockName", namespace.getDefaultBlockState().getName());
+
+        return key;
     }
 }

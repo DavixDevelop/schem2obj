@@ -50,8 +50,8 @@ public class SchematicHolder {
     public int getOriginY(){return schematic.originY;}
     public int getOriginZ(){return schematic.originZ;}
 
-    public Namespace getNamespace(String id){
-        return Constants.BLOCK_MAPPING.getBlockNamespace(id);
+    public Namespace getNamespace(String id, Integer meta){
+        return Constants.NAMESPACE_MAPPING.getBlockNamespace(id, meta);
     }
 
     public Namespace getNamespace(int x, int y, int z){
@@ -67,7 +67,7 @@ public class SchematicHolder {
             if(blockID < 0)
                 blockID += 256;
 
-            return getNamespace(blockID + ":" + meta);
+            return getNamespace(Integer.toString(blockID), meta);
         }
 
         return null;
@@ -77,8 +77,8 @@ public class SchematicHolder {
         return schematic.getEntities().size();
     }
 
-    public Namespace getNamespace(int entityIndex){
-        return Constants.ENTITY_MAPPING.getEntityNamespace(getEntityValues(entityIndex).getString("id"));
+    public Namespace getEntityNamespace(int entityIndex){
+        return Constants.NAMESPACE_MAPPING.getNamespace(getEntityValues(entityIndex).getString("id"));
     }
 
     public EntityValues getEntityValues(int entityIndex){

@@ -12,6 +12,8 @@ import com.davixdevelop.schem2obj.schematic.EntityValues;
 import com.davixdevelop.schem2obj.util.ArrayVector;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 public class ChestCubeModel extends TileEntityCubeModel implements IAdjacentCheck {
     public static AdjacentBlockState ADJACENT_CHEST_STATES = new AdjacentBlockState("assets/minecraft/chest_states.json");
@@ -34,42 +36,38 @@ public class ChestCubeModel extends TileEntityCubeModel implements IAdjacentChec
     }
 
     @Override
-    public boolean fromNamespace(Namespace blockNamespace, EntityValues entityValues) {
+    public boolean fromNamespace(Namespace namespace) {
+        toCubeModel(namespace);
+        return true;
+    }
 
+    @Override
+    public Map<String, Object> getKey(Namespace namespace) {
         if(adjacentCheck){
-            Namespace modifiedNamespace = blockNamespace.clone();
             //Get modified namespace depending on the adjacent block states
-            CubeModelUtility.getAdjacentNamespace_AdjacentState(blockNamespace, modifiedNamespace, ADJACENT_CHEST_STATES, this);
+            CubeModelUtility.getAdjacentNamespace_AdjacentState(namespace, ADJACENT_CHEST_STATES, this);
 
-            if(modifiedNamespace.getData().containsKey("type")){
-                type = modifiedNamespace.getData("type");
+            if(namespace.getDefaultBlockState().getData().containsKey("type")){
+                type = namespace.getDefaultBlockState().getData("type");
             }else
                 type = "single";
 
         }else
             type = "single";
 
-        String key = getKey(blockNamespace);
+        Map<String, Object> key = new LinkedHashMap<>();
+        key.put("EntityTile", namespace.getType());
+        key.put("variant", variant);
+        key.put("type", type);
+        key.put("facing", namespace.getDefaultBlockState().getData("facing"));
 
-        if(CHEST_VARIANTS.containsKey(key)){
-            ICubeModel variantObject = CHEST_VARIANTS.get(key);
-            copy(variantObject);
-        }else{
-            toCubeModel(blockNamespace);
-            CHEST_VARIANTS.put(key, this);
-        }
-
-        return false;
-    }
-
-    public String getKey(Namespace blockNamespace){
-        return String.format("%s:%s:%s", variant, type, blockNamespace.getData("facing"));
+        return key;
     }
 
     public void toCubeModel(Namespace namespace){
         ArrayVector.MatrixRotation rotationY = null;
 
-        Double yAngle = Constants.FACING_ROTATION.get(namespace.getData("facing"));
+        Double yAngle = Constants.FACING_ROTATION.get(namespace.getDefaultBlockState().getData("facing"));
 
         if(yAngle > 0.0){
             rotationY = new ArrayVector.MatrixRotation(yAngle, "Z");
@@ -98,7 +96,7 @@ public class ChestCubeModel extends TileEntityCubeModel implements IAdjacentChec
 
     @Override
     public boolean checkCollision(Namespace adjacent, int y_index, String orientation) {
-        return adjacent.getName().equals(name);
+        return adjacent.getType().equals(name);
     }
 
     @Override

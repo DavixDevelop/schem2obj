@@ -8,40 +8,37 @@ import com.davixdevelop.schem2obj.schematic.EntityValues;
 import com.davixdevelop.schem2obj.util.ArrayVector;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 public class PaintingCubeModel extends EntityCubeModel{
-    //Map<key: motive:direction, value: Painting cube model>
-    public static HashMap<String, PaintingCubeModel> PAINTING_VARIANTS = new HashMap<>();
-
     Double[] origin = new Double[3];
 
     @Override
-    public boolean fromNamespace(Namespace blockNamespace, EntityValues entityValues) {
-
-        String key = getKey(entityValues);
-
-        if(PAINTING_VARIANTS.containsKey(key)){
-            ICubeModel variantObject = PAINTING_VARIANTS.get(key);
-            copy(variantObject);
-        }else {
-            toCubeModel(blockNamespace, entityValues);
-            PAINTING_VARIANTS.put(key, this);
-        }
-
-        return false;
+    public boolean fromNamespace(Namespace namespace) {
+        toCubeModel(namespace);
+        return true;
     }
 
-    public String getKey(EntityValues entityValues){
-        return String.format("%s:%d", entityValues.getString("Motive"), entityValues.getByte("Direction"));
+    @Override
+    public Map<String, Object> getKey(Namespace namespace) {
+        EntityValues entityValues = namespace.getCustomData();
+        Map<String, Object> key = new LinkedHashMap<>();
+        key.put("EntityName", "painting");
+        key.put("Motive", entityValues.getString("Motive"));
+        key.put("Direction", entityValues.getByte("Direction"));
+
+        return key;
     }
 
-    public void toCubeModel(Namespace namespace, EntityValues entityValues){
+    public void toCubeModel(Namespace namespace){
+        EntityValues entityValues = namespace.getCustomData();
         String motive = entityValues.getString("Motive");
 
-        Integer xIndex = 0;
-        Integer yIndex = 15;
-        Integer width = 1;
-        Integer height = 1;
+        int xIndex = 0;
+        int yIndex = 15;
+        int width = 1;
+        int height = 1;
 
         //Get the coordinate and size of to the frame (portion on image), where the Motive lies of
         switch (motive){
@@ -100,46 +97,46 @@ public class PaintingCubeModel extends EntityCubeModel{
                 xIndex = 2;
                 yIndex = 6;
                 height = 2;
-                height = 2;
+                width = 2;
                 break;
             case "Match":
                 yIndex = 6;
                 height = 2;
-                height = 2;
+                width = 2;
                 break;
             case "Skull and Roses":
                 xIndex = 8;
                 yIndex = 6;
                 height = 2;
-                height = 2;
+                width = 2;
                 break;
             case "Stage":
                 xIndex = 4;
                 yIndex = 6;
                 height = 2;
-                height = 2;
+                width = 2;
                 break;
             case "Void":
                 xIndex = 6;
                 yIndex = 6;
                 height = 2;
-                height = 2;
+                width = 2;
                 break;
             case "Wither":
                 xIndex = 10;
                 yIndex = 6;
                 height = 2;
-                height = 2;
+                width = 2;
                 break;
             case "Fighters":
                 yIndex = 8;
-                height = 4;
+                width = 4;
                 height = 2;
                 break;
             case "Kong":
                 xIndex = 12;
                 yIndex = 6;
-                height = 4;
+                width = 4;
                 height = 3;
                 break;
             case "Skeleton":
@@ -194,7 +191,7 @@ public class PaintingCubeModel extends EntityCubeModel{
         //Create cube for the painting
         CubeElement cube = new CubeElement(
                 new Double[]{0.0,7.5 / 16, 0.0},
-                new Double[]{width.doubleValue(), 8.5 / 16, height.doubleValue()},
+                new Double[]{(double) width, 8.5 / 16, (double) height},
                 false,
                 null,
                 cubeFaces);
@@ -250,7 +247,7 @@ public class PaintingCubeModel extends EntityCubeModel{
     }
 
     @Override
-    public ICubeModel clone() {
+    public ICubeModel duplicate() {
         ICubeModel clone = new PaintingCubeModel();
         clone.copy(this);
 

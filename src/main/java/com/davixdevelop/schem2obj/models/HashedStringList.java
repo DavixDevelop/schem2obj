@@ -57,11 +57,13 @@ public class HashedStringList {
         return new ArrayList<>(list);
     }
 
+
+
     /**
      * Clone the hashed string list
      * @return The clone of the object
      */
-    public HashedStringList clone(){
+    public HashedStringList duplicate(){
         HashedStringList clone = new HashedStringList();
         clone.list = new ArrayList<>(list);
         clone.index = new HashMap<>(index.entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue)));

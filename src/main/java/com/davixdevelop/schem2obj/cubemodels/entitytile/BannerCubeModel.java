@@ -31,12 +31,13 @@ public class BannerCubeModel extends TileEntityCubeModel {
     public static Map<String, List<String>> PATTERN_CODES = new HashMap<>();
 
     private static boolean DEFAULT_MATERIAL_GENERATED = false;
-
     String bannerPatternCode;
     String bannerColor;
 
     @Override
-    public boolean fromNamespace(Namespace blockNamespace, EntityValues entityValues) {
+    public boolean fromNamespace(Namespace namespace) {
+        EntityValues entityValues = namespace.getCustomData();
+
         //Get the base color index of the banner
         Integer baseColorIndex = entityValues.getInteger("Base");
         IntegerString baseColor = Constants.BANNER_COLORS.get(baseColorIndex);
@@ -87,8 +88,8 @@ public class BannerCubeModel extends TileEntityCubeModel {
 
         //Create new material from patterns codes
         String baseMaterialPath = "entity/banner_base";
-        CubeModelUtility.generateOrGetMaterial(baseMaterialPath, blockNamespace);
-        IMaterial banner_material = Constants.BLOCK_MATERIALS.getMaterial(baseMaterialPath).clone();
+        CubeModelUtility.generateOrGetMaterial(baseMaterialPath, namespace);
+        IMaterial banner_material = Constants.BLOCK_MATERIALS.getMaterial(baseMaterialPath).duplicate();
 
         try {
 
@@ -136,7 +137,7 @@ public class BannerCubeModel extends TileEntityCubeModel {
         }
 
         //If an error occurred, set the default material as the banner material
-        generateDefaultMaterial(blockNamespace);
+        generateDefaultMaterial(namespace);
 
         return false;
     }
@@ -178,7 +179,7 @@ public class BannerCubeModel extends TileEntityCubeModel {
         if(!DEFAULT_MATERIAL_GENERATED) {
             String baseMaterialPath = "entity/banner_base";
             CubeModelUtility.generateOrGetMaterial(baseMaterialPath, blockNamespace);
-            IMaterial default_banner_material = Constants.BLOCK_MATERIALS.getMaterial(baseMaterialPath).clone();
+            IMaterial default_banner_material = Constants.BLOCK_MATERIALS.getMaterial(baseMaterialPath).duplicate();
             default_banner_material.setName("banner-default");
             Constants.BLOCK_MATERIALS.setMaterial("entity/banner-default", default_banner_material);
             Constants.BLOCK_MATERIALS.unsetUsedMaterial(baseMaterialPath);

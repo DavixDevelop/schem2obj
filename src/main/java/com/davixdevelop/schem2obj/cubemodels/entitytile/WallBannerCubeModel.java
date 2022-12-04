@@ -9,6 +9,8 @@ import com.davixdevelop.schem2obj.schematic.EntityValues;
 import com.davixdevelop.schem2obj.util.ArrayVector;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 /**
  * The CubeModel for the Wall Banner block
@@ -20,23 +22,21 @@ public class WallBannerCubeModel extends BannerCubeModel {
     public static HashMap<String, WallBannerCubeModel> WALL_BANNER_VARIANTS = new HashMap<>();
 
     @Override
-    public boolean fromNamespace(Namespace blockNamespace, EntityValues entityValues) {
-        super.fromNamespace(blockNamespace, entityValues);
+    public boolean fromNamespace(Namespace blockNamespace) {
+        toCubeModel(blockNamespace.getDefaultBlockState().getData("facing"));
+        return true;
+    }
 
-        String facing = blockNamespace.getData("facing");
-        String key = getKey(facing);
+    @Override
+    public Map<String, Object> getKey(Namespace namespace) {
+        super.fromNamespace(namespace);
 
-        if(WALL_BANNER_VARIANTS.containsKey(key)){
-            ICubeModel variantObject = WALL_BANNER_VARIANTS.get(key);
-            super.copy(variantObject);
-        }else
-        {
-            toCubeModel(facing);
-            WALL_BANNER_VARIANTS.put(key, this);
-        }
+        Map<String, Object> key = new LinkedHashMap<>();
+        key.put("EntityTile", namespace.getType());
+        key.put("bannerCode", getBannerPatternCode());
+        key.put("facing", namespace.getDefaultBlockState().getData("facing"));
 
-
-        return false;
+        return key;
     }
 
     public String getKey(String facing){
@@ -62,6 +62,14 @@ public class WallBannerCubeModel extends BannerCubeModel {
 
         //Convert cube elements to cube model
         fromCubes(String.format("wall_banner_%s", getBannerPatternCode()), false, null, rotationY, modelsMaterials, bannerElements);
+    }
+
+    @Override
+    public ICubeModel duplicate() {
+        ICubeModel clone = new WallBannerCubeModel();
+        clone.copy(this);
+
+        return clone;
     }
 
 

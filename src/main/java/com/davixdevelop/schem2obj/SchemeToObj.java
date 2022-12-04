@@ -228,10 +228,11 @@ public class SchemeToObj {
                             }
 
                             if(Constants.SupportedEntities.contains(blockNamespace.getType())){
+                                //Inject tile entity into namespacde custom data
+                                blockNamespace.setCustomData(Constants.LOADED_SCHEMATIC.getEntityValues(Constants.LOADED_SCHEMATIC.getPosX(), Constants.LOADED_SCHEMATIC.getPosY(), Constants.LOADED_SCHEMATIC.getPosZ()));
+
                                 //Get  singleton tile entity cube model from memory or create it anew every time
-                                ICubeModel entityCubeModel = Constants.CUBE_MODEL_FACTORY.fromNamespace(
-                                        blockNamespace,
-                                        Constants.LOADED_SCHEMATIC.getEntityValues(Constants.LOADED_SCHEMATIC.getPosX(), Constants.LOADED_SCHEMATIC.getPosY(), Constants.LOADED_SCHEMATIC.getPosZ()));
+                                ICubeModel entityCubeModel = Constants.CUBE_MODEL_FACTORY.fromNamespace(blockNamespace);
 
                                 //Translate the singleton block to the position of the block in the space
                                 CubeModelUtility.translateCubeModel(entityCubeModel, new Double[]{(double) x, (double) z, (double) y}, new Integer[]{width,length,height});
@@ -339,18 +340,21 @@ public class SchemeToObj {
         if(Constants.LOADED_SCHEMATIC.getEntitiesCount() > 0){
             int entitiesCount = Constants.LOADED_SCHEMATIC.getEntitiesCount();
             for(int entityIndex = 0; entityIndex < entitiesCount; entityIndex++){
-                Namespace entityNamespace = Constants.LOADED_SCHEMATIC.getNamespace(entityIndex);
+                Namespace namespace = Constants.LOADED_SCHEMATIC.getEntityNamespace(entityIndex);
 
-                if(entityNamespace == null)
+                if(namespace == null)
                     continue;
 
                 EntityValues entityValues = Constants.LOADED_SCHEMATIC.getEntityValues(entityIndex);
 
-                if(!Constants.SupportedEntities.contains(entityNamespace.getType()))
+                if(!Constants.SupportedEntities.contains(namespace.getType()))
                     continue;
 
+                //Inject entity values into custom data of namespace
+                namespace.setCustomData(entityValues);
+
                 //Get  singleton entity cube model from memory or create it anew every time
-                ICubeModel entityCubeModel = Constants.CUBE_MODEL_FACTORY.fromNamespace(entityNamespace,entityValues);
+                ICubeModel entityCubeModel = Constants.CUBE_MODEL_FACTORY.fromNamespace(namespace);
 
                 if(entityCubeModel != null){
                     //Translate the singleton entity cube model to the position of the entity in the space

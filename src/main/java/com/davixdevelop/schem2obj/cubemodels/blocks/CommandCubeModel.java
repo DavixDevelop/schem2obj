@@ -4,12 +4,16 @@ import com.davixdevelop.schem2obj.Constants;
 import com.davixdevelop.schem2obj.blockmodels.CubeElement;
 import com.davixdevelop.schem2obj.blockstates.BlockState;
 import com.davixdevelop.schem2obj.cubemodels.CubeModelUtility;
+import com.davixdevelop.schem2obj.cubemodels.ICubeModel;
+import com.davixdevelop.schem2obj.cubemodels.item.ItemCubeModel;
 import com.davixdevelop.schem2obj.models.VariantModels;
 import com.davixdevelop.schem2obj.namespace.Namespace;
 import com.davixdevelop.schem2obj.util.ArrayVector;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 /**
  * The CubeModel for the Command block
@@ -18,12 +22,12 @@ import java.util.HashMap;
  */
 public class CommandCubeModel extends BlockCubeModel {
     @Override
-    public boolean fromNamespace(Namespace blockNamespace) {
+    public boolean fromNamespace(Namespace namespace) {
         //Get the BlockState for the block
-        BlockState blockState = Constants.BLOCKS_STATES.getBlockState(blockNamespace.getName());
+        BlockState blockState = Constants.BLOCKS_STATES.getBlockState(namespace.getType());
 
         //Get the variant/variants of the block
-        ArrayList<BlockState.Variant> variants = blockState.getVariants(blockNamespace);
+        ArrayList<BlockState.Variant> variants = blockState.getVariants(namespace);
 
         VariantModels[] blockModels = new VariantModels[1];
 
@@ -31,7 +35,7 @@ public class CommandCubeModel extends BlockCubeModel {
         BlockState.Variant variant = variants.get(0);
         blockModels[0] = new VariantModels(variant, Constants.BLOCK_MODELS.getBlockModel(variant.getModel()));
 
-        HashMap<String, HashMap<String, String>> commandBlockMaterials = CubeModelUtility.modelsToMaterials(blockModels, blockNamespace);
+        HashMap<String, HashMap<String, String>> commandBlockMaterials = CubeModelUtility.modelsToMaterials(blockModels, namespace);
 
         ArrayVector.MatrixRotation rotationX = null;
         ArrayVector.MatrixRotation rotationY = null;
@@ -77,8 +81,26 @@ public class CommandCubeModel extends BlockCubeModel {
                 cubeDirectional);
 
         //Convert cube to obj
-        fromCubes(blockNamespace.getName(), uvLock, rotationX,rotationY,modelsMaterials,cube);
+        fromCubes(namespace.getType(), uvLock, rotationX,rotationY,modelsMaterials,cube);
 
         return true;
+    }
+
+    @Override
+    public Map<String, Object> getKey(Namespace namespace) {
+        Map<String, Object> key = new LinkedHashMap<>();
+        key.put("BlockName", namespace.getType());
+        key.put("conditional", namespace.getDefaultBlockState().getData("conditional"));
+        key.put("facing", namespace.getDefaultBlockState().getData("facing"));
+
+        return key;
+    }
+
+    @Override
+    public ICubeModel duplicate() {
+        ICubeModel clone = new CommandCubeModel();
+        clone.copy(this);
+
+        return clone;
     }
 }

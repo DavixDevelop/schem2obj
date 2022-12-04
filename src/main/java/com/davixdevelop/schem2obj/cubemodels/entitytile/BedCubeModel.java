@@ -3,46 +3,41 @@ package com.davixdevelop.schem2obj.cubemodels.entitytile;
 import com.davixdevelop.schem2obj.Constants;
 import com.davixdevelop.schem2obj.blockmodels.BlockModel;
 import com.davixdevelop.schem2obj.blockmodels.CubeElement;
-import com.davixdevelop.schem2obj.cubemodels.CubeModelFactory;
-import com.davixdevelop.schem2obj.cubemodels.CubeModelUtility;
-import com.davixdevelop.schem2obj.cubemodels.ICubeModel;
+import com.davixdevelop.schem2obj.cubemodels.*;
 import com.davixdevelop.schem2obj.namespace.Namespace;
 import com.davixdevelop.schem2obj.schematic.EntityValues;
 import com.davixdevelop.schem2obj.util.ArrayVector;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * The CubeModel for all Bed blocks
  *
  * @author DavixDevelop
  */
-public class BedCubeModel extends TileEntityCubeModel{
-    //Map<key: %color:part:facing, value: Bed Cube Model>
-    public static HashMap<String, BedCubeModel> BED_VARIANTS = new HashMap<>();
+public class BedCubeModel extends TileEntityCubeModel {
 
     @Override
-    public boolean fromNamespace(Namespace blockNamespace, EntityValues entityValues) {
-        int color = entityValues.getInteger("color");
-        String facing = blockNamespace.getData("facing");
-        String part = blockNamespace.getData("part");
-
-        String key = getKey(color, part, facing);
-
-        if(!BED_VARIANTS.containsKey(key)){
-            toCubeModel(color, part, facing, blockNamespace);
-            BED_VARIANTS.put(key, this);
-        }else{
-            ICubeModel variantObject = BED_VARIANTS.get(key);
-            super.copy(variantObject);
-        }
-
-        return false;
+    public boolean fromNamespace(Namespace namespace) {
+        EntityValues entityValues = namespace.getCustomData();
+        toCubeModel(entityValues.getInteger("color"), namespace.getDefaultBlockState().getData("part"), namespace.getDefaultBlockState().getData("facing"), namespace);
+        return true;
     }
 
-    private String getKey(int color, String part, String facing){
-        return String.format("%d:%s:%s",color,part,facing);
+    @Override
+    public Map<String, Object> getKey(Namespace namespace) {
+        EntityValues entityValues = namespace.getCustomData();
+
+        Map<String, Object> key = new LinkedHashMap<>();
+        key.put("EntityTile", namespace.getType());
+        key.put("color", entityValues.getInteger("color"));
+        key.put("facing", namespace.getDefaultBlockState().getData("facing"));
+        key.put("part", namespace.getDefaultBlockState().getData("part"));
+
+        return key;
     }
 
     public void toCubeModel(int color, String part, String facing, Namespace namespace){
@@ -75,6 +70,33 @@ public class BedCubeModel extends TileEntityCubeModel{
         //Convert cube to cube model
         fromCubes(String.format("%s-bed", Constants.META_COLORS[color]), false, null, rotationY, modelsMaterials, bedElements);
 
+        if(namespace.getDisplayMode().equals(Namespace.DISPLAY_MODE.FIXED)){
+            Double[] translate = new Double[]{0.0, -1.0, 0.0};
+            //Only Shift the "foot" towards the south by -1.0
+            if(namespace.getDefaultBlockState().getData("part").equals("foot"))
+                CubeModelUtility.translateCubeModel(this, translate);
+
+
+            Namespace namespace1 = namespace.duplicate();
+
+            if(namespace1.getDefaultBlockState().getData("part").equals("foot")) {
+                translate[1] = 0.0;
+                namespace1.setDefaultBlockState(10);
+            }else
+                //Move the foot part to the south by 1.0
+                namespace1.setDefaultBlockState(2);
+
+
+            BedCubeModel secondPart = new BedCubeModel();
+            namespace1.setDisplayMode(Namespace.DISPLAY_MODE.BLOCK);
+            secondPart.fromNamespace(namespace1);
+
+            CubeModelUtility.translateCubeModel(secondPart, translate);
+
+            //Append the head part cubes to the item model
+            appendCubeModel(secondPart);
+        }
+
     }
 
     @Override
@@ -86,7 +108,7 @@ public class BedCubeModel extends TileEntityCubeModel{
     }
 
     @Override
-    public ICubeModel clone() {
+    public ICubeModel duplicate() {
         ICubeModel clone = new BedCubeModel();
         clone.copy(this);
 

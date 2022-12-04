@@ -10,15 +10,22 @@ import com.davixdevelop.schem2obj.materials.IMaterial;
 import com.davixdevelop.schem2obj.materials.Material;
 import com.davixdevelop.schem2obj.materials.SEUSMaterial;
 import com.davixdevelop.schem2obj.models.VariantModels;
+import com.davixdevelop.schem2obj.namespace.BlockStateNamespace;
 import com.davixdevelop.schem2obj.namespace.Namespace;
 import com.davixdevelop.schem2obj.resourceloader.ResourceLoader;
 import com.davixdevelop.schem2obj.resourceloader.ResourcePack;
+import com.davixdevelop.schem2obj.util.ArrayUtility;
 import com.davixdevelop.schem2obj.util.ArrayVector;
 import com.davixdevelop.schem2obj.util.ImageUtility;
+import com.davixdevelop.schem2obj.util.LogUtility;
 
+import java.awt.*;
+import java.awt.image.BufferedImage;
+import java.io.InputStream;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.*;
+import java.util.List;
 
 /**
  * A utility class for working with CubeModels and various BlockModels
@@ -82,9 +89,9 @@ public class CubeModelUtility {
     /**
      * Get material or generate it
      * @param materialPath The path of material, ex. blocks/fire or entity/black-bed
-     * @param blockNamespace The namespace of the block the material uses
+     * @param namespace The namespace of the block the material uses
      */
-    public static void generateOrGetMaterial(String materialPath, Namespace blockNamespace){
+    public static void generateOrGetMaterial(String materialPath, Namespace namespace){
         if (!Constants.BLOCK_MATERIALS.containsMaterial(materialPath)) {
             //ToDo: Implement this in LitBlockWavefrontObject
 
@@ -95,7 +102,7 @@ public class CubeModelUtility {
 
             String diffuseTexturePath = null;
 
-            if(materialPath.startsWith("blocks") || materialPath.startsWith("painting") || (materialPath.startsWith("entity") && !materialPath.contains("-"))) {
+            if(materialPath.startsWith("blocks") || materialPath.startsWith("painting") || materialPath.startsWith("items") || (materialPath.startsWith("entity") && !materialPath.contains("-"))) {
                 diffuseTexturePath = materialPath;
             }else if(materialPath.startsWith("entity") && materialPath.contains("-")){
                 String materialName = textureName(materialPath);
@@ -116,7 +123,7 @@ public class CubeModelUtility {
                     material = new SEUSMaterial(materialPath, diffuseTexturePath);
             }
 
-            material.setEmissionStrength(blockNamespace.getLightValue());
+            material.setEmissionStrength((namespace.getMetaIDS().isEmpty()) ? 0.0 : namespace.getDefaultBlockState().getLightValue());
             Constants.BLOCK_MATERIALS.setMaterial(materialPath, material);
         }
     }
@@ -358,7 +365,7 @@ public class CubeModelUtility {
 
 
         if(addCorners[0])//Corner A
-            vertices.put("A",A);
+            vertices.put("A", ArrayUtility.cloneArray(A));
         if(addCorners[1]) //Corner B
             vertices.put("B", new Double[]{A[0], A[1], F[2]});
         if(addCorners[2]) //Corner C
@@ -366,7 +373,7 @@ public class CubeModelUtility {
         if(addCorners[3]) //Corner D
             vertices.put("D",new Double[]{A[0], F[1], A[2]});
         if(addCorners[4]) //Corner F
-            vertices.put("F",F);
+            vertices.put("F",ArrayUtility.cloneArray(F));
         if(addCorners[5]) //Corner G
             vertices.put("G",new Double[]{F[0], A[1], F[2]});
         if(addCorners[6]) //Corner H
@@ -442,6 +449,93 @@ public class CubeModelUtility {
                     //Sum each vertex and translate
                     for (int c = 0; c < vertices.size(); c++)
                         vertices.set(c, ArrayVector.add(vertices.get(c), translate));
+                }
+            }
+        }
+    }
+
+    /**
+     * Rotate the cube model around the origin by on each axis, depending the xyzRot array
+     * @param cubeModel The cube model to rotate
+     * @param xyzRot A 3 length array, that contains the rotation value for each axis [x, y, z]
+     * @param origin A length array, that contains the origin of rotation
+     */
+    public static void rotateCubeModel(ICubeModel cubeModel, Double[] xyzRot, Double[] origin){
+        ArrayVector.MatrixRotation rotationX = null;
+        ArrayVector.MatrixRotation rotationY = null;
+        ArrayVector.MatrixRotation rotationZ = null;
+        if(xyzRot[0] != 0.0)
+            rotationX = new ArrayVector.MatrixRotation(xyzRot[0], "X");
+
+        if(xyzRot[1] != 0.0)
+            rotationY = new ArrayVector.MatrixRotation(xyzRot[1], "Y");
+
+        if(xyzRot[2] != 0.0)
+            rotationZ = new ArrayVector.MatrixRotation(xyzRot[2], "Z");
+
+        if(rotationX != null || rotationY != null || rotationZ != null){
+            List<ICube> cubes = cubeModel.getCubes();
+
+            //Loop through cubes
+            for(ICube cube : cubes){
+                CubeFace[] cubeFaces = cube.getFaces();
+
+                for (CubeFace cubeFace : cubeFaces) {
+                    if (cubeFace != null) {
+                        List<Double[]> vertices = cubeFace.getCorners();
+
+                        //Sum each vertex on each axis
+                        for (int c = 0; c < vertices.size(); c++) {
+                            if (rotationX != null)
+                                vertices.set(c, rotatePoint(vertices.get(c), rotationX, origin));
+                            if (rotationY != null)
+                                vertices.set(c, rotatePoint(vertices.get(c), rotationY, origin));
+                            if (rotationZ != null)
+                                vertices.set(c, rotatePoint(vertices.get(c), rotationZ, origin));
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Rotate the cube model around the origin by on each axis, depending the xyzRot array
+     * @param cubeModel The cube model to rotate
+     * @param xyzScale A 3 length array, that contains the rotation value for each axis [x, y, z]
+     * @param origin A length array, that contains the origin of rotation
+     */
+    public static void scaleCubeModel(ICubeModel cubeModel, Double[] xyzScale, Double[] origin){
+        List<ICube> cubes = cubeModel.getCubes();
+
+        //Loop through cubes
+        for(ICube cube : cubes){
+            CubeFace[] cubeFaces = cube.getFaces();
+
+            for (CubeFace cubeFace : cubeFaces) {
+                if (cubeFace != null) {
+                    List<Double[]> vertices = cubeFace.getCorners();
+
+                    //Sum each vertex and translate
+                    for (int c = 0; c < vertices.size(); c++) {
+                        //Double[] v = vertices.get(c);
+                        /*for(int vi = 0; vi < 3; vi++){
+                            if (xyzScale[vi] > 0.0) {
+                                if(!origin[vi].equals(v[vi])){
+                                    if(v[vi] > origin[vi]){
+                                        Double l = Math.abs(v[vi] - origin[vi]);
+                                        Double l2 = l * xyzScale[vi];
+                                        v[vi] = round(origin[vi] + l2, 6);
+                                    }else{
+                                        Double l = Math.abs(origin[vi] - v[vi]);
+                                        Double l2 = l * xyzScale[vi];
+                                        v[vi] = round(origin[vi] - l2, 6);
+                                    }
+                                }
+                            }
+                        }*/
+                        vertices.set(c, scalePoint(vertices.get(c), xyzScale[0], xyzScale[1], xyzScale[2], origin));
+                    }
                 }
             }
         }
@@ -551,7 +645,7 @@ public class CubeModelUtility {
                 Constants.LOADED_SCHEMATIC.getPosZ() - 1);
         if(adjacentBlock != null){
             if(check.checkCollision(adjacentBlock, 0, "north"))
-                modified.getData().put("north", "true");
+                modified.getDefaultBlockState().getData().put("north", "true");
         }
 
         //Check south
@@ -561,7 +655,7 @@ public class CubeModelUtility {
                 Constants.LOADED_SCHEMATIC.getPosZ() + 1);
         if(adjacentBlock != null){
             if(check.checkCollision(adjacentBlock, 0, "south"))
-                modified.getData().put("south", "true");
+                modified.getDefaultBlockState().getData().put("south", "true");
         }
 
         //Check west
@@ -571,7 +665,7 @@ public class CubeModelUtility {
                 Constants.LOADED_SCHEMATIC.getPosZ());
         if(adjacentBlock != null){
             if(check.checkCollision(adjacentBlock, 0, "west"))
-                modified.getData().put("west", "true");
+                modified.getDefaultBlockState().getData().put("west", "true");
         }
 
         //Check east
@@ -581,11 +675,13 @@ public class CubeModelUtility {
                 Constants.LOADED_SCHEMATIC.getPosZ());
         if(adjacentBlock != null){
             if(check.checkCollision(adjacentBlock, 0, "east"))
-                modified.getData().put("east", "true");
+                modified.getDefaultBlockState().getData().put("east", "true");
         }
     }
 
-    public static void getAdjacentNamespace_AdjacentState(Namespace stockBlock, Namespace modified, AdjacentBlockState adjacentBlockStates, IAdjacentCheck check){
+    public static void getAdjacentNamespace_AdjacentState(Namespace namespace, AdjacentBlockState adjacentBlockStates, IAdjacentCheck check){
+        Namespace stockNamespace = namespace.duplicate();
+
         //Get list of order of orientations to check
         List<String> checkOrder = adjacentBlockStates.getCheckOrder();
 
@@ -621,22 +717,21 @@ public class CubeModelUtility {
                 if(check.checkCollision(adjacentBlock,
                         (orientation.endsWith("+1")) ? 1 : (orientation.endsWith("-1") ? -1 : 0),
                         orientation_raw)){
-                    Map<String, String> statesToApply = adjacentBlockStates.getStates(orientation, stockBlock.getData(), adjacentBlock.getData());
-                    if(statesToApply != null)
-                        Namespace.copyStatesToNamespace(modified, statesToApply);
+                    Map<String, String> statesToApply = adjacentBlockStates.getStates(orientation, stockNamespace.getDefaultBlockState().getData(), adjacentBlock.getDefaultBlockState().getData());
+                    if(statesToApply != null){
+                        BlockStateNamespace.cloneData(namespace.getDefaultBlockState(), statesToApply);
+                    }
                 }
             }
         }
 
     }
 
-    public static String getKey_NSWE(Namespace blockNamespace){
-        return String.format("%s:north=%s,south=%s,east=%s,west=%s",
-                blockNamespace.getName(),
-                blockNamespace.getData().get("north"),
-                blockNamespace.getData().get("south"),
-                blockNamespace.getData().get("east"),
-                blockNamespace.getData().get("west"));
+    public static void getKey_NSWE(Map<String, Object> key, Namespace namespace){
+        key.put("north", namespace.getDefaultBlockState().getData().get("north"));
+        key.put("south", namespace.getDefaultBlockState().getData().get("south"));
+        key.put("east", namespace.getDefaultBlockState().getData().get("east"));
+        key.put("west",namespace.getDefaultBlockState().getData().get("west"));
     }
 
     /**
@@ -1310,7 +1405,7 @@ public class CubeModelUtility {
                 String transparentTextureName = String.format("%s_transparent", faceMaterial);
                 //Check if the transparent variant doesn't exist yet, and create it by cloning the base material
                 if(!Constants.BLOCK_MATERIALS.containsMaterial(transparentTextureName)){
-                    Constants.BLOCK_MATERIALS.setMaterial(transparentTextureName, material.clone());
+                    Constants.BLOCK_MATERIALS.setMaterial(transparentTextureName, material.duplicate());
 
                     //Modify the clone of the base material
                     IMaterial transparent_material = Constants.BLOCK_MATERIALS.getMaterial(transparentTextureName);
@@ -1353,6 +1448,168 @@ public class CubeModelUtility {
         Cube cube = new Cube(materialFaces, generatedFaces, cubeFaces);
         //Append the cube to the cube model
         cubeModel.addCube(cube);
+    }
+
+    public static void setUVForPixelCube(List<Double[]> faceUV, Orientation faceOrientation,Integer x, Integer flippedY, Integer imageWidth, Integer imageHeight){
+        Double x1 = x.doubleValue() / imageWidth.doubleValue();
+        Double x2 = (x.doubleValue() + 1.0) / imageWidth.doubleValue();
+        Double y1 = flippedY.doubleValue() / imageHeight.doubleValue();
+        Double y2 =  (flippedY.doubleValue() + 1.0) / imageHeight.doubleValue();
+
+        faceUV.add(new Double[]{x1, y1});
+        faceUV.add(new Double[]{x1, y2});
+        faceUV.add(new Double[]{x2, y2});
+        faceUV.add(new Double[]{x2, y1});
+
+        /*if(faceOrientation.equals(Orientation.NORTH) || faceOrientation.equals(Orientation.SOUTH)){
+            faceUV.add(new Double[]{x1, y1});
+            faceUV.add(new Double[]{x1, y2});
+            faceUV.add(new Double[]{x2, y2});
+            faceUV.add(new Double[]{x2, y1});
+        }else if(faceOrientation.equals(Orientation.WEST)){
+            faceUV.add(new Double[]{x1, y1});
+            faceUV.add(new Double[]{x1, y2});
+            faceUV.add(new Double[]{x1, y2});
+            faceUV.add(new Double[]{x1, y1});
+        }else if(faceOrientation.equals(Orientation.EAST)){
+            faceUV.add(new Double[]{x2, y1});
+            faceUV.add(new Double[]{x2, y2});
+            faceUV.add(new Double[]{x2, y2});
+            faceUV.add(new Double[]{x2, y1});
+        }else if(faceOrientation.equals(Orientation.UP)){
+            faceUV.add(new Double[]{x1, y2});
+            faceUV.add(new Double[]{x1, y2});
+            faceUV.add(new Double[]{x2, y2});
+            faceUV.add(new Double[]{x2, y2});
+        }else {
+            faceUV.add(new Double[]{x1, y1});
+            faceUV.add(new Double[]{x1, y1});
+            faceUV.add(new Double[]{x2, y1});
+            faceUV.add(new Double[]{x2, y1});
+        }*/
+
+    }
+
+    public static void convertItemIconToCubeModel(ICubeModel itemCubeModel, String iconPath, Namespace itemNamespace){
+        try{
+            //Get material for icon
+            generateOrGetMaterial(iconPath, itemNamespace);
+            IMaterial iconMaterial = Constants.BLOCK_MATERIALS.getMaterial(iconPath);
+
+            //Set material of item
+            itemCubeModel.putMaterial(iconPath);
+
+            //Get diffuse image from icon material
+            BufferedImage icon = iconMaterial.getDefaultDiffuseImage();
+
+            //Calculate cube width & height per pixel
+            Double cubeWidth = (16.0 / icon.getWidth()) / 16.0;
+            Double cubeHeight = (16.0 / icon.getHeight()) / 16.0;
+
+            //Loop through the image and convert each pixel to a cube
+            for(int x = 0; x < icon.getWidth(); x++){
+                int flippedX = icon.getWidth() - x - 1;
+                for(int y = 0; y < icon.getHeight(); y++){
+                    int flippedY = icon.getHeight() - y - 1;
+
+                    int _color = icon.getRGB(x, y);
+                    Color color = new Color(_color, true);
+                    if(color.getAlpha() != 0){
+                        boolean createUpFace = false;
+                        boolean createDownFace = false;
+                        boolean createWestFace = false;
+                        boolean createEastFace = false;
+
+                        //Check for transparent pixel above
+                        if(y == 0)
+                            createUpFace = true;
+                        else
+                            createUpFace = (icon.getRGB(x, y - 1) >> 24 & 255) == 0;
+
+                        //Check for transparent pixel bellow
+                        if(y + 1 == icon.getHeight())
+                            createDownFace = true;
+                        else
+                            createDownFace = (icon.getRGB(x, y + 1) >> 24 & 255) == 0;
+
+                        //Check for transparent pixel on the left
+                        if(x == 0)
+                            createEastFace = true;
+                        else
+                            createEastFace = (icon.getRGB(x - 1, y) >> 24 & 255) == 0;
+
+                        //Check for transparent pixel on the right
+                        if(x + 1 == icon.getWidth())
+                            createWestFace = true;
+                        else
+                            createWestFace = (icon.getRGB(x + 1, y) >> 24 & 255) == 0;
+
+                        //Array to store index to material per face (See Orientation.DIRECTIONS for order of faces)
+                        Integer[] materialFaces = new Integer[6];
+                        //Array to store which faces should be exported (See Orientation.DIRECTIONS for order of faces)
+                        Boolean[] generatedFaces = new Boolean[]{createUpFace, createDownFace, true, true, createWestFace, createEastFace};
+                        //Array to store cube faces (See Orientation.DIRECTIONS for order of faces)
+                        CubeFace[] cubeFaces = new CubeFace[6];
+
+                        Set<String> faces = new HashSet<>();
+                        faces.add("south");
+                        faces.add("north");
+
+                        if(createUpFace)
+                            faces.add("up");
+                        if(createDownFace)
+                            faces.add("down");
+                        if(createWestFace)
+                            faces.add("west");
+                        if(createEastFace)
+                            faces.add("east");
+
+                        //Calculate cube position
+                        Double[] from = new Double[]{flippedX * cubeWidth, 0.4375, (flippedY * cubeHeight)};
+                        Double[] to = new Double[]{(flippedX + 1) * cubeWidth, 0.5, (flippedY + 1) * cubeHeight};
+
+                        //Create vertices for each corner of a face that the cube uses
+                        Map<String, Double[]> cubeCorners = createCubeVerticesFromPoints(from, to, faces);
+
+                        for (String faceName : faces) {
+
+                            Orientation faceOrientation = Orientation.getOrientation(faceName);
+
+                            //Get the face uv's, or set them, if It's not defined in the uv field
+                            List<Double[]> faceUV = new ArrayList<>();
+                            setUVForPixelCube(faceUV, faceOrientation, x, flippedY, icon.getWidth(), icon.getHeight());
+
+                            //Get the face index from the faceOrientation
+                            Integer faceIndex = faceOrientation.getOrder();
+
+                            //Get the corners names for the original face orientation
+                            String[] cornerNames = getCornerPerOrientation(Orientation.getOrientation(faceName));
+                            //Create Double[] list to store the face vertices
+                            List<Double[]> faceCorners = new ArrayList<>();
+                            for(String cornerName : cornerNames){
+                                faceCorners.add(ArrayUtility.cloneArray(cubeCorners.get(cornerName)));
+                            }
+
+                            //Mark which material the face uses
+                            materialFaces[faceIndex] = 0;
+
+                            //Create cube face and append it to the cube
+                            CubeFace cubeFace = new CubeFace(faceCorners, faceUV, iconPath, false);
+                            cubeFaces[faceIndex] = cubeFace;
+                        }
+
+                        //Create cube from cube faces
+                        Cube cube = new Cube(materialFaces, generatedFaces, cubeFaces);
+                        //Append the cube to the cube model
+                        itemCubeModel.addCube(cube);
+                    }
+
+                }
+            }
+
+        }catch (Exception ex){
+            LogUtility.Log(ex.getMessage());
+        }
     }
 
     /**

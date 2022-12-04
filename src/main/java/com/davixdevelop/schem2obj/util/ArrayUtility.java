@@ -1,6 +1,7 @@
 package com.davixdevelop.schem2obj.util;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 /**
  * An utility class for manipulating with array and arraylists
@@ -84,5 +85,15 @@ public class ArrayUtility {
         }
 
         return true;
+    }
+
+    public static Double[] cloneArray(Double[] org){
+        if(org == null)
+            return null;
+
+        Double[] clone = new Double[org.length];
+        clone = Arrays.copyOf(org, org.length);
+
+        return clone;
     }
 }

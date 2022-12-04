@@ -147,7 +147,7 @@ public class ResourceLoader {
 
                     for (File textureFolder : textureFolders) {
                         //Scan for textures in blocks and entities
-                        if (!textureFolder.getName().equals("blocks") && !textureFolder.getName().equals("entity") && !textureFolder.getName().equals("font") && !textureFolder.getName().equals("painting"))
+                        if (!textureFolder.getName().equals("blocks") && !textureFolder.getName().equals("entity") && !textureFolder.getName().equals("font") && !textureFolder.getName().equals("painting") && !textureFolder.getName().equals("items"))
                             continue;
 
                         File[] textures = textureFolder.listFiles();
@@ -155,7 +155,6 @@ public class ResourceLoader {
 
                         if (textures != null) {
                             parseTexturesFromPackFiles(textures, textureFolderPath, resourcePackIndex);
-
                         }
                     }
                 }
@@ -169,7 +168,7 @@ public class ResourceLoader {
 
                 if(modelsSubfolder != null){
                     for(File modelsSubFolder : modelsSubfolder){
-                        if(modelsSubFolder.isDirectory() && modelsSubFolder.getName().equals("block")){
+                        if(modelsSubFolder.isDirectory() && (modelsSubFolder.getName().equals("block") || modelsSubFolder.getName().equals("item"))){
                             File[] blockModels = modelsSubFolder.listFiles();
 
                             if(blockModels != null)
@@ -269,7 +268,7 @@ public class ResourceLoader {
                         String textureType = assetPath.substring(0, assetPath.indexOf("/"));
 
                         //Scan only for texture types of blocks and entities and font
-                        if(!textureType.equals("blocks") && !textureType.equals("entity") && !textureType.equals("font") && !textureType.equals("painting"))
+                        if(!textureType.equals("blocks") && !textureType.equals("entity") && !textureType.equals("font") && !textureType.equals("painting") && !textureType.equals("items"))
                             continue;
 
                         //Get the path to the texture (ex. textures/entity/bed/blue.png - > blue.png)
