@@ -68,7 +68,7 @@ Optional parameters:
 
 > Note: Marked with (some parameter) are optional parts, and the actual inputs with <some value>. Remove the <> and () before running the command in a terminal.
 > <br>Ex with both jar, schematic and output OBJ file in same folder, and the unpacked resource pack (with the resource pack only in the SEUS or Vanilla format for now) in the .minecraft folder:<br>
-> `java -jar schem2obj-0.5.32.jar -minecraftFolder C:\Users\user\AppData\Roaming\.minecraft -i .lava_test.schematic -o .lava_test.obj -t SEUS:C:\Users\user\AppData\Roaming\.minecraft\resourcepacks\PBRResourcePack`
+> `java -jar schem2obj-0.6.33.jar -minecraftFolder C:\Users\user\AppData\Roaming\.minecraft -i .lava_test.schematic -o .lava_test.obj -t SEUS:C:\Users\user\AppData\Roaming\.minecraft\resourcepacks\PBRResourcePack`
 
 
 ### Blender 3.4 Import Procedure

@@ -10,15 +10,18 @@ import com.davixdevelop.schem2obj.resourceloader.ResourceLoader;
 import com.davixdevelop.schem2obj.resourceloader.ResourcePack;
 import com.davixdevelop.schem2obj.schematic.EntityValues;
 import com.davixdevelop.schem2obj.schematic.Schematic;
+import com.davixdevelop.schem2obj.util.ImageUtility;
 import com.davixdevelop.schem2obj.util.LogUtility;
 import com.davixdevelop.schem2obj.wavefront.*;
 import com.davixdevelop.schem2obj.materials.IMaterial;
 
 import java.io.*;
+import java.lang.ref.SoftReference;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.concurrent.*;
 
 public class SchemeToObj {
     public static void main(String[] arg) {
@@ -132,20 +135,23 @@ public class SchemeToObj {
         }else
             System.console().writer().println("Add arguments (-i <input schematic file> -t <path to resource pack> -o <output OBJ file>)");
 
+        Constants.EXPORT_ALL_BLOCKS = exportAllBlock;
+
         SchemeToObj s = new SchemeToObj();
 
-        ArrayList<ICubeModel> objects = s.schemeToCubeModels(scheme_path, exportAllBlock);
+        //ArrayList<ICubeModel> objects = s.schemeToCubeModels(scheme_path, exportAllBlock);
 
-        if(objects == null || objects.isEmpty()){
+
+        if(!s.exportScheme(scheme_path, output_path, exportAllBlock)){
             LogUtility.Log("Failed to convert schematic to OBJ");
             return;
         }
 
         //Write wavefront objects and materials to file
-        if(!s.exportToOBJ(objects, output_path)){
-            LogUtility.Log("Failed to write wavefront file");
-            return;
-        }
+        //if(!s.exportToOBJ(objects, output_path)){
+        //    LogUtility.Log("Failed to write wavefront file");
+        //    return;
+        //}
 
         Date end = new Date();
         double eclipsed = ((end.getTime()  - start.getTime()) / 1000.0) / 60.0;
@@ -157,9 +163,7 @@ public class SchemeToObj {
 
     }
 
-    public ArrayList<ICubeModel> schemeToCubeModels(String schemePath, boolean exportAllBlocks){
-
-
+    public boolean exportScheme(String schemePath, String outPath, boolean exportAllBlocks){
         try {
             InputStream schemeInput = new FileInputStream(schemePath);
 
@@ -173,18 +177,80 @@ public class SchemeToObj {
             catch(IOException exception){
                 LogUtility.Log("Error while reading schematic");
                 LogUtility.Log(exception.getMessage());
-                return null;
+                return false;
             }
         }catch (FileNotFoundException exception){
             LogUtility.Log("Could not find specified schematic");
             LogUtility.Log(exception.getMessage());
-            return null;
+            return false;
         }
 
-        //The final blocks to export
-        ArrayList<ICubeModel> blocks = new ArrayList<>();
-        //All blocks (including air -> null)
-        HashMap<Integer,ICubeModel> allBlocks = new HashMap<>();
+        Path output_path = Paths.get(outPath);
+        String fileName = output_path.toFile().getName().replace(".obj","");
+        PrintWriter f = null;
+
+        Path obj_file = Paths.get(output_path.toFile().toString());
+
+        if(!exportAllBlocks)
+        {
+            try {
+                String tempFileName = obj_file.toFile().getName();
+                tempFileName = tempFileName.replace(".obj","");
+                tempFileName = String.format("%s_temp.obj", tempFileName);
+                obj_file = Paths.get(output_path.toFile().getParent(), tempFileName);
+            }catch (Exception ex){
+                LogUtility.Log(ex.getMessage());
+                return false;
+            }
+        }
+
+        try{
+            //Write wavefront objects to output file
+            f = new PrintWriter(new BufferedWriter(new FileWriter(obj_file.toFile().getAbsolutePath())), false){
+                @Override
+                public void println() {
+                    write('\n');
+                }
+            };
+            //Specify which material library to use
+            f.println(String.format("mtllib %s.mtl", fileName));
+            f.flush();
+        }catch (Exception ex){
+            LogUtility.Log("Could not create output file:");
+            LogUtility.Log(ex.getMessage());
+            return false;
+        }
+
+        //Queue of processed cube models to be exported to obj
+        ConcurrentLinkedQueue<ICubeModel> processedCubesModels = new ConcurrentLinkedQueue<>();
+
+        boolean[] writerError = {false};
+
+        PrintWriter finalF = f;
+        final Boolean[] processingBlocks = new Boolean[]{true};
+        Thread writerTask = new Thread(() -> {
+            //Array variable to keep track of how many vertices, texture coordinates and vertex normals were written
+            int[] countTracker = new int[]{0,0,0};
+
+            int counter = 0;
+            //int totalBlocks = (Constants.LOADED_SCHEMATIC.getLength() * Constants.LOADED_SCHEMATIC.getWidth() * Constants.LOADED_SCHEMATIC.getHeight()) + Constants.LOADED_SCHEMATIC.getEntitiesCount();
+
+            while(processingBlocks[0] || !processedCubesModels.isEmpty()) { //|| !executorService.isTerminated()){
+                if(!processedCubesModels.isEmpty()){
+                    ICubeModel cubeModel = processedCubesModels.poll();
+                    if(!exportToOBJ(countTracker, cubeModel, finalF)) {
+                        writerError[0] = true;
+                        return;
+                    }
+                    //LogUtility.Log(String.format("Written: %d", counter));
+                    counter += 1;
+                    LogUtility.InlineLog(String.format("Converted: %d blocks \r", counter));
+                }
+            }
+            //Flush and close output stream
+            finalF.flush();
+            finalF.close();
+        });
 
         int width = Constants.LOADED_SCHEMATIC.getWidth();
         int length = Constants.LOADED_SCHEMATIC.getLength();
@@ -193,150 +259,150 @@ public class SchemeToObj {
         WaterCubeModel waterObject = null;
         LavaCubeModel lavaObject = null;
 
+        Map<Integer, SoftReference<Map<?, ?>>> singletonBlockIndex = new ConcurrentHashMap<>();
+
+        LogUtility.Log("Generating blocks");
+        //Create singleton cube models
+        for (int x = 0; x < width; x++) {
+            for (int y = 0; y < height; y++) {
+                for (int z = 0; z < length; z++) {
+                    final int index = x + (y * length + z) * width;
+
+                    if(!Constants.LOADED_SCHEMATIC.isAirOrLiquid(index)){
+                        Namespace namespace = Constants.LOADED_SCHEMATIC.getNamespace(x, y, z);
+                        //ToDo: Remove the builtin domain
+                        if(namespace.getDomain().equals("builtin") && Constants.SupportedEntities.contains(namespace.getType())){
+                            namespace.setCustomData(Constants.LOADED_SCHEMATIC.getEntityValues(x, y, z));
+                        }else if(namespace.getDomain().equals("builtin"))
+                            continue;
+
+                        singletonBlockIndex.put(index, new SoftReference<>(Constants.CUBE_MODEL_FACTORY.getKey(namespace)));
+                    }
+                }
+            }
+        }
+
+        LogUtility.Log("Converting blocks");
+        LogUtility.Log("");
+
+        writerTask.start();
         for (int x = 0; x < width; x++)  {
             for (int y = 0; y < height; y++) {
                 for(int z = 0; z < length; z++) {
                     final int index = x + (y * length + z) * width;
 
-                    //Set the current position of the read block, so other WavefrontObject can check the adjacent blocks
-                    Constants.LOADED_SCHEMATIC.setCurrentBlockPosition(x, y, z);
+                    if(Constants.LOADED_SCHEMATIC.isLiquid(index)){
+                        Namespace namespace = Constants.LOADED_SCHEMATIC.getNamespace(x, y, z);
 
-                    Namespace blockNamespace = Constants.LOADED_SCHEMATIC.getNamespace(x, y, z);
-
-                    //ToDo: Write custom blocks (ex, Chest, Sign, Wall Sign...). Until then, ignore these blocks
-                    if (blockNamespace == null || blockNamespace.getDomain().equals("builtin")){
-                        if(blockNamespace != null) {
-                            switch (blockNamespace.getType()) {
+                        if(namespace != null && namespace.getDomain().equals("builtin")) {
+                            switch (namespace.getType()) {
                                 case "flowing_water":
                                 case "water":
                                     if (waterObject == null)
                                         waterObject = new WaterCubeModel();
 
-                                    if(z == 15 && y == 4){
+                                    if (z == 15 && y == 4) {
                                         String w = "2";
                                     }
 
-                                    waterObject.addBlock(blockNamespace);
+                                    waterObject.addBlock(namespace);
                                     break;
                                 case "flowing_lava":
                                 case "lava":
                                     if (lavaObject == null)
                                         lavaObject = new LavaCubeModel();
 
-                                    lavaObject.addBlock(blockNamespace);
+                                    lavaObject.addBlock(namespace);
                                     break;
                             }
-
-                            if(Constants.SupportedEntities.contains(blockNamespace.getType())){
-                                //Inject tile entity into namespacde custom data
-                                blockNamespace.setCustomData(Constants.LOADED_SCHEMATIC.getEntityValues(Constants.LOADED_SCHEMATIC.getPosX(), Constants.LOADED_SCHEMATIC.getPosY(), Constants.LOADED_SCHEMATIC.getPosZ()));
-
-                                //Get  singleton tile entity cube model from memory or create it anew every time
-                                ICubeModel entityCubeModel = Constants.CUBE_MODEL_FACTORY.fromNamespace(blockNamespace);
-
-                                //Translate the singleton block to the position of the block in the space
-                                CubeModelUtility.translateCubeModel(entityCubeModel, new Double[]{(double) x, (double) z, (double) y}, new Integer[]{width,length,height});
-
-                                //Add it to blocks
-                                if (exportAllBlocks)
-                                    blocks.add(entityCubeModel);
-                                else
-                                    allBlocks.put(index, entityCubeModel);
-
-                                continue;
-                            }
-
                         }
+                    }
 
-                        if (!exportAllBlocks)
-                            allBlocks.put(index, null);
-
+                    if(Constants.LOADED_SCHEMATIC.isAirOrLiquid(index))
                         continue;
-                    }
 
-                    //Get  singleton cube model from memory
-                    ICubeModel cubeModel = Constants.CUBE_MODEL_FACTORY.fromNamespace(blockNamespace);
+                    try{
+                        if(!singletonBlockIndex.containsKey(index))
+                            continue;
 
-                    //Translate the singleton block to the position of the block in the space
-                    CubeModelUtility.translateCubeModel(cubeModel, new Double[]{(double)x, (double)z, (double)y}, new Integer[]{width,length,height});
+                        Map<?, ?> key = singletonBlockIndex.get(index).get();
 
-                    if (exportAllBlocks)
-                        blocks.add(cubeModel);
-                    else
-                        allBlocks.put(index, cubeModel);
+                        if(key != null){
+                            //Get copy of singleton
+                            ICubeModel singletonCubeModel = Constants.CUBE_MODEL_FACTORY.fromKey(key);
 
-                }
-            }
-        }
+                            if(singletonCubeModel != null){
+                                singletonCubeModel = singletonCubeModel.duplicate();
 
-        if(!exportAllBlocks){
-            HashMap<Double[], Double[]> allNormals = new HashMap<>();
+                                if(!exportAllBlocks){
+                                    //Check each face for cull-faces, and delete hidden faces
+                                    for(int o = 0; o < 6; o++){
+                                        //Get the orientation of the face
+                                        Orientation faceOrientation = Orientation.getOrientation(o);
+                                        //Get the opposite direction
+                                        Orientation oppositeOrientation = faceOrientation.getOpposite();
 
-            //If exportAllBlocks all blocks is false, loop through allBlocks from bottom to top and delete hidden faces
-            for (int y = 0; y < height; y++){
-                for (int x = 0; x < width; x++){
-                    for(int z = 0; z < length; z++) {
-                        final int index = x + (y * length + z) * width;
+                                        //Calculate the key index to the adjacent block
+                                        int adjacentX = x + faceOrientation.getXOffset();
+                                        int adjacentZ = z - faceOrientation.getYOffset();
+                                        int adjacentY = y + faceOrientation.getZOffset();
 
-                        Constants.LOADED_SCHEMATIC.setCurrentBlockPosition(x, y, z);
+                                        //Check if adjacent block is withing bounds
+                                        if (adjacentX >= 0 && adjacentX < width &&
+                                                adjacentZ >= 0 && adjacentZ < length &&
+                                                adjacentY >= 0 && adjacentY < height) {
+                                            int adjacentKey = adjacentX + (adjacentY * length + adjacentZ) * width;
 
-                        ICubeModel object = allBlocks.get(index);
-                        if(object != null){
+                                            //If adjacent block is air or liquid ignore it
+                                            if(Constants.LOADED_SCHEMATIC.isAirOrLiquid(adjacentKey))
+                                                continue;
 
-                            for(int o = 0; o < 6; o++){
-                                Orientation faceOrientation = Orientation.getOrientation(o);
+                                            if(!singletonBlockIndex.containsKey(adjacentKey))
+                                                continue;
 
-                                Orientation oppositeOrientation = faceOrientation.getOpposite();
+                                            Map<?, ?> adjacentSingletonKey = singletonBlockIndex.get(adjacentKey).get();
+                                            if(adjacentSingletonKey == null)
+                                                continue;
 
-                                int adjacentX = x + faceOrientation.getXOffset();
-                                int adjacentZ = z - faceOrientation.getYOffset();
-                                int adjacentY = y + faceOrientation.getZOffset();
+                                            //Get copy of the singleton from the adjacent block
+                                            ICubeModel adjacentSingletonCubeModel = Constants.CUBE_MODEL_FACTORY.fromKey(adjacentSingletonKey);
 
-                                if(adjacentX >= 0 && adjacentX < width &&
-                                adjacentZ >= 0 && adjacentZ < length &&
-                                adjacentY >= 0 && adjacentY < height){
-                                    Integer adjacentIndex = adjacentX + (adjacentY * length + adjacentZ) * width;
+                                            if(adjacentSingletonCubeModel == null)
+                                                continue;
 
-                                    ICubeModel adjacentCubeModel = allBlocks.get(adjacentIndex);
+                                            adjacentSingletonCubeModel = adjacentSingletonCubeModel.duplicate();
 
-                                    if(CubeModelUtility.checkFacing(object, adjacentCubeModel, faceOrientation, oppositeOrientation))
-                                        object.deleteFaces(faceOrientation);
+                                            //Perform the check on the cube model
+                                            if (CubeModelUtility.checkFacing(singletonCubeModel, adjacentSingletonCubeModel, faceOrientation, oppositeOrientation))
+                                                singletonCubeModel.deleteFaces(faceOrientation);
+                                        }
+                                    }
                                 }
-                            }
 
-                            blocks.add(object);
+                                //Translate the copy of the singleton block to the position of the block in the space
+                                CubeModelUtility.translateCubeModel(singletonCubeModel, new Double[]{(double)x, (double) z, (double) y}, new Integer[]{(int) width, (int) length, (int) height});
+
+                                processedCubesModels.add(singletonCubeModel);
+                            }
                         }
+
+                    }catch (Exception ex){
+                        LogUtility.Log(ex.getMessage());
                     }
                 }
             }
-            /*
-            //Normalize allNormals
-            WavefrontUtility.normalizeNormals(allNormals);
-
-            //Copy allNormals back to each object
-            for(int c = 0; c < blocks.size(); c++){
-                IWavefrontObject object = blocks.get(c);
-                WavefrontUtility.copyAllNormalsToObject(allNormals, object);
-                blocks.set(c, object);
-            }*/
-
-
         }
-
-
 
         if(waterObject != null){
             waterObject.finalizeCubeModel();
-            blocks.add(waterObject);
+            processedCubesModels.add(waterObject);
         }
 
         if(lavaObject != null){
             lavaObject.finalizeCubeModel();
-            blocks.add(lavaObject);
+            processedCubesModels.add(lavaObject);
         }
 
-
-        //ToDo: Convert items (mob heads, chests...) to cube models
         if(Constants.LOADED_SCHEMATIC.getEntitiesCount() > 0){
             int entitiesCount = Constants.LOADED_SCHEMATIC.getEntitiesCount();
             for(int entityIndex = 0; entityIndex < entitiesCount; entityIndex++){
@@ -369,53 +435,51 @@ public class SchemeToObj {
 
                     CubeModelUtility.translateCubeModel(entityCubeModel, new Double[]{x, y, z}, new Integer[]{width,length,height});
 
-                    blocks.add(entityCubeModel);
+                    processedCubesModels.add(entityCubeModel);
                 }
             }
         }
+        processingBlocks[0] = false;
 
-        return blocks;
+        while (true){
+            if(!writerTask.isAlive())
+                break;
+        }
+
+
+        LogUtility.Log("");
+        if(!writerError[0]) {
+            LogUtility.Log("Writing material file");
+            if(!exportMaterialsToMTL(outPath)) {
+                LogUtility.Log("Error while writing material file");
+                return false;
+            }
+        }
+
+        try {
+            writerTask.join();
+        }catch (Exception ex){
+            LogUtility.Log(ex.getMessage());
+            return  false;
+        }
+
+        if(!exportAllBlocks){
+            LogUtility.Log("Merging blocks");
+            Constants.CUBE_MODEL_FACTORY.clearData();
+            ImageUtility.clearData();
+            if(!WavefrontUtility.mergeOBJ(obj_file, output_path))
+                return false;
+        }
+
+        return !writerError[0];
     }
 
-    public boolean exportToOBJ(ArrayList<ICubeModel> cubeModels, String outputPath){
-        Path output_path = Paths.get(outputPath);
-
-        String fileName = output_path.toFile().getName().replace(".obj","");
+    public boolean exportMaterialsToMTL(String outputPath){
         try{
-            OutputStream outputStream = new FileOutputStream(output_path.toFile().getAbsolutePath());
+            Path output_path = Paths.get(outputPath);
 
-            //Write wavefront objects to output file
-            PrintWriter f = new PrintWriter(outputStream){
-                @Override
-                public void println() {
-                    write('\n');
-                }
-            };
-            //Specify which material library to use
-            f.println(String.format("mtllib %s.mtl", fileName));
+            String fileName = output_path.toFile().getName().replace(".obj","");
 
-            //Array variable to keep track of how many vertices, texture coordinates and vertex normals were written
-            int[] countTracker = new int[]{0,0,0};
-
-            for(ICubeModel cubeModel : cubeModels){
-                IWavefrontObject object = WavefrontObjectFactory.fromCubeModel(cubeModel);
-
-                if(object != null && !object.getMaterialFaces().isEmpty()){
-                    WavefrontUtility.writeObjectData(object, f, countTracker);
-                }
-            }
-
-            //Flush and close output stream
-            f.flush();
-            f.close();
-
-        }catch (FileNotFoundException ex){
-            LogUtility.Log("Could not create output file:");
-            LogUtility.Log(ex.getMessage());
-            return false;
-        }
-
-        try{
             //Set the folder for the textures
             Path textureFolderOutPath = Paths.get(output_path.toFile().getParent(), fileName);
             if(!textureFolderOutPath.toFile().exists())
@@ -468,7 +532,20 @@ public class SchemeToObj {
             return false;
         }
 
-        //ToDo: Download players head's textures if there are any custom mob heads
+        return true;
+    }
+
+    public boolean exportToOBJ(int[] countTracker, ICubeModel cubeModel, PrintWriter f){
+        try{
+            IWavefrontObject object = WavefrontObjectFactory.fromCubeModel(cubeModel);
+
+            if(object != null && !object.getMaterialFaces().isEmpty()){
+                WavefrontUtility.writeObjectData(object, f, countTracker);
+            }
+
+        }catch (Exception ex){
+            return false;
+        }
 
         return true;
     }

@@ -11,4 +11,8 @@ public class LogUtility {
         logger.debug(msg);
         System.out.println(msg);
     }
+
+    public static void InlineLog(String msg){
+        System.out.print(msg);
+    }
 }

@@ -13,6 +13,8 @@ import com.davixdevelop.schem2obj.resourceloader.ResourceLoader;
 import com.davixdevelop.schem2obj.schematic.EntityValues;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 /**
  * Factory responsible for generating and storing CubeModel's from block namespaces, and or their entity values.
@@ -21,26 +23,70 @@ import java.util.*;
  */
 public class CubeModelFactory {
 
-    public Map<Map<?, ?>, ICubeModel> cubeModels;
-    public Map<Object, ICubeModel> itemModels;
+    public ConcurrentMap<Map<?, ?>, ICubeModel> cubeModels;
+    public ConcurrentMap<Object, ICubeModel> itemModels;
 
     public CubeModelFactory(){
-        cubeModels = new LinkedHashMap<>();
-        itemModels = new LinkedHashMap<>();
+        cubeModels = new ConcurrentHashMap<>();
+        itemModels = new ConcurrentHashMap<>();
+
+        //blockGenerationQueue = ConcurrentHashMap.newKeySet();
+        //itemGenerationQueue = ConcurrentHashMap.newKeySet();
+    }
+
+    public Map<?, ?> getKey(Namespace namespace){
+        ICubeModel block = getType(namespace);
+        Map<?, ?> key = block.getKey(namespace);
+
+        /*if(blockGenerationQueue.contains(key)){
+            while (true){
+                if(!blockGenerationQueue.contains(key))
+                    break;
+            }
+        }else
+            blockGenerationQueue.add(key);*/
+
+        if (!cubeModels.containsKey(key)) {
+            //Only store object in memory if to does not have random variants (multiple variants in "variants" field)
+            //If it does recreate it every time
+            if (block.fromNamespace(namespace))
+                cubeModels.put(key, block);
+
+        }
+        //blockGenerationQueue.remove(key);
+
+        return key;
+    }
+
+    public ICubeModel fromKey(Map<?, ?> key){
+        if(cubeModels.containsKey(key))
+            return cubeModels.get(key).duplicate();
+
+        return null;
     }
 
     public ICubeModel fromNamespace(Namespace namespace){
         ICubeModel block = getType(namespace);
         Map<?, ?> key = block.getKey(namespace);
 
-        if(cubeModels.containsKey(key))
+        /*if(blockGenerationQueue.contains(key)){
+            while (true){
+                if(!blockGenerationQueue.contains(key))
+                    break;
+            }
+        }else
+            blockGenerationQueue.add(key);*/
+
+        if(cubeModels.containsKey(key)) {
+            //blockGenerationQueue.remove(key);
             return cubeModels.get(key).duplicate();
-        else{
+        }else{
             //Only store object in memory if to does not have random variants (multiple variants in "variants" field)
             //If it does recreate it every time
             if(block.fromNamespace(namespace))
                 cubeModels.put(key, block);
 
+            //blockGenerationQueue.remove(key);
             return block.duplicate();
         }
     }
@@ -52,10 +98,13 @@ public class CubeModelFactory {
         String itemResource = item.getString("id");
         String itemResourcePath = itemResource.substring(itemResource.indexOf(":") + 1);
         Namespace namespace = Constants.NAMESPACE_MAPPING.getNamespace(itemResource);
+
         //If namespace is null, the item uses the icon in textures/items as the item model
         if(namespace == null)
             itemUsesBlockAsIcon = true;
         else{
+            namespace.setPosition(new Integer[]{0,0,0});
+
             Set<String> tagKeys = new LinkedHashSet<>();
             boolean injectTagIntoNamespaceCustomData = false;
 
@@ -135,8 +184,20 @@ public class CubeModelFactory {
             key = itemCubeModel.getKey(namespace);
         }
 
-        if(itemModels.containsKey(!key.isEmpty() ? key : itemResource)){
-            return itemModels.get(!key.isEmpty() ? key : itemResource).duplicate();
+        Object itemKey = !key.isEmpty() ? key : itemResource;
+
+        /*if(itemGenerationQueue.contains(itemKey)){
+            while (true){
+                if(!itemGenerationQueue.contains(itemKey))
+                    break;
+            }
+        }else
+            itemGenerationQueue.add(itemKey);*/
+
+
+        if(itemModels.containsKey(itemKey)){
+            //itemGenerationQueue.remove(itemKey);
+            return itemModels.get(itemKey).duplicate();
         }else{
             String item_resource = null;
 
@@ -171,7 +232,6 @@ public class CubeModelFactory {
             }
 
             if(itemUsesBlockAsIcon){
-                //ToDo: Convert layer0 texture to cube model
                 String itemIcon = null;
                 if(itemTextures.getTextures().containsKey("layer0"))
                     itemIcon = itemTextures.getTextures().get("layer0");
@@ -208,7 +268,8 @@ public class CubeModelFactory {
                     CubeModelUtility.translateCubeModel(itemCubeModel, fixedDisplay.translation);
             }
 
-            itemModels.put(!key.isEmpty() ? key : itemResource, itemCubeModel);
+            itemModels.put(itemKey, itemCubeModel);
+            //itemGenerationQueue.remove(itemKey);
 
             return itemCubeModel.duplicate();
         }
@@ -233,7 +294,23 @@ public class CubeModelFactory {
         if (blockNamespace.getResource().contains("fence") && !blockNamespace.getResource().contains("gate"))
             return new FenceCubeModel();
 
-        switch (blockNamespace.getResource()) {
+        if(blockNamespace.getResource().contains("glass_pane"))
+            return new GlassPaneCubeModel();
+
+        if(blockNamespace.getResource().contains("glass"))
+            return new GlassCubeModel();
+
+        if(blockNamespace.getResource().contains("stairs"))
+            return new StairsCubeModel();
+
+        if(blockNamespace.getResource().contains("command_block"))
+            return new CommandCubeModel();
+
+        if(blockNamespace.getResource().contains("door"))
+            return new DoorCubeModel();
+
+
+        switch (blockNamespace.getType()) {
             case "grass":
                 return new GrassCubeModel();
             case "magma":
@@ -272,18 +349,6 @@ public class CubeModelFactory {
                 return new TrappedChestCubeModel();
             case "ender_chest":
                 return new EnderChestCubeMode();
-            case "leaves":
-                return new LeavesCubeModel();
-            case "glass_pane":
-                return new GlassPaneCubeModel();
-            case "glass":
-                return new GlassCubeModel();
-            case "stairs":
-                return new StairsCubeModel();
-            case "command_block":
-                return new CommandCubeModel();
-            case "door":
-                return new DoorCubeModel();
             default:
                 return new BlockCubeModel();
 
@@ -292,6 +357,7 @@ public class CubeModelFactory {
     }
 
     public static boolean isTranslucentOrNotFull(ICubeModel object){
+
         return (object instanceof GlassCubeModel) ||
                 (object instanceof GlassPaneCubeModel) ||
                 (object instanceof IronBarsCubeModel) ||
@@ -303,18 +369,24 @@ public class CubeModelFactory {
                 (object instanceof DoorCubeModel) ||
                 (object instanceof FireCubeModel) ||
                 (object instanceof CauldronCubeModel) ||
-                object.getName().equals("slime") ||
-                object.getName().contains("rail") ||
-                object.getName().contains("button") ||
-                object.getName().equals("grass_path") ||
-                object.getName().contains("pressure_plate") ||
-                object.getName().contains("daylight_detector") ||
-                object.getName().contains("piston_head") ||
-                object.getName().contains("comparator") ||
-                object.getName().contains("repeater") ||
-                object.getName().equals("snow_layer") ||
+                (object.getName() != null && object.getName().equals("slime")) ||
+                (object.getName() != null && object.getName().contains("rail")) ||
+                (object.getName() != null && object.getName().contains("button")) ||
+                (object.getName() != null && object.getName().equals("grass_path")) ||
+                (object.getName() != null && object.getName().contains("pressure_plate")) ||
+                (object.getName() != null && object.getName().contains("daylight_detector")) ||
+                (object.getName() != null && object.getName().contains("piston_head")) ||
+                (object.getName() != null && object.getName().contains("comparator")) ||
+                (object.getName() != null && object.getName().contains("repeater")) ||
+                (object.getName() != null && object.getName().equals("snow_layer")) ||
+                (object.getName() != null && object.getName().contains("carpet")) ||
                 object instanceof TileEntityCubeModel ||
                 object instanceof EntityCubeModel;
+    }
+
+    public void clearData(){
+        cubeModels.clear();
+        itemModels.clear();
     }
 
 }

@@ -136,6 +136,8 @@ public class Constants {
         TEXT_COLORS.put("black", new IntegerString("0", 0));
     }
 
+    public static boolean EXPORT_ALL_BLOCKS = false;
+
     public static final SchematicHolder LOADED_SCHEMATIC = new SchematicHolder();
 
     public static final BlockModelCollection BLOCK_MODELS = new BlockModelCollection();

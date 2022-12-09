@@ -156,6 +156,8 @@ public class BlockModel {
                                     angle.set(a, angle.get(a) * -1.0);
                                 } else if (axsis[a].equals("Y"))
                                     axis.add("Z");
+                                else
+                                    axis.add(axsis[a]);
                             }
                         }
                     }

@@ -2,12 +2,15 @@ package com.davixdevelop.schem2obj.wavefront;
 
 import com.davixdevelop.schem2obj.cubemodels.CubeModelUtility;
 import com.davixdevelop.schem2obj.models.HashedDoubleList;
+import com.davixdevelop.schem2obj.models.HashedStringList;
 import com.davixdevelop.schem2obj.util.ArrayVector;
+import com.davixdevelop.schem2obj.util.LogUtility;
 
+import java.io.BufferedWriter;
+import java.io.FileWriter;
 import java.io.PrintWriter;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Locale;
+import java.nio.file.Path;
+import java.util.*;
 
 public class WavefrontUtility {
 
@@ -229,5 +232,117 @@ public class WavefrontUtility {
     setTextureCoordinates(textureCoordinates.toList());
     setMaterialFaces(faces);
     setBoundingFaces(boundingFaces);*/
+
+    public static boolean mergeOBJ(Path obj_file, Path out_file){
+        try{
+            Scanner scanner = new Scanner(obj_file.toFile());
+
+            //Create hashed double list for vertices
+            HashedStringList vertices = new HashedStringList();
+            //Create hashed double list for texture coordinates
+            HashedStringList uvs = new HashedStringList();
+
+            //Read through the obj file, and get all vertices and textures coordinates
+            while (scanner.hasNext()){
+                String line = scanner.nextLine();
+                if(line.startsWith("v ")){
+                    vertices.put(line.substring(2));
+                }else if(line.startsWith("vt ")){
+                    uvs.put(line.substring(3));
+                }
+            }
+
+            scanner.close();
+
+            //Create print writer for outputfile
+            PrintWriter writer = new PrintWriter(new BufferedWriter(new FileWriter(out_file.toFile().getAbsolutePath())), false){
+                @Override
+                public void println() {
+                    write('\n');
+                }
+            };
+            String file_name = out_file.toFile().getName().replace(".obj","");
+            writer.println(String.format("mtllib %s.mtl", file_name));
+            writer.println(String.format("o %s", file_name));
+
+            //Write all vertices to output file
+            List<String> rawVertices = vertices.toList();
+            for(String vertex : rawVertices){
+                writer.println(String.format("v %s", vertex));
+            }
+
+            //Write all texture coordinates to output file
+            List<String> rawUVS = uvs.toList();
+            for(String uv : rawUVS){
+                writer.println(String.format("vt %s", uv));
+            }
+
+            //Loop through the obj file, and write It's faces to the output file
+
+            //Keep count of read vertices and texture coordinates
+            int[] countTracker = new int[]{0, 0};
+
+            List<String> objectVertices = new ArrayList<>();
+            List<String> objectTextureCoordinates = new ArrayList<>();
+
+            Scanner scanner2 = new Scanner(obj_file.toFile());
+
+            while(scanner2.hasNext()){
+                String line = scanner2.nextLine();
+                if(line.startsWith("o ")) {
+                    countTracker[0] += objectVertices.size();
+                    countTracker[1] += objectTextureCoordinates.size();
+
+                    objectVertices.clear();
+                    objectTextureCoordinates.clear();
+
+                }
+                else if(line.startsWith("v ")){
+                    objectVertices.add(line.substring(2));
+                }else if(line.startsWith("vt ")){
+                    objectTextureCoordinates.add(line.substring(3));
+                }else if(line.startsWith("usemtl "))
+                    writer.println(line);
+                else if(line.startsWith("f ")){
+                    line = line.substring(2);
+                    //Split line by space to get the face indices
+                    String[] indices = line.split(" ");
+                    StringBuilder newFace = new StringBuilder();
+                    newFace.append("f");
+                    for(String ind : indices){
+                        //Split the ind by / to get the indexes
+                        String[] indicesIndex = ind.split("/");
+                        //Get the vertex
+                        String vert = objectVertices.get(Integer.parseInt(indicesIndex[0]) - countTracker[0] - 1);
+                        //Get the texture coordinate
+                        String uv = objectTextureCoordinates.get(Integer.parseInt(indicesIndex[1]) - countTracker[1] - 1);
+                        //Get index to vertex in output file
+                        Integer newVertexIndex = vertices.getIndex(vert) + 1;
+                        //Get index to texture coordinate in output file
+                        Integer newUVIndex = uvs.getIndex(uv) + 1;
+
+                        //Append new indices to face
+                        newFace.append(String.format(" %d/%d", newVertexIndex, newUVIndex));
+                    }
+
+                    //Write face to output file
+                    writer.println(newFace);
+                }
+            }
+
+            scanner2.close();
+            writer.flush();
+            writer.close();
+
+            obj_file.toFile().delete();
+
+            return true;
+
+        }catch (Exception ex){
+            LogUtility.Log(ex.getMessage());
+            obj_file.toFile().delete();
+            return false;
+        }
+    }
 
 }

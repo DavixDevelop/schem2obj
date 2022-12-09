@@ -6,6 +6,8 @@ import java.io.File;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.regex.Matcher;
 
 /**
@@ -14,12 +16,12 @@ import java.util.regex.Matcher;
  * @author DavixDevelop
  */
 public class MaterialCollection {
-    HashMap<String, IMaterial> materials;
+    ConcurrentMap<String, IMaterial> materials;
     Set<String> usedMaterials;
 
     public MaterialCollection(){
-        materials = new HashMap<>();
-        usedMaterials = new HashSet<>();
+        materials = new ConcurrentHashMap<>();
+        usedMaterials = ConcurrentHashMap.newKeySet();
     }
 
     /**
@@ -79,11 +81,10 @@ public class MaterialCollection {
             return;
         }
 
-        /*if(material.getName().contains("glass") ||
-                material.getName().contains("leaves") ||
-                material.setAl
-                material.getName().equals("iron_bars"))
-            material.setAlpha(true);*/
+        if(material.getName().contains("glass")){
+            material.setTransmissionFilter(1.0);
+            material.setSpecularHighlights(0.5);
+        }
 
         switch (material.getName()){
             case "oak_planks":

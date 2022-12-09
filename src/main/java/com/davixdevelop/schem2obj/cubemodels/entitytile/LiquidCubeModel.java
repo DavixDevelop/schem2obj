@@ -4,8 +4,10 @@ import com.davixdevelop.schem2obj.Constants;
 import com.davixdevelop.schem2obj.Orientation;
 import com.davixdevelop.schem2obj.cubemodels.Cube;
 import com.davixdevelop.schem2obj.cubemodels.CubeModel;
+import com.davixdevelop.schem2obj.cubemodels.CubeModelFactory;
 import com.davixdevelop.schem2obj.cubemodels.CubeModelUtility;
 import com.davixdevelop.schem2obj.cubemodels.model.CubeFace;
+import com.davixdevelop.schem2obj.models.HashedDoubleList;
 import com.davixdevelop.schem2obj.namespace.Namespace;
 import com.davixdevelop.schem2obj.util.ArrayVector;
 
@@ -75,20 +77,20 @@ public class LiquidCubeModel extends CubeModel {
 
         int liquidLevel = getLiquidLevel(liquidNamespace);
 
-        Namespace south = Constants.LOADED_SCHEMATIC.getNamespace(Constants.LOADED_SCHEMATIC.getPosX(), Constants.LOADED_SCHEMATIC.getPosY(), Constants.LOADED_SCHEMATIC.getPosZ() + 1);
-        Namespace north = Constants.LOADED_SCHEMATIC.getNamespace(Constants.LOADED_SCHEMATIC.getPosX(), Constants.LOADED_SCHEMATIC.getPosY(), Constants.LOADED_SCHEMATIC.getPosZ() - 1);
-        Namespace east = Constants.LOADED_SCHEMATIC.getNamespace(Constants.LOADED_SCHEMATIC.getPosX() + 1, Constants.LOADED_SCHEMATIC.getPosY(), Constants.LOADED_SCHEMATIC.getPosZ());
-        Namespace west = Constants.LOADED_SCHEMATIC.getNamespace(Constants.LOADED_SCHEMATIC.getPosX() - 1, Constants.LOADED_SCHEMATIC.getPosY(), Constants.LOADED_SCHEMATIC.getPosZ());
+        int x_pos = liquidNamespace.getPosition("X");
+        int y_pos = liquidNamespace.getPosition("Y");
+        int z_pos = liquidNamespace.getPosition("Z");
 
-        Namespace up = Constants.LOADED_SCHEMATIC.getNamespace(Constants.LOADED_SCHEMATIC.getPosX(), Constants.LOADED_SCHEMATIC.getPosY() + 1, Constants.LOADED_SCHEMATIC.getPosZ());
-        Namespace down = Constants.LOADED_SCHEMATIC.getNamespace(Constants.LOADED_SCHEMATIC.getPosX(), Constants.LOADED_SCHEMATIC.getPosY() - 1, Constants.LOADED_SCHEMATIC.getPosZ());
+        Namespace south = Constants.LOADED_SCHEMATIC.getNamespace(x_pos, y_pos, z_pos + 1);
+        Namespace north = Constants.LOADED_SCHEMATIC.getNamespace(x_pos, y_pos, z_pos - 1);
+        Namespace east = Constants.LOADED_SCHEMATIC.getNamespace(x_pos + 1, y_pos, z_pos);
+        Namespace west = Constants.LOADED_SCHEMATIC.getNamespace(x_pos - 1, y_pos, z_pos);
+
+        Namespace up = Constants.LOADED_SCHEMATIC.getNamespace(x_pos, y_pos + 1, z_pos);
+        Namespace down = Constants.LOADED_SCHEMATIC.getNamespace(x_pos, y_pos - 1, z_pos);
 
         boolean hasLiquidUp = up != null && isLiquidAdjacent(up);
         boolean hasLiquidDown = down != null && isLiquidAdjacent(down);
-
-        int x_pos = Constants.LOADED_SCHEMATIC.getPosX();
-        int y_pos = Constants.LOADED_SCHEMATIC.getPosY();
-        int z_pos = Constants.LOADED_SCHEMATIC.getPosZ();
 
         //If adjacent blocks are all liquid, don't add any face
         if((south != null && isLiquidAdjacent(south)) && (north != null && isLiquidAdjacent(north)) && (west != null && isLiquidAdjacent(west)) && (east != null && isLiquidAdjacent(east)) && (up != null && isLiquidAdjacent(up)) && (down != null && isLiquidAdjacent(down))) {
@@ -97,10 +99,10 @@ public class LiquidCubeModel extends CubeModel {
         }
 
 
-        Namespace north_east = Constants.LOADED_SCHEMATIC.getNamespace(Constants.LOADED_SCHEMATIC.getPosX() + 1, Constants.LOADED_SCHEMATIC.getPosY(), Constants.LOADED_SCHEMATIC.getPosZ() - 1);
-        Namespace north_west = Constants.LOADED_SCHEMATIC.getNamespace(Constants.LOADED_SCHEMATIC.getPosX() - 1, Constants.LOADED_SCHEMATIC.getPosY(), Constants.LOADED_SCHEMATIC.getPosZ() - 1);
-        Namespace south_east = Constants.LOADED_SCHEMATIC.getNamespace(Constants.LOADED_SCHEMATIC.getPosX() + 1, Constants.LOADED_SCHEMATIC.getPosY(), Constants.LOADED_SCHEMATIC.getPosZ() + 1);
-        Namespace south_west = Constants.LOADED_SCHEMATIC.getNamespace(Constants.LOADED_SCHEMATIC.getPosX() - 1, Constants.LOADED_SCHEMATIC.getPosY(), Constants.LOADED_SCHEMATIC.getPosZ() + 1);
+        Namespace north_east = Constants.LOADED_SCHEMATIC.getNamespace(x_pos + 1, y_pos, z_pos - 1);
+        Namespace north_west = Constants.LOADED_SCHEMATIC.getNamespace(x_pos - 1, y_pos, z_pos - 1);
+        Namespace south_east = Constants.LOADED_SCHEMATIC.getNamespace(x_pos + 1, y_pos, z_pos + 1);
+        Namespace south_west = Constants.LOADED_SCHEMATIC.getNamespace(x_pos - 1, y_pos, z_pos + 1);
 
         Double[] cornerHeights = new Double[]{null, null, null, null};
 
@@ -112,10 +114,10 @@ public class LiquidCubeModel extends CubeModel {
 
 
         if(!hasLiquidDown && !hasLiquidUp){
-            int y = Constants.LOADED_SCHEMATIC.getPosY();
+            int y = y_pos;
             if(LiquidBlocksCollection.containsKey(y - 1)){
                 Boolean[] checkCorner = new Boolean[]{false, false, false, false};
-                hasLiquidAdjacent(y - 1, Constants.LOADED_SCHEMATIC.getPosX(), Constants.LOADED_SCHEMATIC.getPosZ(), checkCorner);
+                hasLiquidAdjacent(y - 1, x_pos, z_pos, checkCorner);
                 hasLiquidDown = checkCorner[0] || checkCorner[1] || checkCorner[2] || checkCorner[3];
             }
         }
@@ -255,17 +257,90 @@ public class LiquidCubeModel extends CubeModel {
                 cornerHeights[x] = 16.0;
         }
 
-
         boolean hasLiquidNorth = north != null && isLiquidAdjacent(north);
         boolean hasLiquidSouth = south != null && isLiquidAdjacent(south);
         boolean hasLiquidEast = east != null && isLiquidAdjacent(east);
         boolean hasLiquidWest = west != null && isLiquidAdjacent(west);
         hasLiquidDown = down != null && isLiquidAdjacent(down);
 
-        appendLiquidBlock(new LiquidBlock(liquidNamespace, cornerHeights, hasLiquidUp, hasLiquidDown, hasLiquidNorth, hasLiquidSouth, hasLiquidWest, hasLiquidEast, flow_direction, !isLiquidAdjacent || createFullBlock), y_pos, x_pos, z_pos);
+        boolean createNorthFace = false;
+        if(north != null){
+            if(!isLiquidAdjacent(north)){
+               boolean isNonBlock = isNonBlockAdjacent(north);
+               boolean isTranslucentOrNotFull = CubeModelFactory.isTranslucentOrNotFull(CubeModelFactory.getType(north));
+
+               if(isNonBlock)
+                   createNorthFace = true;
+               else if(isTranslucentOrNotFull)
+                   createNorthFace = true;
+            }
+        }else
+            createNorthFace = true;
+
+        boolean createSouthFace = false;
+        if(south != null){
+            if(!isLiquidAdjacent(south)){
+                boolean isNonBlock = isNonBlockAdjacent(south);
+                boolean isTranslucentOrNotFull = CubeModelFactory.isTranslucentOrNotFull(CubeModelFactory.getType(south));
+
+                if(isNonBlock)
+                    createSouthFace = true;
+                else if(isTranslucentOrNotFull)
+                    createSouthFace = true;
+            }
+        }else
+            createSouthFace = true;
+
+        boolean createEastFace = false;
+        if(east != null) {
+            if (!isLiquidAdjacent(east)) {
+                boolean isNonBlock = isNonBlockAdjacent(east);
+                boolean isTranslucentOrNotFull = CubeModelFactory.isTranslucentOrNotFull(CubeModelFactory.getType(east));
+
+                if(isNonBlock)
+                    createEastFace = true;
+                else if(isTranslucentOrNotFull)
+                    createEastFace = true;
+            }
+        }else
+            createEastFace = true;
+
+        boolean createWestFace = false;
+        if(west != null) {
+            if (!isLiquidAdjacent(west)) {
+                boolean isNonBlock = isNonBlockAdjacent(west);
+                boolean isTranslucentOrNotFull = CubeModelFactory.isTranslucentOrNotFull(CubeModelFactory.getType(west));
+
+                if(isNonBlock)
+                    createWestFace = true;
+                else if(isTranslucentOrNotFull)
+                    createWestFace = true;
+            }
+        }else
+            createWestFace = true;
+
+        boolean createDownFace = false;
+        if(down != null){
+            if(!isLiquidAdjacent(down)){
+                boolean isNonBlock = isNonBlockAdjacent(down);
+                boolean isTranslucentOrNotFull = CubeModelFactory.isTranslucentOrNotFull(CubeModelFactory.getType(down));
+
+                if(isNonBlock)
+                    createDownFace = true;
+                else if(isTranslucentOrNotFull)
+                    createDownFace = true;
+            }
+        }else
+            createDownFace = true;
+
+        boolean[] createSideFaces = new boolean[]{
+            createNorthFace, createSouthFace, createEastFace, createWestFace, createDownFace
+        };
+
+        appendLiquidBlock(new LiquidBlock(liquidNamespace, cornerHeights, hasLiquidUp, hasLiquidDown, hasLiquidNorth, hasLiquidSouth, hasLiquidWest, hasLiquidEast, createSideFaces, flow_direction, !isLiquidAdjacent || createFullBlock), y_pos, x_pos, z_pos);
 
         if(!isLiquidAdjacent || createFullBlock)
-            createBlock(liquidNamespace, cornerHeights, hasLiquidUp, hasLiquidDown, hasLiquidNorth, hasLiquidSouth, hasLiquidEast, hasLiquidWest, flow_direction, x_pos, y_pos, z_pos);
+            createBlock(liquidNamespace, cornerHeights, hasLiquidUp, hasLiquidDown, hasLiquidNorth, hasLiquidSouth, hasLiquidEast, hasLiquidWest, createSideFaces, flow_direction, x_pos, y_pos, z_pos);
 
 
 
@@ -286,7 +361,7 @@ public class LiquidCubeModel extends CubeModel {
         column.put(z_pos, liquidBlock);
     }
 
-    public void createBlock(Namespace liquidNamespace, Double[] cornerHeights, boolean hasLiquidUp, boolean hasLiquidDown, boolean hasLiquidNorth, boolean hasLiquidSouth, boolean hasLiquidEast, boolean hasLiquidWest, FLOW_DIRECTION flowDirection, int x, int y, int z){
+    public void createBlock(Namespace liquidNamespace, Double[] cornerHeights, boolean hasLiquidUp, boolean hasLiquidDown, boolean hasLiquidNorth, boolean hasLiquidSouth, boolean hasLiquidEast, boolean hasLiquidWest, boolean[] createSideFace, FLOW_DIRECTION flowDirection, int x, int y, int z){
         //Value by how much to move each vert (vert + translate)
         double translateX = x - (Constants.LOADED_SCHEMATIC.getWidth() / 2.0);
         double translateY = (z * -1.0) + ((Constants.LOADED_SCHEMATIC.getLength() / 2.0) - 1);
@@ -316,7 +391,7 @@ public class LiquidCubeModel extends CubeModel {
             CubeCorners.put("G", G);
         }
 
-        if(!hasLiquidDown) {
+        if(createSideFace[4]) {
             CubeFaces.add("down");
 
             CubeCorners.put("D", D);
@@ -326,7 +401,7 @@ public class LiquidCubeModel extends CubeModel {
         }
 
         //Check to create north face
-        if(!hasLiquidNorth && cornerHeights[0] != null && cornerHeights[1] != null){
+        if(createSideFace[0] && cornerHeights[0] != null && cornerHeights[1] != null){
             CubeFaces.add("north");
 
             CubeCorners.put("M", M);
@@ -336,7 +411,7 @@ public class LiquidCubeModel extends CubeModel {
         }
 
         //Check to create west face
-        if(!hasLiquidWest && cornerHeights[0] != null && cornerHeights[3] != null){
+        if(createSideFace[3] && cornerHeights[0] != null && cornerHeights[3] != null){
             CubeFaces.add("west");
 
             CubeCorners.put("D", D);
@@ -346,7 +421,7 @@ public class LiquidCubeModel extends CubeModel {
         }
 
         //Check to create south face
-        if(!hasLiquidSouth && cornerHeights[3] != null && cornerHeights[2] != null){
+        if(createSideFace[1] && cornerHeights[3] != null && cornerHeights[2] != null){
             CubeFaces.add("south");
 
             CubeCorners.put("A", A);
@@ -356,7 +431,7 @@ public class LiquidCubeModel extends CubeModel {
         }
 
         //Check to create east face
-        if(!hasLiquidEast && cornerHeights[1] != null && cornerHeights[2] != null){
+        if(createSideFace[2] && cornerHeights[1] != null && cornerHeights[2] != null){
             CubeFaces.add("east");
 
             CubeCorners.put("H", H);
@@ -387,6 +462,9 @@ public class LiquidCubeModel extends CubeModel {
         Integer[] materialFaces = new Integer[6];
         Boolean[] generatedFaces = new Boolean[]{false, false, false, false, false, false};
         CubeFace[] cubeFaces = new CubeFace[6];
+
+        HashedDoubleList corners = new HashedDoubleList();
+        HashedDoubleList textureCoordinates = new HashedDoubleList();
 
         //Loop through faces and add them to the material faces
         for(String face : CubeFaces){
@@ -489,25 +567,30 @@ public class LiquidCubeModel extends CubeModel {
                     break;
             }
 
-            List<Double[]> liquidCorners = new ArrayList<>();
+            List<Integer> liquidCornersIndex = new ArrayList<>();
             if(faceCorners == null)
                 continue;
 
             for(String corner : faceCorners){
-                liquidCorners.add(CubeCorners.get(corner));
+                liquidCornersIndex.add(corners.put(CubeCorners.get(corner)));
+            }
+
+            List<Integer> textureCooridnatesIndex = new ArrayList<>();
+            for(Double[] u : faceUV){
+                textureCooridnatesIndex.add(textureCoordinates.put(u));
             }
 
             generatedFaces[faceIndex] = true;
             materialFaces[faceIndex] = getMaterials().getIndex(faceMaterial);
 
             //Create face for the liquid
-            CubeFace liquidFace = new CubeFace(liquidCorners, faceUV,  faceMaterial, false);
+            CubeFace liquidFace = new CubeFace(liquidCornersIndex, textureCooridnatesIndex,  faceMaterial, false);
             cubeFaces[faceIndex] = liquidFace;
 
         }
 
         //Create liquid cube add append it to the liquids
-        Cube cube = new Cube(materialFaces, generatedFaces, cubeFaces);
+        Cube cube = new Cube(materialFaces, generatedFaces, cubeFaces, corners.toList(), textureCoordinates.toList());
         addCube(cube);
     }
 
@@ -530,7 +613,9 @@ public class LiquidCubeModel extends CubeModel {
                 (adjacent.getType().contains("button")) ||
                 (adjacent.getType().equals("skull")) ||
                 (adjacent.getType().contains("redstone_torch")) ||
-                (adjacent.getType().equals("snow_layer"));
+                (adjacent.getType().contains("door")) ||
+                (adjacent.getType().equals("snow_layer")) ||
+                (adjacent.getType().equals("barrier"));
     }
 
     /**
@@ -1105,7 +1190,7 @@ public class LiquidCubeModel extends CubeModel {
                             cornerHeights[3] = 16.0;
 
                         //Finally, create a obj from the corner heights
-                        createBlock(liquidBlock.getLiquidNamespace(), cornerHeights, liquidBlock.isLiquidUp(), liquidBlock.isLiquidDown(), liquidBlock.isLiquidNorth(), liquidBlock.isLiquidSouth(), liquidBlock.isLiquidEast(), liquidBlock.isLiquidWest(), liquidBlock.getFlowDirection(), x, y, z);
+                        createBlock(liquidBlock.getLiquidNamespace(), cornerHeights, liquidBlock.isLiquidUp(), liquidBlock.isLiquidDown(), liquidBlock.isLiquidNorth(), liquidBlock.isLiquidSouth(), liquidBlock.isLiquidEast(), liquidBlock.isLiquidWest(), liquidBlock.getCreateSideFaces(), liquidBlock.getFlowDirection(), x, y, z);
                     }
 
                 }
@@ -1159,11 +1244,13 @@ public class LiquidCubeModel extends CubeModel {
         boolean liquidWest;
         boolean liquidEast;
 
+        boolean[] createSideFaces;
+
         FLOW_DIRECTION flowDirection;
 
         boolean generated;
 
-        public LiquidBlock(Namespace liquidNamespace, Double[] cornerHeights, boolean hasLiquidUp, boolean hasLiquidDown, boolean hasLiquidNorth, boolean hasLiquidSouth, boolean hasLiquidWest, boolean hasLiquidEast, FLOW_DIRECTION flowDirection, boolean generated){
+        public LiquidBlock(Namespace liquidNamespace, Double[] cornerHeights, boolean hasLiquidUp, boolean hasLiquidDown, boolean hasLiquidNorth, boolean hasLiquidSouth, boolean hasLiquidWest, boolean hasLiquidEast, boolean[] createSideFaces, FLOW_DIRECTION flowDirection, boolean generated){
             this.liquidNamespace = liquidNamespace;
 
             nw = cornerHeights[0];
@@ -1177,6 +1264,8 @@ public class LiquidCubeModel extends CubeModel {
             liquidSouth = hasLiquidSouth;
             liquidEast = hasLiquidEast;
             liquidWest = hasLiquidWest;
+
+            this.createSideFaces = createSideFaces;
 
             this.flowDirection = flowDirection;
 
@@ -1233,6 +1322,10 @@ public class LiquidCubeModel extends CubeModel {
 
         public boolean isGenerated() {
             return generated;
+        }
+
+        public boolean[] getCreateSideFaces() {
+            return createSideFaces;
         }
     }
 }

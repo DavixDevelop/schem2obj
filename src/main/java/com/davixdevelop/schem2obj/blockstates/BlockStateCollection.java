@@ -4,6 +4,8 @@ import com.davixdevelop.schem2obj.resourceloader.ResourceLoader;
 
 import java.io.InputStream;
 import java.util.HashMap;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 /**
  * Represent a collection of Block States
@@ -11,10 +13,10 @@ import java.util.HashMap;
  */
 public class BlockStateCollection {
     //Key: block name, value: BlockStateObject
-    public HashMap<String, BlockState> blockStates;
+    public ConcurrentMap<String, BlockState> blockStates;
 
     public BlockStateCollection(){
-        blockStates = new HashMap<>();
+        blockStates = new ConcurrentHashMap<>();
     }
 
     /**

@@ -3,7 +3,9 @@ package com.davixdevelop.schem2obj.cubemodels;
 import com.davixdevelop.schem2obj.Orientation;
 import com.davixdevelop.schem2obj.cubemodels.model.CubeFace;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 /**
  * Represents a single cube in a CubeModel
@@ -14,6 +16,9 @@ public class Cube implements ICube {
     private Integer[] materialFaces;
     private Boolean[] generatedFaces;
     private CubeFace[] cubeFaces;
+
+    private List<Double[]> corners;
+    private List<Double[]> uvs;
 
     /**
      * Create new cube
@@ -29,10 +34,12 @@ public class Cube implements ICube {
      * @param generatedFaces A 6 length array that shows which faces should be exported (See Orientation.DIRECTIONS for order of faces)
      * @param cubeFaces      A 6 length array of the cube faces
      */
-    public Cube(Integer[] materialFaces, Boolean[] generatedFaces, CubeFace[] cubeFaces) {
+    public Cube(Integer[] materialFaces, Boolean[] generatedFaces, CubeFace[] cubeFaces, List<Double[]> corners, List<Double[]> textureCoordinates) {
         this.materialFaces = materialFaces;
         this.generatedFaces = generatedFaces;
         this.cubeFaces = cubeFaces;
+        this.corners = corners;
+        uvs = textureCoordinates;
     }
 
     public Cube() {
@@ -43,6 +50,16 @@ public class Cube implements ICube {
     @Override
     public CubeFace[] getFaces() {
         return cubeFaces;
+    }
+
+    @Override
+    public List<Double[]> getCorners() {
+        return corners;
+    }
+
+    @Override
+    public List<Double[]> getTextureCoordinates() {
+        return uvs;
     }
 
     @Override
@@ -86,6 +103,14 @@ public class Cube implements ICube {
         generatedFaces = Arrays.copyOf(cloneCube.generatedFaces, 6);
 
         cubeFaces = new CubeFace[6];
+
+        corners = new ArrayList<>();
+        for(Double[] v : cloneCube.corners)
+            corners.add(Arrays.copyOf(v, v.length));
+
+        uvs = new ArrayList<>();
+        for(Double[] u : cloneCube.uvs)
+            uvs.add(Arrays.copyOf(u, u.length));
 
         for (int x = 0; x < 6; x++) {
             CubeFace face = cloneCube.cubeFaces[x];

@@ -28,24 +28,6 @@ public class SchematicHolder {
         return schematic.getLength();
     }
 
-    public void setCurrentBlockPosition(int x, int y, int z){
-        posX = x;
-        posY = y;
-        posZ = z;
-    }
-
-    public int getPosX() {
-        return posX;
-    }
-
-    public int getPosY() {
-        return posY;
-    }
-
-    public int getPosZ() {
-        return posZ;
-    }
-
     public int getOriginX(){return schematic.originX;}
     public int getOriginY(){return schematic.originY;}
     public int getOriginZ(){return schematic.originZ;}
@@ -59,7 +41,7 @@ public class SchematicHolder {
 
             final int index = x + (y * schematic.getLength() + z) * schematic.getWidth();
 
-            int blockID = schematic.getBlocks()[index];
+            int blockID = schematic.getBlock(index);
 
             int meta = schematic.getData()[index];
 
@@ -67,10 +49,23 @@ public class SchematicHolder {
             if(blockID < 0)
                 blockID += 256;
 
-            return getNamespace(Integer.toString(blockID), meta);
+            Namespace namespace = getNamespace(Integer.toString(blockID), meta);
+            namespace.setPosition(new Integer[]{x, y, z});
+
+            return namespace;
         }
 
         return null;
+    }
+
+    public boolean isAirOrLiquid(int blockIndex){
+        int ID = schematic.getBlock(blockIndex);
+        return ID == 0 || (ID >= 8 && ID <= 11);
+    }
+
+    public boolean isLiquid(int blockIndex){
+        int ID = schematic.getBlock(blockIndex);
+        return (ID >= 8 && ID <= 11);
     }
 
     public int getEntitiesCount(){
@@ -78,7 +73,12 @@ public class SchematicHolder {
     }
 
     public Namespace getEntityNamespace(int entityIndex){
-        return Constants.NAMESPACE_MAPPING.getNamespace(getEntityValues(entityIndex).getString("id"));
+        Namespace namespace = Constants.NAMESPACE_MAPPING.getNamespace(getEntityValues(entityIndex).getString("id"));
+        if(namespace == null)
+            return null;
+
+        namespace.setPosition(new Integer[]{entityIndex});
+        return namespace;
     }
 
     public EntityValues getEntityValues(int entityIndex){

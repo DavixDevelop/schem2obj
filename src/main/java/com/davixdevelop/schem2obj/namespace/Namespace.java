@@ -25,6 +25,8 @@ public class Namespace {
 
     DISPLAY_MODE displayMode;
 
+    Integer[] position;
+
     public Namespace(String id, String domain, String type, Map<Integer, BlockStateNamespace> blockStates, Integer defaultMetaID, List<String> validTileEntityKeys, EntityValues defaultTileEntityValues) {
         this.id = id;
         this.domain = domain;
@@ -106,6 +108,29 @@ public class Namespace {
         this.displayMode = displayMode;
     }
 
+    public void setPosition(Integer[] position) {
+        this.position = position;
+    }
+
+    public Integer getPosition(String ...axis) {
+        if(position == null)
+            return null;
+
+        if(position.length == 1 || axis.length == 0)
+            return position[0];
+
+        switch (axis[0]){
+            case "X":
+                return position[0];
+            case "Y":
+                return position[1];
+            case "Z":
+                return position[2];
+        }
+
+        return null;
+    }
+
     public Namespace duplicate(){
         Map<Integer, BlockStateNamespace> cloneBlockstates = new LinkedHashMap<>();
         for(Integer metaID : blockStates.keySet()){
@@ -124,6 +149,9 @@ public class Namespace {
         }
 
         clone.displayMode = DISPLAY_MODE.valueOf(displayMode.toString());
+
+        if(position != null)
+            clone.position = Arrays.copyOf(position, position.length);
 
         return clone;
     }

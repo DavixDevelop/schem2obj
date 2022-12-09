@@ -1,3 +1,7 @@
+- [0.6](https://github.com/DavixDevelop/schem2obj/releases/tag/v0.6-alpha)
+  - Memory optimized generating and converting of blocks, to enable converting larger schematics
+  - The exported OBJ file (if the optional parameter `-allBlocks` isn't set), now consists of only one object, 
+    as to save on storage space and enable faster loading of the OBJ file
 - [0.5](https://github.com/DavixDevelop/schem2obj/releases/tag/v0.5-alpha)
   - Added support for following Tile entities: 
       - Banners (Colored and patterned)

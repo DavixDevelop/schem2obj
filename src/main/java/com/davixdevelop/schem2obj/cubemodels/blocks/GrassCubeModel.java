@@ -52,7 +52,7 @@ public class GrassCubeModel extends BlockCubeModel {
     public Map<String, Object> getKey(Namespace namespace) {
 
         //Check if the above block is a snow layer
-        Namespace aboveBlock = Constants.LOADED_SCHEMATIC.getNamespace(Constants.LOADED_SCHEMATIC.getPosX(), Constants.LOADED_SCHEMATIC.getPosY() + 1, Constants.LOADED_SCHEMATIC.getPosZ());
+        Namespace aboveBlock = Constants.LOADED_SCHEMATIC.getNamespace(namespace.getPosition("X"), namespace.getPosition("Y") + 1, namespace.getPosition("Z"));
         if(aboveBlock != null){
             if(aboveBlock.getType().equals("snow_layer"))
                 namespace.getDefaultBlockState().setData("snowy", "true");

@@ -30,9 +30,10 @@ public class DoorCubeModel extends BlockCubeModel {
         if(namespace.getDefaultBlockState().getData("half").equals("upper")){
             //Get the block bellow the upper part of the door
             Namespace lowerAdjacentBlock = Constants.LOADED_SCHEMATIC.getNamespace(
-                    Constants.LOADED_SCHEMATIC.getPosX(),
-                    Constants.LOADED_SCHEMATIC.getPosY() - 1,
-                    Constants.LOADED_SCHEMATIC.getPosZ());
+                    namespace.getPosition("X"),
+                    namespace.getPosition("Y") - 1,
+                    namespace.getPosition("Z")
+                    );
             //Check if there is any block bellow
             if(lowerAdjacentBlock != null){
                 //Check if the block bellow is also door of the same variant

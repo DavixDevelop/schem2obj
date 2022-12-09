@@ -9,6 +9,7 @@ import com.davixdevelop.schem2obj.cubemodels.model.CubeFace;
 import com.davixdevelop.schem2obj.materials.IMaterial;
 import com.davixdevelop.schem2obj.materials.Material;
 import com.davixdevelop.schem2obj.materials.SEUSMaterial;
+import com.davixdevelop.schem2obj.models.HashedDoubleList;
 import com.davixdevelop.schem2obj.models.VariantModels;
 import com.davixdevelop.schem2obj.namespace.BlockStateNamespace;
 import com.davixdevelop.schem2obj.namespace.Namespace;
@@ -441,14 +442,15 @@ public class CubeModelUtility {
         //Loop through cubes
         for(ICube cube : cubes){
             CubeFace[] cubeFaces = cube.getFaces();
+            List<Double[]> corners = cube.getCorners();
 
             for (CubeFace cubeFace : cubeFaces) {
                 if (cubeFace != null) {
-                    List<Double[]> vertices = cubeFace.getCorners();
+                    List<Integer> verticesIndex = cubeFace.getCorners();
 
                     //Sum each vertex and translate
-                    for (int c = 0; c < vertices.size(); c++)
-                        vertices.set(c, ArrayVector.add(vertices.get(c), translate));
+                    for (Integer index : verticesIndex)
+                        corners.set(index, ArrayVector.add(corners.get(index), translate));
                 }
             }
         }
@@ -479,19 +481,20 @@ public class CubeModelUtility {
             //Loop through cubes
             for(ICube cube : cubes){
                 CubeFace[] cubeFaces = cube.getFaces();
+                List<Double[]> corners = cube.getCorners();
 
                 for (CubeFace cubeFace : cubeFaces) {
                     if (cubeFace != null) {
-                        List<Double[]> vertices = cubeFace.getCorners();
+                        List<Integer> verticesIndex = cubeFace.getCorners();
 
                         //Sum each vertex on each axis
-                        for (int c = 0; c < vertices.size(); c++) {
+                        for (Integer index : verticesIndex) {
                             if (rotationX != null)
-                                vertices.set(c, rotatePoint(vertices.get(c), rotationX, origin));
+                                corners.set(index, rotatePoint(corners.get(index), rotationX, origin));
                             if (rotationY != null)
-                                vertices.set(c, rotatePoint(vertices.get(c), rotationY, origin));
+                                corners.set(index, rotatePoint(corners.get(index), rotationY, origin));
                             if (rotationZ != null)
-                                vertices.set(c, rotatePoint(vertices.get(c), rotationZ, origin));
+                                corners.set(index, rotatePoint(corners.get(index), rotationZ, origin));
                         }
                     }
                 }
@@ -511,30 +514,15 @@ public class CubeModelUtility {
         //Loop through cubes
         for(ICube cube : cubes){
             CubeFace[] cubeFaces = cube.getFaces();
+            List<Double[]> corners = cube.getCorners();
 
             for (CubeFace cubeFace : cubeFaces) {
                 if (cubeFace != null) {
-                    List<Double[]> vertices = cubeFace.getCorners();
+                    List<Integer> verticesIndex = cubeFace.getCorners();
 
                     //Sum each vertex and translate
-                    for (int c = 0; c < vertices.size(); c++) {
-                        //Double[] v = vertices.get(c);
-                        /*for(int vi = 0; vi < 3; vi++){
-                            if (xyzScale[vi] > 0.0) {
-                                if(!origin[vi].equals(v[vi])){
-                                    if(v[vi] > origin[vi]){
-                                        Double l = Math.abs(v[vi] - origin[vi]);
-                                        Double l2 = l * xyzScale[vi];
-                                        v[vi] = round(origin[vi] + l2, 6);
-                                    }else{
-                                        Double l = Math.abs(origin[vi] - v[vi]);
-                                        Double l2 = l * xyzScale[vi];
-                                        v[vi] = round(origin[vi] - l2, 6);
-                                    }
-                                }
-                            }
-                        }*/
-                        vertices.set(c, scalePoint(vertices.get(c), xyzScale[0], xyzScale[1], xyzScale[2], origin));
+                    for (Integer index : verticesIndex) {
+                        corners.set(index, scalePoint(corners.get(index), xyzScale[0], xyzScale[1], xyzScale[2], origin));
                     }
                 }
             }
@@ -640,9 +628,10 @@ public class CubeModelUtility {
     public static void getAdjacentNamespace_NSWE(Namespace modified, IAdjacentCheck check){
         //Check north
         Namespace adjacentBlock = Constants.LOADED_SCHEMATIC.getNamespace(
-                Constants.LOADED_SCHEMATIC.getPosX(),
-                Constants.LOADED_SCHEMATIC.getPosY(),
-                Constants.LOADED_SCHEMATIC.getPosZ() - 1);
+                modified.getPosition("X"),
+                modified.getPosition("Y"),
+                modified.getPosition("Z") - 1
+                );
         if(adjacentBlock != null){
             if(check.checkCollision(adjacentBlock, 0, "north"))
                 modified.getDefaultBlockState().getData().put("north", "true");
@@ -650,9 +639,9 @@ public class CubeModelUtility {
 
         //Check south
         adjacentBlock = Constants.LOADED_SCHEMATIC.getNamespace(
-                Constants.LOADED_SCHEMATIC.getPosX(),
-                Constants.LOADED_SCHEMATIC.getPosY(),
-                Constants.LOADED_SCHEMATIC.getPosZ() + 1);
+                modified.getPosition("X"),
+                modified.getPosition("Y"),
+                modified.getPosition("Z") + 1);
         if(adjacentBlock != null){
             if(check.checkCollision(adjacentBlock, 0, "south"))
                 modified.getDefaultBlockState().getData().put("south", "true");
@@ -660,9 +649,9 @@ public class CubeModelUtility {
 
         //Check west
         adjacentBlock = Constants.LOADED_SCHEMATIC.getNamespace(
-                Constants.LOADED_SCHEMATIC.getPosX() - 1,
-                Constants.LOADED_SCHEMATIC.getPosY(),
-                Constants.LOADED_SCHEMATIC.getPosZ());
+                modified.getPosition("X") - 1,
+                modified.getPosition("Y"),
+                modified.getPosition("Z"));
         if(adjacentBlock != null){
             if(check.checkCollision(adjacentBlock, 0, "west"))
                 modified.getDefaultBlockState().getData().put("west", "true");
@@ -670,9 +659,9 @@ public class CubeModelUtility {
 
         //Check east
         adjacentBlock = Constants.LOADED_SCHEMATIC.getNamespace(
-                Constants.LOADED_SCHEMATIC.getPosX() + 1,
-                Constants.LOADED_SCHEMATIC.getPosY(),
-                Constants.LOADED_SCHEMATIC.getPosZ());
+                modified.getPosition("X") + 1,
+                modified.getPosition("Y"),
+                modified.getPosition("Z"));
         if(adjacentBlock != null){
             if(check.checkCollision(adjacentBlock, 0, "east"))
                 modified.getDefaultBlockState().getData().put("east", "true");
@@ -686,9 +675,9 @@ public class CubeModelUtility {
         List<String> checkOrder = adjacentBlockStates.getCheckOrder();
 
         for(String orientation : checkOrder){
-            int x = Constants.LOADED_SCHEMATIC.getPosX();
-            int y = Constants.LOADED_SCHEMATIC.getPosY();
-            int z = Constants.LOADED_SCHEMATIC.getPosZ();
+            int x = namespace.getPosition("X");
+            int y = namespace.getPosition("Y");
+            int z = namespace.getPosition("Z");
 
 
             String orientation_raw = (orientation.endsWith("-1") || orientation.endsWith("+1")) ? orientation.substring(0, orientation.length() - 2) : orientation;
@@ -794,9 +783,9 @@ public class CubeModelUtility {
         Double[] a = vertices.get(0);
         Double[] b = vertices.get(1);
         Double[] c = vertices.get(2);
-        Double[] face_normal = ArrayVector.multiply(ArrayVector.subtract(b, a), ArrayVector.subtract(c, a));
+        Double[] face_normal = ArrayVector.normalize(ArrayVector.multiply(ArrayVector.subtract(b, a), ArrayVector.subtract(c, a)));
 
-        //First 3 values is the face of the normal, while the
+        //First 3 values is the face of the normal, while the others are the origin
         plane[0] = face_normal[0];
         plane[1] = face_normal[1];
         plane[2] = face_normal[2];
@@ -852,11 +841,17 @@ public class CubeModelUtility {
             //Get all faces of cube
             CubeFace[] cubeFaces = cube.getFaces();
 
+            List<Double[]> corners = cube.getCorners();
+
             for(CubeFace face : cubeFaces){
                 if(face == null)
                     continue;
 
-                List<Double[]> faceVertices2 = face.getCorners();
+                List<Integer> faceIndexVertices = face.getCorners();
+
+                List<Double[]> faceVertices2 = new ArrayList<>();
+                for(Integer v : faceIndexVertices)
+                    faceVertices2.add(corners.get(v));
 
                 Double[] facePlane2 = new Double[6];
                 int planeIndex2 = getFacePlane(facePlane2, faceVertices2);
@@ -867,7 +862,8 @@ public class CubeModelUtility {
                         increased = true;
                         facePlane[planeIndex] += OVERLAP_SIZE;
                     }
-                }else{
+                }else if(planeIndex == -1 && planeIndex2 == -2){
+
                     //If both faces have the same normal, and origin
                     if(facePlane[0].equals(facePlane2[0]) && facePlane[1].equals(facePlane2[1]) && facePlane[2].equals(facePlane2[2]) &&
                             facePlane[3].equals(facePlane2[3]) && facePlane[4].equals(facePlane2[4]) && facePlane[5].equals(facePlane2[5])){
@@ -1044,6 +1040,11 @@ public class CubeModelUtility {
         Boolean[] generatedFaces = new Boolean[]{false, false, false, false, false, false};
         //Array to store cube faces (See Orientation.DIRECTIONS for order of faces)
         CubeFace[] cubeFaces = new CubeFace[6];
+
+        //Hashed double list to store all the corners the cube uses
+        HashedDoubleList corners = new HashedDoubleList();
+        //Hashed double list to store all texture coordinates the cube uses
+        HashedDoubleList textureCoordinates = new HashedDoubleList();
 
         //Check if element has rotation
         if (element.getRotation() != null) {
@@ -1428,10 +1429,16 @@ public class CubeModelUtility {
 
             //Get the corners names for the original face orientation
             String[] cornerNames = getCornerPerOrientation(Orientation.getOrientation(faceName));
-            //Create Double[] list to store the face vertices
-            List<Double[]> faceCorners = new ArrayList<>();
+            //Create Integer list to store the index vertices of the face
+            List<Integer> indexCorners = new ArrayList<>();
             for(String cornerName : cornerNames){
-                faceCorners.add(cubeCorners.get(cornerName));
+                indexCorners.add(corners.put(cubeCorners.get(cornerName)));
+            }
+
+            //Create Integer list to store the index texture coordinates of the face
+            List<Integer> indexTextureCoordinates = new ArrayList<>();
+            for(Double[] u : faceUV){
+                indexTextureCoordinates.add(textureCoordinates.put(u));
             }
 
             //Mark which material the face uses
@@ -1440,12 +1447,12 @@ public class CubeModelUtility {
             generatedFaces[faceIndex] = true;
 
             //Create cube face and append it to the cube
-            CubeFace cubeFace = new CubeFace(faceCorners, faceUV, faceMaterial, isCullFace);
+            CubeFace cubeFace = new CubeFace(indexCorners, indexTextureCoordinates, faceMaterial, isCullFace);
             cubeFaces[faceIndex] = cubeFace;
         }
 
         //Create cube from cube faces
-        Cube cube = new Cube(materialFaces, generatedFaces, cubeFaces);
+        Cube cube = new Cube(materialFaces, generatedFaces, cubeFaces, corners.toList(), textureCoordinates.toList());
         //Append the cube to the cube model
         cubeModel.addCube(cube);
     }
@@ -1551,6 +1558,11 @@ public class CubeModelUtility {
                         //Array to store cube faces (See Orientation.DIRECTIONS for order of faces)
                         CubeFace[] cubeFaces = new CubeFace[6];
 
+                        //Hashed double list to store all the corners the cube uses
+                        HashedDoubleList corners = new HashedDoubleList();
+                        //Hashed double list to store all texture coordinates the cube uses
+                        HashedDoubleList textureCoordinates = new HashedDoubleList();
+
                         Set<String> faces = new HashSet<>();
                         faces.add("south");
                         faces.add("north");
@@ -1584,22 +1596,27 @@ public class CubeModelUtility {
 
                             //Get the corners names for the original face orientation
                             String[] cornerNames = getCornerPerOrientation(Orientation.getOrientation(faceName));
-                            //Create Double[] list to store the face vertices
-                            List<Double[]> faceCorners = new ArrayList<>();
+                            //Create Integer list to store the indexes of the vertices the face uses
+                            List<Integer> indexCorners = new ArrayList<>();
                             for(String cornerName : cornerNames){
-                                faceCorners.add(ArrayUtility.cloneArray(cubeCorners.get(cornerName)));
+                                indexCorners.add(corners.put(ArrayUtility.cloneArray(cubeCorners.get(cornerName))));
                             }
+
+                            //Create Integer list to store the indexes of the texture coordinates the face uses
+                            List<Integer> indexTextureCoordinates = new ArrayList<>();
+                            for(Double[] u : faceUV)
+                                indexTextureCoordinates.add(textureCoordinates.put(u));
 
                             //Mark which material the face uses
                             materialFaces[faceIndex] = 0;
 
                             //Create cube face and append it to the cube
-                            CubeFace cubeFace = new CubeFace(faceCorners, faceUV, iconPath, false);
+                            CubeFace cubeFace = new CubeFace(indexCorners, indexTextureCoordinates, iconPath, false);
                             cubeFaces[faceIndex] = cubeFace;
                         }
 
                         //Create cube from cube faces
-                        Cube cube = new Cube(materialFaces, generatedFaces, cubeFaces);
+                        Cube cube = new Cube(materialFaces, generatedFaces, cubeFaces, corners.toList(), textureCoordinates.toList());
                         //Append the cube to the cube model
                         itemCubeModel.addCube(cube);
                     }

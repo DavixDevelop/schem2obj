@@ -38,13 +38,26 @@ public class WavefrontObjectFactory {
 
             //Get which faces should be exported
             Boolean[] generatedFaces = cube.getGeneratedFaces();
+
+            List<Double[]> cubeCorners= cube.getCorners();
+            List<Double[]> cubeTextureCoordinates = cube.getTextureCoordinates();
+
+            Integer[] materialIndex =  cube.getMaterialFaces();
+
             for(int c = 0; c < 6; c++){
                 //Check if face should be exported
                 if(generatedFaces[c]){
                     CubeFace cubeFace = cubeFaces[c];
 
-                    List<Double[]> faceUv = cubeFace.getUv();
-                    List<Double[]> faceVertices = cubeFace.getCorners();
+                    List<Integer> faceUVIndex = cubeFace.getUv();
+                    List<Double[]> faceUv = new ArrayList<>();
+                    for(Integer index : faceUVIndex)
+                        faceUv.add(cubeTextureCoordinates.get(index));
+
+                    List<Integer> verticesIndex = cubeFace.getCorners();
+                    List<Double[]> faceVertices = new ArrayList<>();
+                    for(Integer index : verticesIndex)
+                        faceVertices.add(cubeCorners.get(index));
 
                     Integer[] uvIndex = new Integer[4];
                     Integer[] vertIndex = new Integer[4];
@@ -52,22 +65,13 @@ public class WavefrontObjectFactory {
                     //Append the uv's to textureCoordinates
                     for(int u = 0; u < faceUv.size(); u++){
                         Double[] uv = faceUv.get(u);
-                        if (textureCoordinates.containsKey(uv)) {
-                            uvIndex[u] = textureCoordinates.getIndex(uv);
-                        } else {
-                            uvIndex[u] = textureCoordinates.put(uv);
-                        }
                         uvIndex[u] = textureCoordinates.put(uv);
                     }
 
                     //Append the face vertices to vertices
                     for(int v = 0; v < faceVertices.size(); v++){
                         Double[] vert = faceVertices.get(v);
-                        if (vertices.containsKey(vert)) {
-                            vertIndex[v] = vertices.getIndex(vert);
-                        } else {
-                            vertIndex[v] = vertices.put(vert);
-                        }
+                        vertIndex[v] = vertices.put(vert);
                     }
 
                     //Set the face indices
@@ -81,8 +85,10 @@ public class WavefrontObjectFactory {
                         faceIndices.add(indices);
                     }
 
+
+
                     //Add the face indices to faces
-                    ArrayList<ArrayList<Integer[]>> materialFaces = faces.get(cubeFace.getMaterial());
+                    ArrayList<ArrayList<Integer[]>> materialFaces = faces.get(cubeModelMaterials.get(materialIndex[c]));
                     materialFaces.add(faceIndices);
 
                     //Mark that the cube has faces present

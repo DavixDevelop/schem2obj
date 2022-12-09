@@ -47,6 +47,10 @@ public class Schematic implements java.io.Serializable {
         return blocks;
     }
 
+    public int getBlock(int index){
+        return blocks[index];
+    }
+
     public int[] getData() {
         return data;
     }

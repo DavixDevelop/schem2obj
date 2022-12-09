@@ -5,6 +5,8 @@ import com.davixdevelop.schem2obj.resourceloader.ResourceLoader;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 /**
  * Represent a collection of Block Models
@@ -12,10 +14,10 @@ import java.util.HashMap;
  */
 public class BlockModelCollection {
 
-    HashMap<String, BlockModel> blocksModels;
+    ConcurrentMap<String, BlockModel> blocksModels;
 
     public BlockModelCollection(){
-        blocksModels = new HashMap<>();
+        blocksModels = new ConcurrentHashMap<>();
     }
 
     /**

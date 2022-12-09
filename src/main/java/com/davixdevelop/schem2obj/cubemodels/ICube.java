@@ -3,6 +3,8 @@ package com.davixdevelop.schem2obj.cubemodels;
 import com.davixdevelop.schem2obj.Orientation;
 import com.davixdevelop.schem2obj.cubemodels.model.CubeFace;
 
+import java.util.List;
+
 /**
  * A interface for a Cube in a CubeModel
  *
@@ -15,6 +17,19 @@ public interface ICube {
      * @return A 6 length array of all cube faces (See Orientation.DIRECTIONS for order of faces)
      */
     CubeFace[] getFaces();
+
+    /**
+     * Get list of vertices the cube uses
+     * @return Max 8 size list of vertices
+     */
+    List<Double[]> getCorners();
+
+    /**
+     * Get list of uv's the cube uses
+     * @return List of uv's the cube uses
+     */
+    List<Double[]> getTextureCoordinates();
+
 
     void setCubeFace(int index, CubeFace cubeFace);
 

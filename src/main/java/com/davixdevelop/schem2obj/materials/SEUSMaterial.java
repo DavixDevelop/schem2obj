@@ -210,7 +210,7 @@ public class SEUSMaterial extends Material {
         if(hasNormal){
             matLines.add(String.format("map_Kn %s/%s_n.png", textureFolderName, getName()));
             matLines.add(String.format("norm %s/%s_n.png", textureFolderName, getName()));
-            matLines.add(String.format("map_bump -bm 1.0 %s/%s_.png", textureFolderName, getName()));
+            matLines.add(String.format("map_bump -bm 1.0 %s/%s_n.png", textureFolderName, getName()));
         }
 
         if(hasSpec){

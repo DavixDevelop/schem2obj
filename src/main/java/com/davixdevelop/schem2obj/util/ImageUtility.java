@@ -702,5 +702,9 @@ public class ImageUtility {
         return stats;
     }
 
+    public static void clearData(){
+        LOADED_ALPHA_IMAGES.clear();
+    }
+
 
 }
