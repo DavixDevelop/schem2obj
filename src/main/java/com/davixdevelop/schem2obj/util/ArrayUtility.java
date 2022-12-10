@@ -91,9 +91,6 @@ public class ArrayUtility {
         if(org == null)
             return null;
 
-        Double[] clone = new Double[org.length];
-        clone = Arrays.copyOf(org, org.length);
-
-        return clone;
+        return Arrays.copyOf(org, org.length);
     }
 }
