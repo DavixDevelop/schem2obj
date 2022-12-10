@@ -47,7 +47,10 @@ public class FenceCubeModel extends BlockCubeModel implements IAdjacentCheck {
         if(adjacentBlock.getDomain().equals("builtin"))
             return false;
 
-        return CubeModelFactory.getType(adjacentBlock) instanceof BlockCubeModel;
+        if(CubeModelFactory.isTranslucentOrNotFull(adjacentBlock.getType()))
+            return false;
+
+        return !CubeModelFactory.isTranslucentOrNotFull(CubeModelFactory.getType(adjacentBlock));
     }
 
     @Override

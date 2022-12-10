@@ -600,22 +600,11 @@ public class LiquidCubeModel extends CubeModel {
      * @return True if adjacent block is a non block, else false
      */
     public boolean isNonBlockAdjacent(Namespace adjacent){
-        return (adjacent.getType().equals("air")) ||
-                (adjacent.getType().equals("carpet")) ||
-                (adjacent.getType().equals("end_rod")) ||
-                (adjacent.getType().equals("sapling")) ||
-                (adjacent.getType().equals("double_plant")) ||
-                (adjacent.getType().contains("_flower")) ||
-                (adjacent.getType().contains("flower_")) ||
-                (adjacent.getType().equals("lever")) ||
-                (adjacent.getType().contains("_comparator")) ||
-                (adjacent.getType().contains("_repeater")) ||
-                (adjacent.getType().contains("button")) ||
-                (adjacent.getType().equals("skull")) ||
-                (adjacent.getType().contains("redstone_torch")) ||
-                (adjacent.getType().contains("door")) ||
-                (adjacent.getType().equals("snow_layer")) ||
-                (adjacent.getType().equals("barrier"));
+        if(adjacent.getType().equals("slime") || adjacent.getType().equals("grass_path"))
+            return false;
+
+
+        return CubeModelFactory.isTranslucentOrNotFull(adjacent.getType());
     }
 
     /**

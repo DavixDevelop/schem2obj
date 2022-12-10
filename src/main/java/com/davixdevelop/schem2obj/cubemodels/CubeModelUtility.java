@@ -1067,15 +1067,20 @@ public class CubeModelUtility {
                     cubeCorners.put(corner, rotatePoint(cubeCorners.get(corner), matrixRotation, rotation_origin));
 
                 if(cubeRotation.getRescale()){
+
+                    Double scale_x = null;
+                    Double scale_y = null;
+                    Double scale_z = null;
+
+                    double absRot = Math.abs(angle);
+
                     //The min/max values (points) of axis
                     Double[] min_x = null;
                     Double[] max_x = null;
                     Double[] min_y = null;
                     Double[] max_y = null;
-                    Double[] min_z = null;
-                    Double[] max_z = null;
 
-                    //Find min/max values of axis
+                    //Find min/max values of x and y axis
                     for(String corner : cubeCorners.keySet()){
                         Double[] vert = cubeCorners.get(corner);
 
@@ -1084,8 +1089,6 @@ public class CubeModelUtility {
                             max_x = min_x;
                             min_y = vert;
                             max_y = min_y;
-                            min_z = vert;
-                            max_z = min_z;
                         }else{
                             if(vert[0] > max_x[0])
                                 max_x = vert;
@@ -1096,150 +1099,54 @@ public class CubeModelUtility {
                                 max_y = vert;
                             if(vert[1] < min_y[1])
                                 min_y = vert;
-
-                            if(vert[2] > max_z[2])
-                                max_z = vert;
-                            if(vert[2] < min_z[2])
-                                min_z = vert;
                         }
                     }
 
-                    Double scale_x = null;
-                    Double scale_y = null;
-                    Double scale_z = null;
-
-                    //Calculate by how much to scale (multiply) each point on each axis to get a full block
                     switch (axis){
                         case "X":
-                            //If element has more than one face, calculate the pre-scale hypotenuse based on the entire cube
-                            //Else calculate it based on the face
-                            if(element.getFaces().size() > 1) {
-                                if (max_z != null){
-
-                                    double desiredHypotenuse = 1.0 / Math.cos(Math.toRadians(angle));
-                                    double pre_scaleHypotenuse = (max_z[1] - min_z[1]) / Math.cos(Math.toRadians(angle));
-                                    scale_y = desiredHypotenuse / pre_scaleHypotenuse;
+                        case "Z":
+                            if(max_y != null) {
+                                //Get length of cube
+                                Double length = Math.abs(max_y[1] - min_y[1]);
+                                /*  / |
+                                   /  |
+                                c /   |
+                                 /    |
+                                /_____|
+                                 width
+                                 */
+                                //Calculate the hypotenuse of the rotated length
+                                Double c = length / Math.cos(Math.toRadians(absRot));
+                                if(axis.equals("X")) {
+                                    scale_y = c / length;
                                     scale_z = scale_y;
                                     scale_x = 1.0;
+                                }else {
+                                    scale_x = c / length;
+                                    scale_y = scale_x;
+                                    scale_z = 1.0;
                                 }
+
                             }
-                            else {
-                                String faceOrientation = element.getFaces().keySet().stream().findFirst().get();
-                                switch (faceOrientation){
-                                    case "up":
-                                    case "down":
-                                    case "east":
-                                    case "west":
-                                        if(min_y != null) {
-                                            //Get the line segment end points of the face, when viewing the face straight on from x axis (the abscissa is the y axis, and the ordinate is the z axis)
-                                    /*-------------
-                                      | B1        |
-                                      |   .       |
-                                      |    .      |
-                                      |     A1    |
-                                      -------------
-                                     */
-                                            Double[] A1 = new Double[]{min_y[1], min_z[2]};
-                                            Double[] B1 = new Double[]{max_y[1], max_z[2]};
-
-                                            Double[] A = new Double[]{0.0, 0.0};
-                                            Double[] B = new Double[]{0.0, 0.0};
-
-                                            getBoundingLineSegment(A1, B1, A, B);
-                                            //Replace the y and z values of the faces, with the A and B points
-
-                                            for (String corner : cubeCorners.keySet()) {
-                                                Double[] vert = cubeCorners.get(corner);
-                                                if (vert[1].equals(min_y[1]))
-                                                    vert[1] = A[0];
-                                                else if (vert[1].equals(max_y[1]))
-                                                    vert[1] = B[0];
-
-                                                if (vert[2].equals(min_z[2]))
-                                                    vert[2] = A[1];
-                                                else if (vert[2].equals(max_z[1]))
-                                                    vert[2] = B[1];
-                                            }
-                                        }
-                                    case "north":
-                                    case "south":
-                                        if(max_y != null) {
-                                            scale_y = 1.0 / (max_y[1] - min_y[1]);
-                                            scale_z = 1.0 / (max_z[2] - min_z[2]);
-                                            scale_x = 1.0;
-                                        }
-                                }
-                            }
-
-
                             break;
                         case "Y":
-                            if(element.getFaces().size() > 1) {
-                                if(max_z != null) {
-
-                                    double desiredHypotenuse = 1.0 / Math.cos(Math.toRadians(angle));
-                                    double pre_scaleHypotenuse = (max_z[0] - min_z[0]) / Math.cos(Math.toRadians(angle));
-
-                                    scale_x = desiredHypotenuse / pre_scaleHypotenuse;
-                                    scale_z = scale_x;
-                                    scale_y = 1.0;
-                                }
-                            }else {
-                                String faceOrientation = element.getFaces().keySet().stream().findFirst().get();
-                                switch (faceOrientation){
-                                    case "up":
-                                    case "down":
-                                    case "south":
-                                    case "north":
-                                        if(min_x != null) {
-                                            //Get the line segment end points of the face, when viewing the face straight on from y axis (the abscissa is the x axis, and the ordinate is the z axis)
-                                    /*-------------
-                                      | B1        |
-                                      |   .       |
-                                      |    .      |
-                                      |     A1    |
-                                      -------------
-                                     */
-                                            Double[] A1 = new Double[]{min_x[0], min_z[2]};
-                                            Double[] B1 = new Double[]{max_x[0], max_z[2]};
-
-                                            Double[] A = new Double[]{0.0, 0.0};
-                                            Double[] B = new Double[]{0.0, 0.0};
-
-                                            getBoundingLineSegment(A1, B1, A, B);
-                                            //Replace the y and z values of the faces, with the A and B points
-
-                                            for (String corner : cubeCorners.keySet()) {
-                                                Double[] vert = cubeCorners.get(corner);
-                                                if (vert[0].equals(min_x[0]))
-                                                    vert[0] = A[0];
-                                                else if (vert[0].equals(max_x[0]))
-                                                    vert[0] = B[0];
-
-                                                if (vert[2].equals(min_z[2]))
-                                                    vert[2] = A[1];
-                                                else if (vert[2].equals(max_z[1]))
-                                                    vert[2] = B[1];
-                                            }
-                                        }
-                                    case "west":
-                                    case "east":
-                                        if(min_x != null) {
-                                            scale_x = 1.0 / (max_x[0] - min_x[0]);
-                                            scale_z = 1.0 / (max_z[2] - min_z[2]);
-                                            scale_y = 1.0;
-                                        }
-                                }
-                            }
-                            break;
-                        case "Z":
-                            if(min_x != null) {
-                                scale_x = 1.0 / (max_x[0] - min_x[0]);
-                                scale_y = 1.0 / (max_y[1] - min_y[1]);
-                                scale_z = 1.0;
+                            if(max_x != null) {
+                                //Get width of cube
+                                Double width = Math.abs(max_x[0] - min_x[0]);
+                                /*  / |
+                                   /  |
+                                c /   |
+                                 /    |
+                                /_____|
+                                 width
+                                 */
+                                //Calculate the hypotenuse of the rotated width
+                                Double c = width / Math.cos(Math.toRadians(absRot));
+                                scale_x = c / width;
+                                scale_z = scale_x;
+                                scale_y = 1.0;
                             }
 
-                            break;
                     }
 
                     if(scale_x != null) {
@@ -1253,7 +1160,6 @@ public class CubeModelUtility {
 
                         }
                     }
-
                 }
             }
 

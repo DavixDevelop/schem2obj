@@ -309,6 +309,9 @@ public class CubeModelFactory {
         if(blockNamespace.getResource().contains("door"))
             return new DoorCubeModel();
 
+        if(blockNamespace.getResource().contains("leaves"))
+            return new LeavesCubeModel();
+
 
         switch (blockNamespace.getType()) {
             case "grass":
@@ -349,6 +352,10 @@ public class CubeModelFactory {
                 return new TrappedChestCubeModel();
             case "ender_chest":
                 return new EnderChestCubeMode();
+            case "tallgrass":
+                return new TallGrassCubeModel();
+            case "double_plant":
+                return new DoublePlantCubeModel();
             default:
                 return new BlockCubeModel();
 
@@ -369,19 +376,38 @@ public class CubeModelFactory {
                 (object instanceof DoorCubeModel) ||
                 (object instanceof FireCubeModel) ||
                 (object instanceof CauldronCubeModel) ||
-                (object.getName() != null && object.getName().equals("slime")) ||
-                (object.getName() != null && object.getName().contains("rail")) ||
-                (object.getName() != null && object.getName().contains("button")) ||
-                (object.getName() != null && object.getName().equals("grass_path")) ||
-                (object.getName() != null && object.getName().contains("pressure_plate")) ||
-                (object.getName() != null && object.getName().contains("daylight_detector")) ||
-                (object.getName() != null && object.getName().contains("piston_head")) ||
-                (object.getName() != null && object.getName().contains("comparator")) ||
-                (object.getName() != null && object.getName().contains("repeater")) ||
-                (object.getName() != null && object.getName().equals("snow_layer")) ||
-                (object.getName() != null && object.getName().contains("carpet")) ||
+                (object instanceof TallGrassCubeModel) ||
+                (object instanceof DoublePlantCubeModel) ||
+                (object.getName() != null && isTranslucentOrNotFull(object.getName())) ||
                 object instanceof TileEntityCubeModel ||
                 object instanceof EntityCubeModel;
+    }
+
+    public static boolean isTranslucentOrNotFull(String blockType){
+        return blockType.equals("slime") ||
+                blockType.contains("rail") ||
+                blockType.contains("button") ||
+                blockType.equals("grass_path") ||
+                blockType.contains("pressure_plate") ||
+                blockType.contains("daylight_detector") ||
+                blockType.contains("piston_head") ||
+                blockType.contains("comparator") ||
+                blockType.contains("repeater") ||
+                blockType.equals("snow_layer") ||
+                blockType.contains("carpet") ||
+                blockType.contains("flower") ||
+                blockType.equals("air") ||
+                blockType.equals("end_rod") ||
+                blockType.equals("sapling") ||
+                blockType.equals("double_plant") ||
+                blockType.equals("tallgrass") ||
+                blockType.equals("lever") ||
+                blockType.contains("_comparator") ||
+                blockType.contains("_repeater") ||
+                blockType.equals("skull") ||
+                blockType.contains("redstone_torch") ||
+                blockType.contains("door") ||
+                blockType.equals("barrier");
     }
 
     public void clearData(){

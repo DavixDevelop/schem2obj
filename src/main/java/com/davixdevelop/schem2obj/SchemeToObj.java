@@ -147,12 +147,6 @@ public class SchemeToObj {
             return;
         }
 
-        //Write wavefront objects and materials to file
-        //if(!s.exportToOBJ(objects, output_path)){
-        //    LogUtility.Log("Failed to write wavefront file");
-        //    return;
-        //}
-
         Date end = new Date();
         double eclipsed = ((end.getTime()  - start.getTime()) / 1000.0) / 60.0;
         double minutes = Math.floor(eclipsed);
