@@ -110,9 +110,9 @@ public class Schematic implements java.io.Serializable {
         short length = ((ShortTag)nbtData.get("Length")).getValue();
         short height = ((ShortTag)nbtData.get("Height")).getValue();
 
-        int offsetX = ((IntTag)nbtData.get("WEOriginX")).getValue();
-        int offsetY = ((IntTag)nbtData.get("WEOriginY")).getValue();
-        int offsetZ = ((IntTag)nbtData.get("WEOriginZ")).getValue();
+        int offsetX = getOrDefault(((IntTag)nbtData.get("WEOriginX")), 0);
+        int offsetY = getOrDefault(((IntTag)nbtData.get("WEOriginY")), 0);
+        int offsetZ = getOrDefault(((IntTag)nbtData.get("WEOriginZ")), 0);
 
         byte[] blockId = ((ByteArrayTag)nbtData.get("Blocks")).getValue();
         byte[] blockData = ((ByteArrayTag)nbtData.get("Data")).getValue();
@@ -194,5 +194,12 @@ public class Schematic implements java.io.Serializable {
         stream.close();
 
         return new Schematic(blocks, data, width, length, height, offsetX, offsetY, offsetZ, tileEntities, entities);
+    }
+
+    private static <VALUE, TAG extends Tag<VALUE>> VALUE getOrDefault(TAG tag, VALUE defaultValue) {
+        if (tag == null) {
+            return defaultValue;
+        }
+        return tag.getValue();
     }
 }
