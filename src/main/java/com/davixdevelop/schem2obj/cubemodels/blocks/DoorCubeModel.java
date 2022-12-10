@@ -47,7 +47,28 @@ public class DoorCubeModel extends BlockCubeModel {
                     }
                 }
             }
+        }else{
+            //Get the block up the lower part of the door
+            Namespace upperAdjacentBlock = Constants.LOADED_SCHEMATIC.getNamespace(
+                    namespace.getPosition("X"),
+                    namespace.getPosition("Y") + 1,
+                    namespace.getPosition("Z")
+            );
+            //Check if there is any block bellow
+            if(upperAdjacentBlock != null){
+                //Check if the block bellow is also door of the same variant
+                if(upperAdjacentBlock.getType().equals(namespace.getType())){
+                    //Check if the block up is the upper part of the door
+                    if(upperAdjacentBlock.getDefaultBlockState().getData("half").equals("upper")){
+                        //Set the hinge of the lower door to the same of the upper door
+                        namespace.getDefaultBlockState().setData("hinge", upperAdjacentBlock.getDefaultBlockState().getData("hinge"));
+                    }
+                }
+            }
         }
+
+        if(namespace.getDefaultBlockState().getData("facing").equals("east") && namespace.getDefaultBlockState().getData("open").equals("true"))
+            namespace.getDefaultBlockState().setData("hinge", "left");
 
         key.put("facing", namespace.getDefaultBlockState().getData("facing"));
         key.put("half", namespace.getDefaultBlockState().getData("half"));

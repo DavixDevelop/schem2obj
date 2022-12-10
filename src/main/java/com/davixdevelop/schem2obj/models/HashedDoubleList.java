@@ -53,6 +53,9 @@ public class HashedDoubleList {
         return list.size();
     }
 
+    /**
+     * @author NotStirred
+     */
     private class CachedHashArray {
         final Double[] internalArray;
         private final int cachedHash;
