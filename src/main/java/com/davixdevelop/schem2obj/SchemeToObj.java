@@ -46,7 +46,7 @@ public class SchemeToObj {
         Option christmasChestsOption = Option.builder("c").longOpt("christmasChests").argName("Christmas Chests").desc("Uses the Christmas texture for the chests (except Enders chest)").optionalArg(true).hasArg(false).build();
         options.addOption(christmasChestsOption);
 
-        Option resourcePacksOption = Option.builder("t").longOpt("resourcePacks").argName("List of resource packs (SEUS:<path> or Vanilla:<path>").optionalArg(true).hasArg().valueSeparator(' ').build();
+        Option resourcePacksOption = Option.builder("t").longOpt("resourcePacks").argName("List of resource packs (SEUS:<path> or Vanilla:<path>)").optionalArg(true).hasArg().valueSeparator(' ').build();
         options.addOption(resourcePacksOption);
 
         if (sendUsageInfoIfRequested(args, options)) return;
@@ -541,16 +541,15 @@ public class SchemeToObj {
         DefaultParser parser = DefaultParser.builder().setAllowPartialMatching(false).build();
 
         HelpFormatter helper = new HelpFormatter();
-        String footer = " -t <Resource Packs>                       User-specified resource packs to load";
         if (args.length == 0) {
-            helper.printHelp(120, " ", "", options, footer);
+            helper.printHelp(120, " ", "", options, "");
             return true;
         }
         try {
             CommandLine parsed = parser.parse(helpOptions, args);
 
             if (parsed.hasOption(helpOption)) {
-                helper.printHelp(120, " ", "", options, footer);
+                helper.printHelp(120, " ", "", options, "");
                 return true;
             }
         } catch (ParseException ignored) { }
