@@ -39,8 +39,10 @@ repositories {
 dependencies {
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.0'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.7.0'
+
     compile 'org.apache.logging.log4j:log4j-core:2.17.1'
     compile 'commons-logging:commons-logging:1.2'
+    compile 'commons-cli:commons-cli:1.5.0'
     compile "com.google.code.gson:gson:2.8.9"
     compile "com.flowpowered:flow-nbt:1.0.0"
 }

@@ -14,6 +14,7 @@ import com.davixdevelop.schem2obj.util.ImageUtility;
 import com.davixdevelop.schem2obj.util.LogUtility;
 import com.davixdevelop.schem2obj.wavefront.*;
 import com.davixdevelop.schem2obj.materials.IMaterial;
+import org.apache.commons.cli.*;
 
 import java.io.*;
 import java.lang.ref.SoftReference;
@@ -24,125 +25,125 @@ import java.util.*;
 import java.util.concurrent.*;
 
 public class SchemeToObj {
-    public static void main(String[] arg) {
-
+    public static void main(String[] args) {
         Date start = new Date();
-
-        String scheme_path = null;
-        String output_path = null;
-
-        boolean exportAllBlock = false;
-
-        String rootFolder = Paths.get(".").toAbsolutePath().normalize().toString();
 
         Constants.setConstants();
 
-        if(arg.length >= 6) {
-            //Get the path to the minecraft folder from the arguments
-            if(arg[0].startsWith("-minecraftFolder")){
-                String minecraftFolder = arg[1];
-                Path minecraftJarPath = Paths.get(minecraftFolder, "versions", "1.12.2", "1.12.2.jar");
-                if(Files.exists(minecraftJarPath)){
-                    //Register the material, blocks models and block states for the provided 1.12.2.jar
-                    String resourcePath = minecraftJarPath.toString();
+        Options options = new Options();
 
-                    LogUtility.Log("Loading resources from 1.12.2.jar...");
-                    if(!ResourceLoader.registerResourcePack(resourcePath, ResourcePack.Format.Vanilla)){
-                        LogUtility.Log("Failed to read versions/1.12.2/1.12.2.jar in minecraft folder");
-                        return;
-                    }
-                }
-                else {
-                    LogUtility.Log("Could not find versions/1.12.2/1.12.2.jar in minecraft folder");
-                    return;
-                }
+        Option minecraftFolderOption = Option.builder("m").longOpt("minecraftFolder").argName("Minecraft Folder").desc("Your .minecraft folder, which must contain versions/1.12.2/1.12.2.jar.").required().hasArg().numberOfArgs(1).build();
+        options.addOption(minecraftFolderOption);
+        Option inputOption = Option.builder("i").longOpt("input").argName("Input Schematic File").desc("The schematic/nbt input file.").required().hasArg().numberOfArgs(1).build();
+        options.addOption(inputOption);
+        Option outputOption = Option.builder("o").longOpt("output").argName("Output Schematic File").desc("The object file to output to.").required().hasArg().numberOfArgs(1).build();
+        options.addOption(outputOption);
+
+        Option exportAllBlocksOption = Option.builder("e").longOpt("allBlocks").argName("Export All Blocks").desc("TODO").optionalArg(true).hasArg(false).build();
+        options.addOption(exportAllBlocksOption);
+        Option isSnowyOption = Option.builder("s").longOpt("snowy").argName("Snowy").desc("TODO").optionalArg(true).hasArg(false).build();
+        options.addOption(isSnowyOption);
+        Option christmasChestsOption = Option.builder("c").longOpt("christmasChests").argName("Christmas Chests").desc("TODO").optionalArg(true).hasArg(false).build();
+        options.addOption(christmasChestsOption);
+
+        if (sendUsageInfoIfRequested(args, options)) return;
+
+        DefaultParser parser;
+
+        parser = DefaultParser.builder().setAllowPartialMatching(false).setStripLeadingAndTrailingQuotes(true).build();
+        CommandLine parsed;
+        try {
+            parsed = parser.parse(options, args);
+        } catch (ParseException e) {
+            System.err.printf("Failed to parse input arguments: %s\nRun with --help to display usage", e.getMessage());
+            return;
+        }
+
+        String minecraftFolder = parsed.getOptionValue(minecraftFolderOption);
+        String input = parsed.getOptionValue(inputOption);
+        String output = parsed.getOptionValue(outputOption);
+
+        //Get the path to the minecraft folder from the arguments
+        Path minecraftJarPath = Paths.get(minecraftFolder, "versions", "1.12.2", "1.12.2.jar");
+        if (Files.exists(minecraftJarPath)) {
+            //Register the material, blocks models and block states for the provided 1.12.2.jar
+            String resourcePath = minecraftJarPath.toString();
+
+            LogUtility.Log("Loading resources from 1.12.2.jar...");
+            if (!ResourceLoader.registerResourcePack(resourcePath, ResourcePack.Format.Vanilla)) {
+                LogUtility.Log("Failed to read versions/1.12.2/1.12.2.jar in minecraft folder");
+                return;
             }
+        } else {
+            LogUtility.Log("Could not find versions/1.12.2/1.12.2.jar in minecraft folder");
+            return;
+        }
 
-            //Get scheme file from arguments
-            if(arg[2].startsWith("-i")){
-                if(arg[3].endsWith(".schematic") || arg[1].endsWith(".nbt")) {
-                    if(arg[3].startsWith(".")) //If filename starts with . It's a relative path -> convert it to absolute
-                        scheme_path = Paths.get(rootFolder, arg[3].substring(1)).toString();
-                    else
-                        scheme_path = arg[3];
-                }else{
-                    LogUtility.Log("Input scheme doesn't use the .schematic extension");
-                    return;
-                }
-            }else
-                return;
+        //Get scheme file from arguments
+        String scheme_path;
+        if (input.endsWith(".schematic") || input.endsWith(".nbt")) {
+            scheme_path = Paths.get(input).toAbsolutePath().toString();
+        } else {
+            LogUtility.Log("Input scheme doesn't use the .schematic extension");
+            return;
+        }
 
-            //Get output Wavefront file from arguments
-            if(arg[4].startsWith("-o")){
-                if(arg[5].endsWith(".obj")){
-                    if(arg[5].startsWith(".")) //If filename starts with . It's a relative path -> convert it to absolute
-                        output_path = Paths.get(rootFolder, arg[5].substring(1)).toString();
-                    else
-                        output_path = arg[5];
+        //Get output Wavefront file from arguments
+        String output_path;
+        if(output.endsWith(".obj")) {
+            output_path = Paths.get(output).toAbsolutePath().toString();
+        } else {
+            LogUtility.Log("Output Wavefront file doesn't end with .obj");
+            return;
+        }
 
-                }else {
-                    LogUtility.Log("Output Wavefront file doesn't end with .obj");
-                    return;
-                }
-            }else
-                return;
+        Constants.EXPORT_ALL_BLOCKS = parsed.hasOption(exportAllBlocksOption);
+        Constants.IS_SNOWY = parsed.hasOption(isSnowyOption);
+        Constants.CHRISTMAS_CHEST = parsed.hasOption(christmasChestsOption);
 
-            //Read additional parameters (ex -allBlocks)
-            if(6 < arg.length){
-                int nextArgIndex = 6;
-                while (nextArgIndex < arg.length){
-                    if(arg[nextArgIndex].startsWith("-t")){
+        String[] remainingArgs = parsed.getArgs();
+        //Read resource pack
+        if (remainingArgs.length > 0) {
+            int nextArgIndex = 0;
+            while (nextArgIndex < remainingArgs.length) {
+                if (remainingArgs[nextArgIndex].startsWith("-t")) {
+                    nextArgIndex += 1;
+
+                    //Check if the user defined what format the resource pack is
+                    while (remainingArgs[nextArgIndex].startsWith("SEUS:") || remainingArgs[nextArgIndex].startsWith("Vanilla:") || remainingArgs[nextArgIndex].startsWith("Specular:")){
+                        //Get resource pack path
+                        String resourcePath = Paths.get(remainingArgs[nextArgIndex].substring(remainingArgs[nextArgIndex].indexOf(":") + 1)).toAbsolutePath().toString();
+                        //Read the resource pack format (SEUS, Vanilla, Specular)
+                        String format = remainingArgs[nextArgIndex].substring(0, remainingArgs[nextArgIndex].indexOf(":"));
+
+                        if (format.equals("SEUS") || format.equals("Vanilla") || format.equals("Specular")) {
+
+                            LogUtility.Log("Loading resources from: " + resourcePath + " .Please wait.");
+                            //Register the material, blocks models and block states the resource pack uses
+                            if (!ResourceLoader.registerResourcePack(resourcePath, ResourcePack.Format.fromName(format))) {
+                                LogUtility.Log("Input resource pack isn't valid");
+                                LogUtility.Log("Using default textures instead");
+                            }
+                        } else {
+                            LogUtility.Log("Failed to register resource pack. Incorrect format provided: " + format);
+                        }
+
                         nextArgIndex += 1;
 
-                        //Check if the user defined what format the resource pack is
-                        while(arg[nextArgIndex].startsWith("SEUS:") || arg[nextArgIndex].startsWith("Vanilla:") || arg[nextArgIndex].startsWith("Specular:")){
-                            //Get resource pack path
-                            String resourcePath = arg[nextArgIndex].substring(arg[nextArgIndex].indexOf(":") + 1);
-                            if(resourcePath.startsWith(".")) //Relative path -> convert to absolute
-                                resourcePath = Paths.get(rootFolder, resourcePath.substring(1)).toString();
-                            //Read the resource pack format (SEUS, Vanilla, Specular)
-                            String format = arg[nextArgIndex].substring(0, arg[nextArgIndex].indexOf(":"));
-
-                            if(format.equals("SEUS") || format.equals("Vanilla") || format.equals("Specular")) {
-
-                                LogUtility.Log("Loading resources from: " + resourcePath + " .Please wait.");
-                                //Register the material, blocks models and block states the resource pack uses
-                                if (!ResourceLoader.registerResourcePack(resourcePath, ResourcePack.Format.fromName(format))) {
-                                    LogUtility.Log("Input resource pack isn't valid");
-                                    LogUtility.Log("Using default textures instead");
-                                }
-                            }else
-                            {
-                                LogUtility.Log("Failed to register resource pack. Incorrect format provided: " + format);
-                            }
-
-                            nextArgIndex += 1;
-
-                            if(nextArgIndex >= arg.length)
-                                break;
-                        }
-                        nextArgIndex -= 1;
+                        if(nextArgIndex >= remainingArgs.length)
+                            break;
                     }
-                    else if(arg[nextArgIndex].equals("-allBlocks"))
-                        exportAllBlock = true;
-                    else if(arg[nextArgIndex].equals("-snowy"))
-                        Constants.IS_SNOWY = true;
-                    else if(arg[nextArgIndex].equals("-christmasChests"))
-                        Constants.CHRISTMAS_CHEST = true;
-                    nextArgIndex += 1;
+                    nextArgIndex -= 1;
                 }
+                nextArgIndex += 1;
             }
-        }else
-            System.console().writer().println("Add arguments (-i <input schematic file> -t <path to resource pack> -o <output OBJ file>)");
-
-        Constants.EXPORT_ALL_BLOCKS = exportAllBlock;
+        }
 
         SchemeToObj s = new SchemeToObj();
 
         //ArrayList<ICubeModel> objects = s.schemeToCubeModels(scheme_path, exportAllBlock);
 
-
-        if(!s.exportScheme(scheme_path, output_path, exportAllBlock)){
+        if(!s.exportScheme(scheme_path, output_path, Constants.EXPORT_ALL_BLOCKS)){
             LogUtility.Log("Failed to convert schematic to OBJ");
             return;
         }
@@ -153,8 +154,6 @@ public class SchemeToObj {
         double seconds = Math.floor((eclipsed - minutes) * 60);
 
         LogUtility.Log(String.format("Success (Done in: %02d:%02d)", (int) minutes, (int) seconds));
-
-
     }
 
     public boolean exportScheme(String schemePath, String outPath, boolean exportAllBlocks){
@@ -542,5 +541,23 @@ public class SchemeToObj {
         }
 
         return true;
+    }
+
+    private static boolean sendUsageInfoIfRequested(String[] args, Options options) {
+        Options helpOptions = new Options();
+        Option helpOption = Option.builder("h").longOpt("help").argName("Help").desc("Display usage information").optionalArg(true).build();
+        helpOptions.addOption(helpOption);
+        DefaultParser parser = DefaultParser.builder().setAllowPartialMatching(false).build();
+
+        try {
+            CommandLine parsed = parser.parse(helpOptions, args);
+
+            if (parsed.hasOption(helpOption)) {
+                HelpFormatter helper = new HelpFormatter();
+                helper.printHelp(120, " ", "", options, " -t <Resource Packs>                       User-specified resource packs to load");
+                return true;
+            }
+        } catch (ParseException ignored) { }
+        return false;
     }
 }
