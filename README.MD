@@ -63,14 +63,14 @@ Required parameters:
 - `-o` The absolute or relative path to the OBJ file<br>
 
 Optional parameters:
-- `-t` The absolute or relative path to the resource pack (folder with `pack.mcdata` or zipped resource pack)
 - `-allBlocks` If set, all blocks (including hidden) are exported
 - `-snowy` If set, only the snowy grass is generated for now
 - `-christmasChests` If set, all chests (except ender chests) use the Christmas texture
+- `-t` The absolute or relative path to the resource pack (folder with `pack.mcdata` or zipped resource pack)
 
 > Note: Marked with (some parameter) are optional parts, and the actual inputs with <some value>. Remove the <> and () before running the command in a terminal.
 > <br>Ex with both jar, schematic and output OBJ file in same folder, and the unpacked resource pack (with the resource pack only in the SEUS or Vanilla format for now) in the .minecraft folder:<br>
-> `java -jar schem2obj-0.6.42.jar -minecraftFolder C:\Users\user\AppData\Roaming\.minecraft -i .lava_test.schematic -o .lava_test.obj -t SEUS:C:\Users\user\AppData\Roaming\.minecraft\resourcepacks\PBRResourcePack`
+> `java -jar schem2obj-0.6.42.jar -minecraftFolder C:\Users\user\AppData\Roaming\.minecraft -i lava_test.schematic -o lava_test.obj -t SEUS:C:\Users\user\AppData\Roaming\.minecraft\resourcepacks\PBRResourcePack`
 
 
 ### Blender 3.4 Import Procedure

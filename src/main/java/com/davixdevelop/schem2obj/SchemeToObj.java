@@ -39,12 +39,15 @@ public class SchemeToObj {
         Option outputOption = Option.builder("o").longOpt("output").argName("Output Schematic File").desc("The object file to output to.").required().hasArg().numberOfArgs(1).build();
         options.addOption(outputOption);
 
-        Option exportAllBlocksOption = Option.builder("e").longOpt("allBlocks").argName("Export All Blocks").desc("TODO").optionalArg(true).hasArg(false).build();
+        Option exportAllBlocksOption = Option.builder("e").longOpt("allBlocks").argName("Export All Blocks").desc("Exports all blocks, including hidden blocks").optionalArg(true).hasArg(false).build();
         options.addOption(exportAllBlocksOption);
-        Option isSnowyOption = Option.builder("s").longOpt("snowy").argName("Snowy").desc("TODO").optionalArg(true).hasArg(false).build();
+        Option isSnowyOption = Option.builder("s").longOpt("snowy").argName("Snowy").desc("Only generates snowy grass for now").optionalArg(true).hasArg(false).build();
         options.addOption(isSnowyOption);
-        Option christmasChestsOption = Option.builder("c").longOpt("christmasChests").argName("Christmas Chests").desc("TODO").optionalArg(true).hasArg(false).build();
+        Option christmasChestsOption = Option.builder("c").longOpt("christmasChests").argName("Christmas Chests").desc("Uses the Christmas texture for the chests (except Enders chest)").optionalArg(true).hasArg(false).build();
         options.addOption(christmasChestsOption);
+
+        Option resourcePacksOption = Option.builder("t").longOpt("resourcePacks").argName("List of resource packs (SEUS:<path> or Vanilla:<path>").optionalArg(true).hasArg().valueSeparator(' ').build();
+        options.addOption(resourcePacksOption);
 
         if (sendUsageInfoIfRequested(args, options)) return;
 
@@ -55,7 +58,7 @@ public class SchemeToObj {
         try {
             parsed = parser.parse(options, args);
         } catch (ParseException e) {
-            System.err.printf("Failed to parse input arguments: %s\nRun with --help to display usage", e.getMessage());
+            LogUtility.Log(String.format("Failed to parse input arguments: %s\nRun with --help to display usage", e.getMessage()));
             return;
         }
 
@@ -101,41 +104,29 @@ public class SchemeToObj {
         Constants.IS_SNOWY = parsed.hasOption(isSnowyOption);
         Constants.CHRISTMAS_CHEST = parsed.hasOption(christmasChestsOption);
 
-        String[] remainingArgs = parsed.getArgs();
-        //Read resource pack
-        if (remainingArgs.length > 0) {
-            int nextArgIndex = 0;
-            while (nextArgIndex < remainingArgs.length) {
-                if (remainingArgs[nextArgIndex].startsWith("-t")) {
-                    nextArgIndex += 1;
+        if(parsed.hasOption(resourcePacksOption)) {
+            String[] resourcePacks = parsed.getOptionValues(resourcePacksOption);
+            //Read resource pack
+            for(String resourcePack : resourcePacks){
+                //Check if the user defined what format the resource pack is
+                if (resourcePack.startsWith("SEUS:") || resourcePack.startsWith("Vanilla:") || resourcePack.startsWith("Specular:")) {
+                    //Get resource pack path
+                    String resourcePath = Paths.get(resourcePack.substring(resourcePack.indexOf(":") + 1)).toAbsolutePath().toString();
+                    //Read the resource pack format (SEUS, Vanilla, Specular)
+                    String format = resourcePack.substring(0, resourcePack.indexOf(":"));
 
-                    //Check if the user defined what format the resource pack is
-                    while (remainingArgs[nextArgIndex].startsWith("SEUS:") || remainingArgs[nextArgIndex].startsWith("Vanilla:") || remainingArgs[nextArgIndex].startsWith("Specular:")){
-                        //Get resource pack path
-                        String resourcePath = Paths.get(remainingArgs[nextArgIndex].substring(remainingArgs[nextArgIndex].indexOf(":") + 1)).toAbsolutePath().toString();
-                        //Read the resource pack format (SEUS, Vanilla, Specular)
-                        String format = remainingArgs[nextArgIndex].substring(0, remainingArgs[nextArgIndex].indexOf(":"));
+                    if (format.equals("SEUS") || format.equals("Vanilla") || format.equals("Specular")) {
 
-                        if (format.equals("SEUS") || format.equals("Vanilla") || format.equals("Specular")) {
-
-                            LogUtility.Log("Loading resources from: " + resourcePath + " .Please wait.");
-                            //Register the material, blocks models and block states the resource pack uses
-                            if (!ResourceLoader.registerResourcePack(resourcePath, ResourcePack.Format.fromName(format))) {
-                                LogUtility.Log("Input resource pack isn't valid");
-                                LogUtility.Log("Using default textures instead");
-                            }
-                        } else {
-                            LogUtility.Log("Failed to register resource pack. Incorrect format provided: " + format);
+                        LogUtility.Log("Loading resources from: " + resourcePath + " .Please wait.");
+                        //Register the material, blocks models and block states the resource pack uses
+                        if (!ResourceLoader.registerResourcePack(resourcePath, ResourcePack.Format.fromName(format))) {
+                            LogUtility.Log("Input resource pack isn't valid");
+                            LogUtility.Log("Using default textures instead");
                         }
-
-                        nextArgIndex += 1;
-
-                        if(nextArgIndex >= remainingArgs.length)
-                            break;
+                    } else {
+                        LogUtility.Log("Failed to register resource pack. Incorrect format provided: " + format);
                     }
-                    nextArgIndex -= 1;
                 }
-                nextArgIndex += 1;
             }
         }
 
