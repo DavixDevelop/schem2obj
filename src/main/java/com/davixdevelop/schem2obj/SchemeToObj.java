@@ -549,12 +549,17 @@ public class SchemeToObj {
         helpOptions.addOption(helpOption);
         DefaultParser parser = DefaultParser.builder().setAllowPartialMatching(false).build();
 
+        HelpFormatter helper = new HelpFormatter();
+        String footer = " -t <Resource Packs>                       User-specified resource packs to load";
+        if (args.length == 0) {
+            helper.printHelp(120, " ", "", options, footer);
+            return true;
+        }
         try {
             CommandLine parsed = parser.parse(helpOptions, args);
 
             if (parsed.hasOption(helpOption)) {
-                HelpFormatter helper = new HelpFormatter();
-                helper.printHelp(120, " ", "", options, " -t <Resource Packs>                       User-specified resource packs to load");
+                helper.printHelp(120, " ", "", options, footer);
                 return true;
             }
         } catch (ParseException ignored) { }
