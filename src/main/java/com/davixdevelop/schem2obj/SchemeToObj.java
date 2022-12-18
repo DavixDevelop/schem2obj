@@ -348,13 +348,11 @@ public class SchemeToObj {
                                             if(adjacentSingletonKey == null)
                                                 continue;
 
-                                            //Get copy of the singleton from the adjacent block
+                                            //Get reference to the singleton from the adjacent block
                                             ICubeModel adjacentSingletonCubeModel = Constants.CUBE_MODEL_FACTORY.fromKey(adjacentSingletonKey);
 
                                             if(adjacentSingletonCubeModel == null)
                                                 continue;
-
-                                            adjacentSingletonCubeModel = adjacentSingletonCubeModel.duplicate();
 
                                             //Perform the check on the cube model
                                             if (CubeModelUtility.checkFacing(singletonCubeModel, adjacentSingletonCubeModel, faceOrientation, oppositeOrientation))
