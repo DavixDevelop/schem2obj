@@ -532,6 +532,9 @@ public class SchemeToObj {
         return true;
     }
 
+    /**
+     * @author NotStirred
+     */
     private static boolean sendUsageInfoIfRequested(String[] args, Options options) {
         Options helpOptions = new Options();
         Option helpOption = Option.builder("h").longOpt("help").argName("Help").desc("Display usage information").optionalArg(true).build();
