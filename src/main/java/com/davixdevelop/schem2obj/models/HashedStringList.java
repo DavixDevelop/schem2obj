@@ -66,7 +66,7 @@ public class HashedStringList {
     public HashedStringList duplicate(){
         HashedStringList clone = new HashedStringList();
         clone.list = new ArrayList<>(list);
-        clone.index = new HashMap<>(index.entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue)));
+        clone.index = new HashMap<>(index);
 
         return clone;
     }
