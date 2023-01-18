@@ -1,5 +1,7 @@
 package com.davixdevelop.schem2obj.schematic;
 
+import com.davixdevelop.schem2obj.Constants;
+import com.davixdevelop.schem2obj.biomes.Biome;
 import com.flowpowered.nbt.*;
 import com.flowpowered.nbt.stream.NBTInputStream;
 
@@ -29,6 +31,8 @@ public class Schematic implements java.io.Serializable {
 
     Map<String, EntityValues>  tileEntities;
     List<EntityValues> entities;
+
+    static Biome CONSTANT_BIOME;
 
     public Schematic(int[] blocks, int[] data, short width, short length, short height, int originX, int originY, int originZ, Map<String, EntityValues>  tileEntities, List<EntityValues> entities) {
         this.blocks = blocks;
@@ -85,6 +89,14 @@ public class Schematic implements java.io.Serializable {
 
     public List<EntityValues> getEntities() {
         return entities;
+    }
+
+    public Biome getBiome(int x, int z){
+        if(CONSTANT_BIOME == null){
+            CONSTANT_BIOME = Constants.BIOME_COLLECTION.getBiomeForId(Constants.CONSTANT_BIOME_ID);
+        }
+
+        return CONSTANT_BIOME;
     }
 
     /**

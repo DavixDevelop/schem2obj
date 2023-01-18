@@ -1,5 +1,6 @@
 package com.davixdevelop.schem2obj;
 
+import com.davixdevelop.schem2obj.biomes.BiomeCollection;
 import com.davixdevelop.schem2obj.blockmodels.BlockModelCollection;
 import com.davixdevelop.schem2obj.blockstates.BlockStateCollection;
 import com.davixdevelop.schem2obj.cubemodels.CubeModelFactory;
@@ -143,14 +144,16 @@ public class Constants {
     public static final BlockModelCollection BLOCK_MODELS = new BlockModelCollection();
     public static final BlockStateCollection BLOCKS_STATES = new BlockStateCollection();
     public static final NamespaceMapping NAMESPACE_MAPPING = new NamespaceMapping();
+    public static final BiomeCollection BIOME_COLLECTION = new BiomeCollection();
 
     public static final MaterialCollection BLOCK_MATERIALS = new MaterialCollection();
     public static final CubeModelFactory CUBE_MODEL_FACTORY = new CubeModelFactory();
 
-    public static int BIOMES_GRASS_COLOR = 9551193;
-    public static int BIOMES_FOLIAGE_COLOR = 7842607;
+    public static int CONSTANT_BIOME_ID = 1;
 
     public static int SNOW_COLOR = 16316922;
+
+    public static int SWAMPLAND_PURPLE_OVERLAY = 10716067;
 
     public static Map<Integer, Integer> REDSTONE_COLORS = new HashMap<>();
 

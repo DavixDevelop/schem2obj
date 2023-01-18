@@ -312,6 +312,9 @@ public class CubeModelFactory {
         if(blockNamespace.getResource().contains("leaves"))
             return new LeavesCubeModel();
 
+        if(blockNamespace.getResource().contains("fence_gate"))
+            return new FenceGateCubeModel();
+
 
         switch (blockNamespace.getType()) {
             case "grass":
@@ -356,6 +359,8 @@ public class CubeModelFactory {
                 return new TallGrassCubeModel();
             case "double_plant":
                 return new DoublePlantCubeModel();
+            case "cobblestone_wall":
+                return new CobblestoneWallCubeModel();
             default:
                 return new BlockCubeModel();
 
@@ -378,6 +383,8 @@ public class CubeModelFactory {
                 (object instanceof CauldronCubeModel) ||
                 (object instanceof TallGrassCubeModel) ||
                 (object instanceof DoublePlantCubeModel) ||
+                (object instanceof CobblestoneWallCubeModel) ||
+                (object instanceof FenceGateCubeModel) ||
                 (object.getName() != null && isTranslucentOrNotFull(object.getName())) ||
                 object instanceof TileEntityCubeModel ||
                 object instanceof EntityCubeModel;

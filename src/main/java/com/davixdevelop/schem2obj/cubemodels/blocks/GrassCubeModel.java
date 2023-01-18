@@ -1,6 +1,7 @@
 package com.davixdevelop.schem2obj.cubemodels.blocks;
 
 import com.davixdevelop.schem2obj.Constants;
+import com.davixdevelop.schem2obj.biomes.Biome;
 import com.davixdevelop.schem2obj.blockmodels.CubeElement;
 import com.davixdevelop.schem2obj.blockstates.BlockState;
 import com.davixdevelop.schem2obj.cubemodels.CubeModelUtility;
@@ -9,9 +10,11 @@ import com.davixdevelop.schem2obj.materials.IMaterial;
 import com.davixdevelop.schem2obj.namespace.Namespace;
 import com.davixdevelop.schem2obj.schematic.EntityValues;
 import com.davixdevelop.schem2obj.util.ArrayVector;
+import com.davixdevelop.schem2obj.util.ColorUtility;
 import com.davixdevelop.schem2obj.util.ImageUtility;
 import com.davixdevelop.schem2obj.util.LogUtility;
 
+import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -130,17 +133,29 @@ public class GrassCubeModel extends BlockCubeModel {
             IMaterial grass_side = Constants.BLOCK_MATERIALS.getMaterial("blocks/grass_side");
             IMaterial grass_side_overlay = Constants.BLOCK_MATERIALS.getMaterial("blocks/grass_side_overlay");
 
+            //Get the biome of the column
+            Biome biome = Constants.LOADED_SCHEMATIC.getBiome(blockNamespace.getPosition("X"), blockNamespace.getPosition("Z"));
+
             //Color the gray grass top with the biomes grass color
-            BufferedImage coloredTop = ImageUtility.colorImage(grass_top.getDefaultDiffuseImage(), Constants.BIOMES_GRASS_COLOR);
+            BufferedImage coloredTop = ImageUtility.colorImage(grass_top.getDefaultDiffuseImage(), biome.getGrassColor());
+
+            //Overlay texture with purple color if biome is swampland
+            if(biome.getResource().contains("swampland"))
+                coloredTop = ImageUtility.colorColoredImage(coloredTop, Constants.SWAMPLAND_PURPLE_OVERLAY);
 
             //Set grass top output diffuse image to colored top
             grass_top.setDiffuseImage(coloredTop);
 
             //Color the gray grass side overlay with the biomes grass color
-            BufferedImage colored_side_overlay = ImageUtility.colorImage(grass_side_overlay.getDefaultDiffuseImage(), Constants.BIOMES_GRASS_COLOR);
+            BufferedImage colored_side_overlay = ImageUtility.colorImage(grass_side_overlay.getDefaultDiffuseImage(), biome.getGrassColor());
+
+            //Overlay texture with purple color if biome is swampland
+            if(biome.getResource().contains("swampland"))
+                colored_side_overlay = ImageUtility.colorColoredImage(colored_side_overlay, Constants.SWAMPLAND_PURPLE_OVERLAY);
 
             //Combine the grass side and colored overlay
             BufferedImage combinedOverlay = ImageUtility.overlayImage(grass_side.getDefaultDiffuseImage(),colored_side_overlay);
+
             grass_side.setDiffuseImage(combinedOverlay);
 
             grass_side.setSpecularHighlights(0.0);

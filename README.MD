@@ -2,11 +2,11 @@
 
 A java program for converting Minecraft 1.12 schematics to OBJ (Wavefront)
 with support for multiple resource packs (only in SEUS and Vanilla Format for now).  The MTL file uses
-the PBR .mtl extension, so for now importing of MTL files with all PBR textures (when resource pack is used) is only supported
-on Blender 3.4 Alpha.
+the PBR .mtl extension, so  importing of MTL files with all PBR textures (when resource pack is used) is supported starting
+with `Blender 3.4.1`.
 
 ### Supported blocks
-All basic blocks (that are only basic cubes), and some builtin blocks (ex, water and lava) are supported. Other built in blocks (ex, bed, player head...) or blocks that don't work are currently being implemented.
+All basic blocks (that are only basic cubes), and builtin blocks (ex, water, banners...) are supported. Other blocks and entities that don't work are currently being implemented.
 <br>List of custom blocks implemented:
 - Grass Block (non-snowy and snowy)
 - Glass Pane & Block (regular and stained)
@@ -29,6 +29,8 @@ All basic blocks (that are only basic cubes), and some builtin blocks (ex, water
 - Magma Block (fixed compressed texture)
 - Tall Grass
 - Double Plant
+- Fence Gate
+- Wall
 
 ### Supported entities
 - Beds
@@ -53,7 +55,7 @@ it also reads the models & block states the resource pack defines. It is recomme
 > `-t "SEUS:C:\Users\user name\AppData\Roaming\.minecraft\resourcepacks\PBRResourcePack" "SEUS:C:\Users\user name\AppData\Roaming\.minecraft\resourcepacks\PBRResourcePack2.zip"`
 
 ### Usage
-In terminal run: `java -jar (<path-to-jar>/)schem2obj-<release version>.jar -minecraftFolder <minecraft path> -i <input schematic> -o <output obj> (Optional parameters: -t <resource pack path> -allBlock -snowy)`
+In terminal run: `java -jar (<path-to-jar>/)schem2obj-<release version>.jar -minecraftFolder <minecraft path> -i <input schematic> -o <output obj> (Optional parameters: -t <resource pack path> -biome <biome_id> -allBlock -snowy -christmasChests)`
 <br>The paths can either be absolute or relative (must start with `.`).
 
 Required parameters:
@@ -66,11 +68,13 @@ Optional parameters:
 - `-allBlocks` If set, all blocks (including hidden) are exported
 - `-snowy` If set, only the snowy grass is generated for now
 - `-christmasChests` If set, all chests (except ender chests) use the Christmas texture
+- `-biome <biome_id>` Specifies which biome to use (default: 1 -> Plains Biomes)
 - `-t` The absolute or relative path to the resource pack (folder with `pack.mcdata` or zipped resource pack)
 
-> Note: Marked with (some parameter) are optional parts, and the actual inputs with <some value>. Remove the <> and () before running the command in a terminal.
+> 
+> Note: Marked with `(some parameter)` are optional parts, and the actual inputs with `<some value>`. Remove the <> and () before running the command in a terminal.
 > <br>Ex with both jar, schematic and output OBJ file in same folder, and the unpacked resource pack (with the resource pack only in the SEUS or Vanilla format for now) in the .minecraft folder:<br>
-> `java -jar schem2obj-0.6.52.jar -minecraftFolder C:\Users\user\AppData\Roaming\.minecraft -i lava_test.schematic -o lava_test.obj -t SEUS:C:\Users\user\AppData\Roaming\.minecraft\resourcepacks\PBRResourcePack`
+> `java -jar schem2obj-0.6.53.jar -minecraftFolder C:\Users\user\AppData\Roaming\.minecraft -i lava_test.schematic -o lava_test.obj -t SEUS:C:\Users\user\AppData\Roaming\.minecraft\resourcepacks\PBRResourcePack`
 
 
 ### Blender 3.4 Import Procedure

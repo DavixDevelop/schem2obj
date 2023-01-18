@@ -319,18 +319,7 @@ public class ImageUtility {
         }
     }
 
-    /**
-     * Color a image with the provide color
-     * @param bufferedImage The diffuse image to color
-     * @param color A Integer color
-     * @return The colored image
-     */
-    public static BufferedImage colorImage(BufferedImage bufferedImage, int color, boolean ...isMask){
-
-        float multiRed = (float)(color >> 16 & 255) / 255.0f;
-        float multiGreen = (float)(color >> 8 & 255) / 255.0f;
-        float multiBlue = (float) (color & 255) / 255.0f;
-
+    private static BufferedImage colorImage(BufferedImage bufferedImage, float multiRed, float multiGreen, float multiBlue, boolean ...isMask){
         boolean masked = false;
 
         if(isMask.length > 0)
@@ -375,6 +364,81 @@ public class ImageUtility {
 
         }catch (Exception ex){
             LogUtility.Log("Failed to read input image");
+            LogUtility.Log(ex.getMessage());
+            return null;
+        }
+    }
+
+    /**
+     * Color a image with the provided color
+     * @param bufferedImage The diffuse image to color
+     * @param color A Integer color
+     * @return The colored image
+     */
+    public static BufferedImage colorImage(BufferedImage bufferedImage, int color, boolean ...isMask){
+
+        float multiRed = (float)(color >> 16 & 255) / 255.0f;
+        float multiGreen = (float)(color >> 8 & 255) / 255.0f;
+        float multiBlue = (float) (color & 255) / 255.0f;
+
+        return colorImage(bufferedImage, multiRed, multiGreen, multiBlue, isMask);
+    }
+
+    /**
+     * Color a image with the provided color
+     * @param bufferedImage The diffuse image to color
+     * @param color A Integer color
+     * @return The colored image
+     */
+    public static BufferedImage colorImage(BufferedImage bufferedImage, Color color, boolean ...isMask){
+
+        float multiRed = (float)(color.getRed()) / 255.0f;
+        float multiGreen = (float)(color.getGreen()) / 255.0f;
+        float multiBlue = (float) (color.getBlue()) / 255.0f;
+
+        return colorImage(bufferedImage, multiRed, multiGreen, multiBlue, isMask);
+    }
+
+    /**
+     * Color a colored image with the provided color
+     * @param bufferedImage The diffuse image to color
+     * @param color A Integer color
+     * @return The colored image
+     */
+    public static BufferedImage colorColoredImage(BufferedImage bufferedImage, Integer color){
+        try{
+            BufferedImage combinedImage = new BufferedImage(bufferedImage.getWidth(), bufferedImage.getHeight(), bufferedImage.getType());
+
+            int red_multi = (color >> 16) & 0xFF;
+            int green_multi = (color >> 8) & 0xFF;
+            int blue_multi = color & 0xFF;
+
+            for(int x = 0; x < bufferedImage.getWidth(); x++){
+                for(int y = 0; y < bufferedImage.getHeight(); y++){
+                    final int color1 = bufferedImage.getRGB(x, y);
+
+                    int red_color = (color1 >> 16) & 0xFF;
+                    int green_color = (color1 >> 8) & 0xFF;
+                    int blue_color = color1 & 0xFF;
+                    int alpha = (color1 >> 24) & 0xFF;
+
+                    if(alpha != 0) {
+                        int red = (int)((float)red_color * red_multi / 255);
+                        int green = (int)((float)green_color * green_multi / 255);
+                        int blue = (int)((float)blue_color * blue_multi / 255);
+
+                        final Color originalColor = new Color(ColorUtility.clipRGB(Math.abs(red)), ColorUtility.clipRGB(Math.abs(green)), ColorUtility.clipRGB(Math.abs(blue)), alpha);
+                        combinedImage.setRGB(x, y, originalColor.getRGB());
+
+                    }else
+                        combinedImage.setRGB(x, y, color1);
+                }
+            }
+
+            return combinedImage;
+
+        }catch (Exception ex){
+            LogUtility.Log("Failed to color image");
             LogUtility.Log(ex.getMessage());
             return null;
         }

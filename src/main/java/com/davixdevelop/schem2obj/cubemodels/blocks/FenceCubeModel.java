@@ -6,7 +6,6 @@ import com.davixdevelop.schem2obj.cubemodels.IAdjacentCheck;
 import com.davixdevelop.schem2obj.cubemodels.ICubeModel;
 import com.davixdevelop.schem2obj.namespace.Namespace;
 
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -16,8 +15,6 @@ import java.util.Map;
  * @author DavixDevelop
  */
 public class FenceCubeModel extends BlockCubeModel implements IAdjacentCheck {
-    //Map<key: %fence_name:north=true|false,south=true|false,east=true|false,west=true|false, value: Fence Cube Model>
-    public static HashMap<String, FenceCubeModel> FENCE_VARIANTS = new HashMap<>();
 
     @Override
     public boolean fromNamespace(Namespace namespace) {
@@ -41,7 +38,7 @@ public class FenceCubeModel extends BlockCubeModel implements IAdjacentCheck {
         if(adjacentBlock.getType().contains("fence") && !adjacentBlock.getType().contains("gate"))
             return true;
 
-        if(adjacentBlock.getType().equals("glowstone") || adjacentBlock.getType().equals("sea_lantern"))
+        if(adjacentBlock.getType().equals("glowstone") || adjacentBlock.getType().equals("sea_lantern") || adjacentBlock.getType().equals("beacon"))
             return false;
 
         if(adjacentBlock.getDomain().equals("builtin"))

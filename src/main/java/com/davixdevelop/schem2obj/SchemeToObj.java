@@ -1,5 +1,6 @@
 package com.davixdevelop.schem2obj;
 
+import com.davixdevelop.schem2obj.biomes.Biome;
 import com.davixdevelop.schem2obj.cubemodels.CubeModelUtility;
 import com.davixdevelop.schem2obj.cubemodels.ICubeModel;
 import com.davixdevelop.schem2obj.cubemodels.entity.EntityCubeModel;
@@ -45,6 +46,8 @@ public class SchemeToObj {
         options.addOption(isSnowyOption);
         Option christmasChestsOption = Option.builder("c").longOpt("christmasChests").argName("Christmas Chests").desc("Uses the Christmas texture for the chests (except Enders chest)").optionalArg(true).hasArg(false).build();
         options.addOption(christmasChestsOption);
+        Option biomeOption = Option.builder("b").longOpt("biome").argName("Biome ID").desc("The ID of the biome to use").optionalArg(true).hasArg(true).build();
+        options.addOption(biomeOption);
 
         Option resourcePacksOption = Option.builder("t").longOpt("resourcePacks").argName("List of resource packs (SEUS:<path> or Vanilla:<path>)").optionalArg(true).hasArg().valueSeparator(' ').build();
         options.addOption(resourcePacksOption);
@@ -103,6 +106,19 @@ public class SchemeToObj {
         Constants.EXPORT_ALL_BLOCKS = parsed.hasOption(exportAllBlocksOption);
         Constants.IS_SNOWY = parsed.hasOption(isSnowyOption);
         Constants.CHRISTMAS_CHEST = parsed.hasOption(christmasChestsOption);
+
+        if(parsed.hasOption(biomeOption)){
+            String _biomeID = parsed.getOptionValue(biomeOption);
+            try{
+                int biomeID = Integer.parseInt(_biomeID);
+                Biome biome = Constants.BIOME_COLLECTION.getBiomeForId(biomeID);
+                if(biome != null)
+                    Constants.CONSTANT_BIOME_ID = biomeID;
+
+            }catch (Exception ex){
+                LogUtility.Log(String.format("Wrong value for Biome ID: %s", _biomeID));
+            }
+        }
 
         if(parsed.hasOption(resourcePacksOption)) {
             String[] resourcePacks = parsed.getOptionValues(resourcePacksOption);

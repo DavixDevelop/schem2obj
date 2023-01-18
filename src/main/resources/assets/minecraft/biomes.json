@@ -1,0 +1,498 @@
+[
+  {
+    "ID": 0,
+    "name": "Ocean",
+    "resourceLocation": "ocean",
+    "grassColor": 9485403,
+    "foliageColor": 7776818,
+    "waterColor": 16777215
+  },
+  {
+    "ID": 1,
+    "name": "Plains",
+    "resourceLocation": "plains",
+    "grassColor": 9551193,
+    "foliageColor": 7842607,
+    "waterColor": 16777215
+  },
+  {
+    "ID": 2,
+    "name": "Desert",
+    "resourceLocation": "desert",
+    "grassColor": 9878616,
+    "foliageColor": 8235566,
+    "waterColor": 16777215
+  },
+  {
+    "ID": 3,
+    "name": "Extreme Hills",
+    "resourceLocation": "extreme_hills",
+    "grassColor": 9485406,
+    "foliageColor": 7711285,
+    "waterColor": 16777215
+  },
+  {
+    "ID": 4,
+    "name": "Forest",
+    "resourceLocation": "forest",
+    "grassColor": 9354585,
+    "foliageColor": 7580463,
+    "waterColor": 16777215
+  },
+  {
+    "ID": 5,
+    "name": "Taiga",
+    "resourceLocation": "taiga",
+    "grassColor": 9419869,
+    "foliageColor": 7711284,
+    "waterColor": 16777215
+  },
+  {
+    "ID": 6,
+    "name": "Swampland",
+    "resourceLocation": "swampland",
+    "grassColor": 9221205,
+    "foliageColor": 7709744,
+    "waterColor": 14745518
+  },
+  {
+    "ID": 7,
+    "name": "River",
+    "resourceLocation": "river",
+    "grassColor": 9485403,
+    "foliageColor": 7776818,
+    "waterColor": 16777215
+  },
+  {
+    "ID": 8,
+    "name": "Hell",
+    "resourceLocation": "hell",
+    "grassColor": 9878616,
+    "foliageColor": 8235566,
+    "waterColor": 16777215
+  },
+  {
+    "ID": 9,
+    "name": "The End",
+    "resourceLocation": "sky",
+    "grassColor": 9485403,
+    "foliageColor": 7776818,
+    "waterColor": 16777215
+  },
+  {
+    "ID": 10,
+    "name": "FrozenOcean",
+    "resourceLocation": "frozen_ocean",
+    "grassColor": 9419871,
+    "foliageColor": 7645495,
+    "waterColor": 16777215
+  },
+  {
+    "ID": 11,
+    "name": "FrozenRiver",
+    "resourceLocation": "frozen_river",
+    "grassColor": 9419871,
+    "foliageColor": 7645495,
+    "waterColor": 16777215
+  },
+  {
+    "ID": 12,
+    "name": "Ice Plains",
+    "resourceLocation": "ice_flats",
+    "grassColor": 9419871,
+    "foliageColor": 7645495,
+    "waterColor": 16777215
+  },
+  {
+    "ID": 13,
+    "name": "Ice Mountains",
+    "resourceLocation": "ice_mountains",
+    "grassColor": 9419871,
+    "foliageColor": 7645495,
+    "waterColor": 16777215
+  },
+  {
+    "ID": 14,
+    "name": "MushroomIsland",
+    "resourceLocation": "mushroom_island",
+    "grassColor": 9092694,
+    "foliageColor": 7253035,
+    "waterColor": 16777215
+  },
+  {
+    "ID": 15,
+    "name": "MushroomIslandShore",
+    "resourceLocation": "mushroom_island_shore",
+    "grassColor": 9092694,
+    "foliageColor": 7253035,
+    "waterColor": 16777215
+  },
+  {
+    "ID": 16,
+    "name": "Beach",
+    "resourceLocation": "beaches",
+    "grassColor": 9551193,
+    "foliageColor": 7842607,
+    "waterColor": 16777215
+  },
+  {
+    "ID": 17,
+    "name": "DesertHills",
+    "resourceLocation": "desert_hills",
+    "grassColor": 9878616,
+    "foliageColor": 8235566,
+    "waterColor": 16777215
+  },
+  {
+    "ID": 18,
+    "name": "ForestHills",
+    "resourceLocation": "forest_hills",
+    "grassColor": 9354585,
+    "foliageColor": 7580463,
+    "waterColor": 16777215
+  },
+  {
+    "ID": 19,
+    "name": "TaigaHills",
+    "resourceLocation": "taiga_hills",
+    "grassColor": 9419869,
+    "foliageColor": 7711284,
+    "waterColor": 16777215
+  },
+  {
+    "ID": 20,
+    "name": "Extreme Hills Edge",
+    "resourceLocation": "smaller_extreme_hills",
+    "grassColor": 9485406,
+    "foliageColor": 7711285,
+    "waterColor": 16777215
+  },
+  {
+    "ID": 21,
+    "name": "Jungle",
+    "resourceLocation": "jungle",
+    "grassColor": 9092693,
+    "foliageColor": 7318571,
+    "waterColor": 16777215
+  },
+  {
+    "ID": 22,
+    "name": "JungleHills",
+    "resourceLocation": "jungle_hills",
+    "grassColor": 9092693,
+    "foliageColor": 7318571,
+    "waterColor": 16777215
+  },
+  {
+    "ID": 23,
+    "name": "JungleEdge",
+    "resourceLocation": "jungle_edge",
+    "grassColor": 9223766,
+    "foliageColor": 7384107,
+    "waterColor": 16777215
+  },
+  {
+    "ID": 24,
+    "name": "Deep Ocean",
+    "resourceLocation": "deep_ocean",
+    "grassColor": 9485403,
+    "foliageColor": 7776818,
+    "waterColor": 16777215
+  },
+  {
+    "ID": 25,
+    "name": "Stone Beach",
+    "resourceLocation": "stone_beach",
+    "grassColor": 9485406,
+    "foliageColor": 7711285,
+    "waterColor": 16777215
+  },
+  {
+    "ID": 26,
+    "name": "Cold Beach",
+    "resourceLocation": "cold_beach",
+    "grassColor": 9419871,
+    "foliageColor": 7645751,
+    "waterColor": 16777215
+  },
+  {
+    "ID": 27,
+    "name": "Birch Forest",
+    "resourceLocation": "birch_forest",
+    "grassColor": 9485402,
+    "foliageColor": 7711280,
+    "waterColor": 16777215
+  },
+  {
+    "ID": 28,
+    "name": "Birch Forest Hills",
+    "resourceLocation": "birch_forest_hills",
+    "grassColor": 9485402,
+    "foliageColor": 7711280,
+    "waterColor": 16777215
+  },
+  {
+    "ID": 29,
+    "name": "Roofed Forest",
+    "resourceLocation": "roofed_forest",
+    "grassColor": 9024852,
+    "foliageColor": 7580463,
+    "waterColor": 16777215
+  },
+  {
+    "ID": 30,
+    "name": "Cold Taiga",
+    "resourceLocation": "taiga_cold",
+    "grassColor": 9419871,
+    "foliageColor": 7645495,
+    "waterColor": 16777215
+  },
+  {
+    "ID": 31,
+    "name": "Cold Taiga Hills",
+    "resourceLocation": "taiga_cold_hills",
+    "grassColor": 9419871,
+    "foliageColor": 7645495,
+    "waterColor": 16777215
+  },
+  {
+    "ID": 32,
+    "name": "Mega Taiga",
+    "resourceLocation": "redwood_taiga",
+    "grassColor": 9419869,
+    "foliageColor": 7711284,
+    "waterColor": 16777215
+  },
+  {
+    "ID": 33,
+    "name": "Mega Taiga Hills",
+    "resourceLocation": "redwood_taiga_hills",
+    "grassColor": 9419869,
+    "foliageColor": 7711284,
+    "waterColor": 16777215
+  },
+  {
+    "ID": 34,
+    "name": "Extreme Hills+",
+    "resourceLocation": "extreme_hills_with_trees",
+    "grassColor": 9485406,
+    "foliageColor": 7711285,
+    "waterColor": 16777215
+  },
+  {
+    "ID": 35,
+    "name": "Savanna",
+    "resourceLocation": "savanna",
+    "grassColor": 9878616,
+    "foliageColor": 8235566,
+    "waterColor": 16777215
+  },
+  {
+    "ID": 36,
+    "name": "Savanna Plateau",
+    "resourceLocation": "savanna_rock",
+    "grassColor": 9878616,
+    "foliageColor": 8235566,
+    "waterColor": 16777215
+  },
+  {
+    "ID": 37,
+    "name": "Mesa",
+    "resourceLocation": "mesa",
+    "grassColor": 9483863,
+    "foliageColor": 8103474,
+    "waterColor": 16777215
+  },
+  {
+    "ID": 38,
+    "name": "Mesa Plateau F",
+    "resourceLocation": "mesa_rock",
+    "grassColor": 9483863,
+    "foliageColor": 8103474,
+    "waterColor": 16777215
+  },
+  {
+    "ID": 39,
+    "name": "Mesa Plateau",
+    "resourceLocation": "mesa_clear_rock",
+    "grassColor": 9483863,
+    "foliageColor": 8103474,
+    "waterColor": 16777215
+  },
+  {
+    "ID": 127,
+    "name": "The Void",
+    "resourceLocation": "void",
+    "grassColor": 9485403,
+    "foliageColor": 7776818,
+    "waterColor": 16777215
+  },
+  {
+    "ID": 129,
+    "name": "Sunflower Plains",
+    "resourceLocation": "mutated_plains",
+    "grassColor": 9551193,
+    "foliageColor": 7842607,
+    "waterColor": 16777215
+  },
+  {
+    "ID": 130,
+    "name": "Desert M",
+    "resourceLocation": "mutated_desert",
+    "grassColor": 9878616,
+    "foliageColor": 8235566,
+    "waterColor": 16777215
+  },
+  {
+    "ID": 131,
+    "name": "Extreme Hills M",
+    "resourceLocation": "mutated_extreme_hills",
+    "grassColor": 9485406,
+    "foliageColor": 7711285,
+    "waterColor": 16777215
+  },
+  {
+    "ID": 132,
+    "name": "Flower Forest",
+    "resourceLocation": "mutated_forest",
+    "grassColor": 9354585,
+    "foliageColor": 7580463,
+    "waterColor": 16777215
+  },
+  {
+    "ID": 133,
+    "name": "Taiga M",
+    "resourceLocation": "mutated_taiga",
+    "grassColor": 9419869,
+    "foliageColor": 7711284,
+    "waterColor": 16777215
+  },
+  {
+    "ID": 134,
+    "name": "Swampland M",
+    "resourceLocation": "mutated_swampland",
+    "grassColor": 9221205,
+    "foliageColor": 7709744,
+    "waterColor": 14745518
+  },
+  {
+    "ID": 140,
+    "name": "Ice Plains Spikes",
+    "resourceLocation": "mutated_ice_flats",
+    "grassColor": 9419871,
+    "foliageColor": 7645495,
+    "waterColor": 16777215
+  },
+  {
+    "ID": 149,
+    "name": "Jungle M",
+    "resourceLocation": "mutated_jungle",
+    "grassColor": 9092693,
+    "foliageColor": 7318571,
+    "waterColor": 16777215
+  },
+  {
+    "ID": 151,
+    "name": "JungleEdge M",
+    "resourceLocation": "mutated_jungle_edge",
+    "grassColor": 9223766,
+    "foliageColor": 7384107,
+    "waterColor": 16777215
+  },
+  {
+    "ID": 155,
+    "name": "Birch Forest M",
+    "resourceLocation": "mutated_birch_forest",
+    "grassColor": 9485402,
+    "foliageColor": 7711280,
+    "waterColor": 16777215
+  },
+  {
+    "ID": 156,
+    "name": "Birch Forest Hills M",
+    "resourceLocation": "mutated_birch_forest_hills",
+    "grassColor": 9485402,
+    "foliageColor": 7711280,
+    "waterColor": 16777215
+  },
+  {
+    "ID": 157,
+    "name": "Roofed Forest M",
+    "resourceLocation": "mutated_roofed_forest",
+    "grassColor": 9024852,
+    "foliageColor": 7580463,
+    "waterColor": 16777215
+  },
+  {
+    "ID": 158,
+    "name": "Cold Taiga M",
+    "resourceLocation": "mutated_taiga_cold",
+    "grassColor": 9419871,
+    "foliageColor": 7645495,
+    "waterColor": 16777215
+  },
+  {
+    "ID": 160,
+    "name": "Mega Spruce Taiga",
+    "resourceLocation": "mutated_redwood_taiga",
+    "grassColor": 9419869,
+    "foliageColor": 7711284,
+    "waterColor": 16777215
+  },
+  {
+    "ID": 161,
+    "name": "Redwood Taiga Hills M",
+    "resourceLocation": "mutated_redwood_taiga_hills",
+    "grassColor": 9419869,
+    "foliageColor": 7711284,
+    "waterColor": 16777215
+  },
+  {
+    "ID": 162,
+    "name": "Extreme Hills+ M",
+    "resourceLocation": "mutated_extreme_hills_with_trees",
+    "grassColor": 9485406,
+    "foliageColor": 7711285,
+    "waterColor": 16777215
+  },
+  {
+    "ID": 163,
+    "name": "Savanna M",
+    "resourceLocation": "mutated_savanna",
+    "grassColor": 9878616,
+    "foliageColor": 8235566,
+    "waterColor": 16777215
+  },
+  {
+    "ID": 164,
+    "name": "Savanna Plateau M",
+    "resourceLocation": "mutated_savanna_rock",
+    "grassColor": 9878616,
+    "foliageColor": 8235566,
+    "waterColor": 16777215
+  },
+  {
+    "ID": 165,
+    "name": "Mesa (Bryce)",
+    "resourceLocation": "mutated_mesa",
+    "grassColor": 9483863,
+    "foliageColor": 8103474,
+    "waterColor": 16777215
+  },
+  {
+    "ID": 166,
+    "name": "Mesa Plateau F M",
+    "resourceLocation": "mutated_mesa_rock",
+    "grassColor": 9483863,
+    "foliageColor": 8103474,
+    "waterColor": 16777215
+  },
+  {
+    "ID": 167,
+    "name": "Mesa Plateau M",
+    "resourceLocation": "mutated_mesa_clear_rock",
+    "grassColor": 9483863,
+    "foliageColor": 8103474,
+    "waterColor": 16777215
+  }
+]

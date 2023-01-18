@@ -48,7 +48,7 @@ public class NamespaceMapping {
                 Map<Integer, BlockStateNamespace> blockStateNamespaceMap = new LinkedHashMap<>();
                 for(Integer metaID : jsonBlockStateMap.keySet()){
                     JsonBlockState jsonBlockState = jsonBlockStateMap.get(metaID);
-                    blockStateNamespaceMap.put(metaID, new BlockStateNamespace(metaID, jsonBlockState.getBlockStateName(), jsonBlockState.getLightValue().doubleValue(), jsonBlockState.getProperties()));
+                    blockStateNamespaceMap.put(metaID, new BlockStateNamespace(metaID, jsonBlockState.getBlockStateName(), jsonBlockState.getLightValue().doubleValue(), jsonBlockState.getDefaultColor(), jsonBlockState.getProperties()));
                 }
 
                 EntityValues defaultCustomData = new EntityValues();

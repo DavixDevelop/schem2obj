@@ -31,4 +31,11 @@ public class ColorUtility {
         return Math.max(val, 0);
 
     }
+
+    public static Color multiplyColor(Color color1, Color color2){
+        int red = (color1.getRed() * color2.getRed()) / 255;
+        int green = (color1.getGreen() * color2.getGreen()) / 255;
+        int blue = (color1.getBlue() * color2.getBlue()) / 255;
+        return new Color(clipRGB(red), clipRGB(green), clipRGB(blue));
+    }
 }

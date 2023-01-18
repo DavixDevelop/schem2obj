@@ -625,7 +625,16 @@ public class CubeModelUtility {
         return false;
     }
 
-    public static void getAdjacentNamespace_NSWE(Namespace modified, IAdjacentCheck check){
+    /**
+     * Check north, south, west and east block, and depending on the check in IAdjacentCheck,
+     * either set the modified namespace blockstate property of the orientation to true (default behaviour),
+     * or perform some action upon the modified namespace as specified by IModifyNamespace
+     *
+     * @param modified The namespace to modify
+     * @param check An interface which checks if the adjacent blocks meets a certain condition
+     * @param modifyNamespace Optional interface that modifies the namespace if the `check` returns true
+     */
+    public static void getAdjacentNamespace_NSWE(Namespace modified, IAdjacentCheck check, IModifyNamespace ...modifyNamespace){
         //Check north
         Namespace adjacentBlock = Constants.LOADED_SCHEMATIC.getNamespace(
                 modified.getPosition("X"),
@@ -633,8 +642,12 @@ public class CubeModelUtility {
                 modified.getPosition("Z") - 1
                 );
         if(adjacentBlock != null){
-            if(check.checkCollision(adjacentBlock, 0, "north"))
-                modified.getDefaultBlockState().getData().put("north", "true");
+            if(check.checkCollision(adjacentBlock, 0, "north")) {
+                if(modifyNamespace.length != 0)
+                    modifyNamespace[0].modifyNamespace(modified);
+                else
+                    modified.getDefaultBlockState().getData().put("north", "true");
+            }
         }
 
         //Check south
@@ -643,8 +656,12 @@ public class CubeModelUtility {
                 modified.getPosition("Y"),
                 modified.getPosition("Z") + 1);
         if(adjacentBlock != null){
-            if(check.checkCollision(adjacentBlock, 0, "south"))
-                modified.getDefaultBlockState().getData().put("south", "true");
+            if(check.checkCollision(adjacentBlock, 0, "south")) {
+                if (modifyNamespace.length != 0)
+                    modifyNamespace[0].modifyNamespace(modified);
+                else
+                    modified.getDefaultBlockState().getData().put("south", "true");
+            }
         }
 
         //Check west
@@ -653,8 +670,12 @@ public class CubeModelUtility {
                 modified.getPosition("Y"),
                 modified.getPosition("Z"));
         if(adjacentBlock != null){
-            if(check.checkCollision(adjacentBlock, 0, "west"))
-                modified.getDefaultBlockState().getData().put("west", "true");
+            if(check.checkCollision(adjacentBlock, 0, "west")) {
+                if(modifyNamespace.length != 0)
+                    modifyNamespace[0].modifyNamespace(modified);
+                else
+                    modified.getDefaultBlockState().getData().put("west", "true");
+            }
         }
 
         //Check east
@@ -663,8 +684,12 @@ public class CubeModelUtility {
                 modified.getPosition("Y"),
                 modified.getPosition("Z"));
         if(adjacentBlock != null){
-            if(check.checkCollision(adjacentBlock, 0, "east"))
-                modified.getDefaultBlockState().getData().put("east", "true");
+            if(check.checkCollision(adjacentBlock, 0, "east")) {
+                if(modifyNamespace.length != 0)
+                    modifyNamespace[0].modifyNamespace(modified);
+                else
+                    modified.getDefaultBlockState().getData().put("east", "true");
+            }
         }
     }
 

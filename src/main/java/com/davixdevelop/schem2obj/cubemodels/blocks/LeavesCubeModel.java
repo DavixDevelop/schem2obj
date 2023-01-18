@@ -1,14 +1,18 @@
 package com.davixdevelop.schem2obj.cubemodels.blocks;
 
 import com.davixdevelop.schem2obj.Constants;
+import com.davixdevelop.schem2obj.biomes.Biome;
 import com.davixdevelop.schem2obj.blockstates.BlockState;
 import com.davixdevelop.schem2obj.cubemodels.CubeModelUtility;
 import com.davixdevelop.schem2obj.cubemodels.ICubeModel;
 import com.davixdevelop.schem2obj.materials.IMaterial;
 import com.davixdevelop.schem2obj.models.VariantModels;
 import com.davixdevelop.schem2obj.namespace.Namespace;
+import com.davixdevelop.schem2obj.util.ColorUtility;
 import com.davixdevelop.schem2obj.util.ImageUtility;
 
+import java.awt.*;
+import java.awt.image.BufferedImage;
 import java.util.*;
 
 /**
@@ -51,8 +55,18 @@ public class LeavesCubeModel extends BlockCubeModel {
 
             IMaterial leaves_material = Constants.BLOCK_MATERIALS.getMaterial(leaves_texture);
 
+            //Get the biome of the column
+            Biome biome = Constants.LOADED_SCHEMATIC.getBiome(blockNamespace.getPosition("X"), blockNamespace.getPosition("Z"));
+
             //Color the leaves with the foliage color
-            leaves_material.setDiffuseImage(ImageUtility.colorImage(leaves_material.getDefaultDiffuseImage(), Constants.BIOMES_FOLIAGE_COLOR));
+            BufferedImage leavesImage = ImageUtility.colorImage(leaves_material.getDefaultDiffuseImage(), biome.getFoliageColor());
+
+            //Overlay texture with purple color if biome is swampland
+            if(biome.getResource().contains("swampland"))
+                leavesImage = ImageUtility.colorColoredImage(leavesImage, Constants.SWAMPLAND_PURPLE_OVERLAY);
+
+
+            leaves_material.setDiffuseImage(leavesImage);
 
             //Set the material options for leaves
             leaves_material.setSpecularHighlights(0.0);

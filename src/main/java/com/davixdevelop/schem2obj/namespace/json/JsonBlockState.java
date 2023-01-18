@@ -5,10 +5,12 @@ import java.util.Map;
 public class JsonBlockState {
     String blockStateName;
     Integer lightValue;
+    Integer defaultColor;
     Map<String, String> properties;
 
-    public JsonBlockState(String blockStateName, Integer lightValue, Map<String, String> properties) {
+    public JsonBlockState(String blockStateName, Integer lightValue, Integer defaultColor, Map<String, String> properties) {
         this.blockStateName = blockStateName;
+        this.defaultColor = defaultColor;
         this.lightValue = lightValue;
         this.properties = properties;
     }
@@ -19,6 +21,10 @@ public class JsonBlockState {
 
     public Integer getLightValue() {
         return lightValue;
+    }
+
+    public Integer getDefaultColor() {
+        return defaultColor;
     }
 
     public Map<String, String> getProperties() {

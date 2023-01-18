@@ -1,16 +1,13 @@
 package com.davixdevelop.schem2obj.schematic;
 
 import com.davixdevelop.schem2obj.Constants;
+import com.davixdevelop.schem2obj.biomes.Biome;
 import com.davixdevelop.schem2obj.namespace.Namespace;
 
 import java.util.List;
 
 public class SchematicHolder {
     private Schematic schematic;
-
-    private int posX;
-    private int posY;
-    private int posZ;
 
     public void setSchematic(Schematic schematic) {
         this.schematic = schematic;
@@ -56,6 +53,10 @@ public class SchematicHolder {
         }
 
         return null;
+    }
+
+    public Biome getBiome(int x, int z){
+        return schematic.getBiome(x, z);
     }
 
     public boolean isAirOrLiquid(int blockIndex){

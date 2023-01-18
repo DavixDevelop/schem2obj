@@ -454,10 +454,16 @@ public class LiquidCubeModel extends CubeModel {
             CubeModelUtility.generateOrGetMaterial(stillMaterial, liquidNamespace);
             CubeModelUtility.generateOrGetMaterial(flowableMaterial, liquidNamespace);
 
-            getMaterials().put(stillMaterial);
-            getMaterials().put(flowableMaterial);
+            if(stillMaterial.contains("water")){
+                WaterCubeModel.modifyWaterMaterial(stillMaterial, liquidNamespace);
+                WaterCubeModel.modifyWaterMaterial(flowableMaterial, liquidNamespace);
+            }
 
+            generatedMaterials = true;
         }
+
+        getMaterials().put(stillMaterial);
+        getMaterials().put(flowableMaterial);
 
         Integer[] materialFaces = new Integer[6];
         Boolean[] generatedFaces = new Boolean[]{false, false, false, false, false, false};
