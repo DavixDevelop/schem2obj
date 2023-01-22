@@ -1,6 +1,6 @@
-<img src="Schem2Obj_Logo.png" width="50%" />
+<img src="Schem2Obj_Banner.png" />
 
-## Schem2Obj
+#
 
 A java program for converting Minecraft 1.12 schematics to OBJ (Wavefront)
 with support for multiple resource packs (only in SEUS and Vanilla Format for now).  The MTL file uses
