@@ -1,3 +1,5 @@
+<img src="Schem2Obj_Logo.png" width="50%" />
+
 ## Schem2Obj
 
 A java program for converting Minecraft 1.12 schematics to OBJ (Wavefront)
@@ -74,7 +76,7 @@ Optional parameters:
 > 
 > Note: Marked with `(some parameter)` are optional parts, and the actual inputs with `<some value>`. Remove the <> and () before running the command in a terminal.
 > <br>Ex with both jar, schematic and output OBJ file in same folder, and the unpacked resource pack (with the resource pack only in the SEUS or Vanilla format for now) in the .minecraft folder:<br>
-> `java -jar schem2obj-0.7.54.jar -minecraftFolder C:\Users\user\AppData\Roaming\.minecraft -i lava_test.schematic -o lava_test.obj -t SEUS:C:\Users\user\AppData\Roaming\.minecraft\resourcepacks\PBRResourcePack`
+> `java -jar schem2obj-0.7.55.jar -minecraftFolder C:\Users\user\AppData\Roaming\.minecraft -i lava_test.schematic -o lava_test.obj -t SEUS:C:\Users\user\AppData\Roaming\.minecraft\resourcepacks\PBRResourcePack`
 
 
 ### Blender 3.4 Import Procedure
@@ -83,4 +85,4 @@ To import the generated OBJ into Blender 3.4 for example, create a new collectio
 
 Once It's imported, to properly set up the import, use the companion `MCImportCleanUp_Blender.py` script (Go to scripting tab, open the script and run it with `Alt+P`).
 
-> Currently in development.
+>  In development.

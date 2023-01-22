@@ -1,3 +1,9 @@
+- [0.7](https://github.com/DavixDevelop/schem2obj/releases/tag/v0.7)
+- Dropped `alpha` tag
+- Added new optional parameter `-biome <biome_id>`
+- Added support for following Blocks:
+  - Wall
+  - Fence Gate
 - [0.6](https://github.com/DavixDevelop/schem2obj/releases/tag/v0.6-alpha)
   - Memory optimized generating and converting of blocks, to enable converting larger schematics
   - The exported OBJ file (if the optional parameter `-allBlocks` isn't set), now consists of only one object, 
