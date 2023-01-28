@@ -81,7 +81,9 @@ public class SignCubeModel extends TileEntityCubeModel {
             int rowSize = (bitmapYRes != null) ? bitmapYRes / 16 : 8;
 
             int yPixelSize = rowSize / 8;
-            int yResolution = (4 * (8 * yPixelSize)) + (4 * (2 * yPixelSize)) + (3 * yPixelSize);
+            //row height + bottom/top border + row spacing
+            //int yResolution = (4 * (8 * yPixelSize)) + (2 * (4 * yPixelSize)) + (3 * (2 * yPixelSize));
+            int yResolution = 48 * yPixelSize;
             int xResolution = 2 * yResolution;
             //Create empty diffuse image
             BufferedImage diffuseImage = new BufferedImage(xResolution, yResolution, BufferedImage.TYPE_INT_ARGB_PRE);
@@ -131,6 +133,23 @@ public class SignCubeModel extends TileEntityCubeModel {
             color = Constants.TEXT_COLORS.get("black");
 
         String text = row.getString("text");
+
+        if(row.containsKey("extra")){
+            List<?> extra = row.getList("extra");
+            if(extra.size() > 0){
+                if(extra.get(0) instanceof Map){
+                    Map<?, ?> map = (Map<?, ?>) extra.get(0);
+                    if(map.containsKey("text"))
+                        text = (String) map.get("text");
+
+                    if(row.containsKey("color")) {
+                        String colorName = row.getString("color");
+                        color = Constants.TEXT_COLORS.get(colorName);
+                    }
+                }
+            }
+        }
+
         for(int d = 0; d < text.length(); d++){
 
             String coloredGlyphKey = String.format("%s:%s", color.getStringValue(), text.charAt(d));
@@ -364,12 +383,12 @@ public class SignCubeModel extends TileEntityCubeModel {
 
             int yPixelSize = rowHeight / 8;
             int rowSpacing = (2 * yPixelSize);
-            int yOffset = (row * rowSpacing) + ((row - 1) * rowHeight);
+            int yOffset = (row * rowSpacing) + ((row - 1) * rowHeight) + rowSpacing;
 
             for(int c = 0; c < text.length(); c++){
                 char t = text.charAt(c);
                 BufferedImage glyph = COLORED_GLYPHS.get(String.format("%s:%s", color, t));
-                //Upscale glyph is It's height doesn't match the rowHeight
+                //Upscale glyph is Its height doesn't match the rowHeight
                 if(glyph.getHeight() != rowHeight){
                     double yRatio = rowHeight.doubleValue() / glyph.getHeight();
                     int xRes = (int) (glyph.getWidth() * yRatio);
@@ -377,9 +396,15 @@ public class SignCubeModel extends TileEntityCubeModel {
                 }
 
                 if (c != text.length() - 1) {
-                    rowWidth += glyph.getWidth() + (Character.isWhitespace(t) ? 0 : (int) columnSpacing);
+                    if(Character.isWhitespace(t))
+                        rowWidth += glyph.getWidth() / 1.77;
+                    else
+                        rowWidth += glyph.getWidth() + (int) columnSpacing;
                 }else {
-                    rowWidth += glyph.getWidth();
+                    if(Character.isWhitespace(t))
+                        rowWidth += glyph.getWidth() / 1.77;
+                    else
+                        rowWidth += glyph.getWidth();
                 }
 
                 glyphRow[c] = glyph;
@@ -391,12 +416,20 @@ public class SignCubeModel extends TileEntityCubeModel {
                 char t = text.charAt(c);
                 BufferedImage glyph = glyphRow[c];
 
-                ImageUtility.insertIntoImage(image, glyph, xOffset, yOffset);
+                try {
+                    ImageUtility.insertIntoImage(image, glyph, xOffset, yOffset);
+                }catch (Exception ignored){
 
-                if(c != text.length() - 1)
-                    xOffset += glyph.getWidth() + (Character.isWhitespace(t) ? 0 : columnSpacing);
+                }
+
+                if (c != text.length() - 1) {
+                    if (Character.isWhitespace(t))
+                        xOffset += (glyph.getWidth() / 1.77);
+                    else
+                        xOffset += glyph.getWidth() + (int) columnSpacing;
+                }
+
             }
-
         }
     }
 

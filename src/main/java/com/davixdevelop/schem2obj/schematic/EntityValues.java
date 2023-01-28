@@ -111,6 +111,10 @@ public class EntityValues {
                 EntityValues entityValues1 = new EntityValues();
                 parseJsonMap((Map<?, ?>) val, entityValues1);
                 entityValues.map.put((String)key, entityValues1);
+            }else if(val instanceof List){
+                List<?> list = (List<?>) val;
+                List<Object> entityValuesList = new ArrayList<>(list);
+                entityValues.map.put((String) key, entityValuesList);
             }
         }
     }
