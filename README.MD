@@ -44,6 +44,7 @@ All basic blocks (that are only basic cubes), and builtin blocks (ex, water, ban
 - Paintings
 - Boats (All variants)
 - Item Frames (Including holding items (all supported blocks & entities))
+- Armor Stand & Armor
 
 ### Supported resource packs
 For now, only resource packs that use the SEUS or Vanilla format are supported. Beside using the textures the resource pack includes,

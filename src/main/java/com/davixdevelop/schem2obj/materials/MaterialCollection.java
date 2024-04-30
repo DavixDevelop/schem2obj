@@ -46,11 +46,11 @@ public class MaterialCollection {
 
     /**
      * Check if material is in collection
-     * @param name The name of the material ex, blocks/dirt
+     * @param path The path of the material ex, blocks/dirt
      * @return True if it is present, else false
      */
-    public boolean containsMaterial(String name){
-        return materials.containsKey(name);
+    public boolean containsMaterial(String path){
+        return materials.containsKey(path);
     }
 
     /**
@@ -173,9 +173,11 @@ public class MaterialCollection {
                 material.setIlluminationModel(4);
                 material.setTransmissionFilter(0.7);
                 material.setTransparency(true);
+        }
 
-
-
+        if(material.getName().contains("diamond") || material.getName().contains("gold")){
+            material.setSpecularHighlights(229.5);
+            material.setSpecularColor(0.18);
         }
     }
 }

@@ -392,6 +392,8 @@ public class SignCubeModel extends TileEntityCubeModel {
                 if(glyph.getHeight() != rowHeight){
                     double yRatio = rowHeight.doubleValue() / glyph.getHeight();
                     int xRes = (int) (glyph.getWidth() * yRatio);
+                    if(xRes == 0)
+                        xRes = 1;
                     glyph = ImageUtility.upscaleImage(glyph, xRes, rowHeight);
                 }
 

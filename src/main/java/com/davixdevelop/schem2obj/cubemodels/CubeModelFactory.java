@@ -8,6 +8,10 @@ import com.davixdevelop.schem2obj.cubemodels.blocks.*;
 import com.davixdevelop.schem2obj.cubemodels.entity.*;
 import com.davixdevelop.schem2obj.cubemodels.entitytile.*;
 import com.davixdevelop.schem2obj.cubemodels.item.ItemCubeModel;
+import com.davixdevelop.schem2obj.cubemodels.item.armor.ArmorBootsCubeModel;
+import com.davixdevelop.schem2obj.cubemodels.item.armor.ArmorChestplateCubeModel;
+import com.davixdevelop.schem2obj.cubemodels.item.armor.ArmorHelmetCubeModel;
+import com.davixdevelop.schem2obj.cubemodels.item.armor.ArmorLeggingsCubeModel;
 import com.davixdevelop.schem2obj.namespace.Namespace;
 import com.davixdevelop.schem2obj.resourceloader.ResourceLoader;
 import com.davixdevelop.schem2obj.schematic.EntityValues;
@@ -91,18 +95,12 @@ public class CubeModelFactory {
         }
     }
 
-    public ICubeModel getItemModel(EntityValues item, Namespace itemHolderNamespace){
-        boolean itemUsesBlockAsIcon = false;
-
+    public Namespace getNamespaceFromItem(EntityValues item){
         //Get namespace of item
         String itemResource = item.getString("id");
-        String itemResourcePath = itemResource.substring(itemResource.indexOf(":") + 1);
         Namespace namespace = Constants.NAMESPACE_MAPPING.getNamespace(itemResource);
 
-        //If namespace is null, the item uses the icon in textures/items as the item model
-        if(namespace == null)
-            itemUsesBlockAsIcon = true;
-        else{
+        if(namespace != null){
             namespace.setPosition(new Integer[]{0,0,0});
 
             Set<String> tagKeys = new LinkedHashSet<>();
@@ -173,6 +171,27 @@ public class CubeModelFactory {
                 namespace.setCustomData(entityValues);
         }
 
+        return namespace;
+    }
+
+    /**
+     * Get the item model from the Item nbt tag
+     * @param item The nbt tag of the Item
+     * @param itemHolderNamespace The namespace of the object that holds the Item
+     * @return The model of the Item
+     */
+    public ICubeModel getItemModel(EntityValues item, Namespace itemHolderNamespace){
+        boolean itemUsesBlockAsIcon = false;
+
+        //Get namespace of item
+        String itemResource = item.getString("id");
+        String itemResourcePath = itemResource.substring(itemResource.indexOf(":") + 1);
+        Namespace namespace = getNamespaceFromItem(item);
+
+        //If namespace is null, the item uses the icon in textures/items as the item model
+        if(namespace == null)
+            itemUsesBlockAsIcon = true;
+
 
         ICubeModel itemCubeModel = null;
         Map<String, Object> key = new LinkedHashMap<>();
@@ -186,17 +205,8 @@ public class CubeModelFactory {
 
         Object itemKey = !key.isEmpty() ? key : itemResource;
 
-        /*if(itemGenerationQueue.contains(itemKey)){
-            while (true){
-                if(!itemGenerationQueue.contains(itemKey))
-                    break;
-            }
-        }else
-            itemGenerationQueue.add(itemKey);*/
-
 
         if(itemModels.containsKey(itemKey)){
-            //itemGenerationQueue.remove(itemKey);
             return itemModels.get(itemKey).duplicate();
         }else{
             String item_resource = null;
@@ -286,6 +296,8 @@ public class CubeModelFactory {
                 return new BoatCubeModel();
             case "item_frame":
                 return new ItemFrameCubeModel();
+            case "armor_stand":
+                return new ArmorStandModel();
         }
 
         if (blockNamespace.getResource().contains("slab") && !blockNamespace.getResource().contains("double"))
@@ -314,6 +326,18 @@ public class CubeModelFactory {
 
         if(blockNamespace.getResource().contains("fence_gate"))
             return new FenceGateCubeModel();
+
+        if(blockNamespace.getType().contains("_helmet"))
+            return new ArmorHelmetCubeModel();
+
+        if(blockNamespace.getType().contains("_chestplate"))
+            return new ArmorChestplateCubeModel();
+
+        if(blockNamespace.getType().contains("_leggings"))
+            return new ArmorLeggingsCubeModel();
+
+        if(blockNamespace.getType().contains("_boots"))
+            return new ArmorBootsCubeModel();
 
 
         switch (blockNamespace.getType()) {

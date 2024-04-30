@@ -20,7 +20,7 @@ public class BiomeCollection {
 
         //Get tge input stream of biomes.json
         //biomes.json was generated using ExtractBlocks (https://github.com/DavixDevelop/ExtractBlocks)
-        InputStream biomesStream = this.getClass().getClassLoader().getResourceAsStream("assets/minecraft/biomes.json");
+        InputStream biomesStream = this.getClass().getClassLoader().getResourceAsStream("assets/schem2obj/biomes.json");
 
         if(biomesStream != null){
             //Get reader for input stream

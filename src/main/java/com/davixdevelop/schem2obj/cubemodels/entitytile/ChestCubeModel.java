@@ -8,7 +8,6 @@ import com.davixdevelop.schem2obj.cubemodels.CubeModelUtility;
 import com.davixdevelop.schem2obj.cubemodels.IAdjacentCheck;
 import com.davixdevelop.schem2obj.cubemodels.ICubeModel;
 import com.davixdevelop.schem2obj.namespace.Namespace;
-import com.davixdevelop.schem2obj.schematic.EntityValues;
 import com.davixdevelop.schem2obj.util.ArrayVector;
 
 import java.util.HashMap;
@@ -16,7 +15,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class ChestCubeModel extends TileEntityCubeModel implements IAdjacentCheck {
-    public static AdjacentBlockState ADJACENT_CHEST_STATES = new AdjacentBlockState("assets/minecraft/chest_states.json");
+    public static AdjacentBlockState ADJACENT_CHEST_STATES = new AdjacentBlockState("assets/schem2obj/chest_states.json");
 
     //Map<key: variant:type:facing, value: Chest Cube Model>
     public static HashMap<String, ChestCubeModel> CHEST_VARIANTS = new HashMap<>();

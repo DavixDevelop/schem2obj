@@ -20,10 +20,6 @@ import java.net.URL;
 import java.util.*;
 
 public class SkullCubeModel extends TileEntityCubeModel {
-
-    //key facing:Rot:SkullType(:Owner-ID), value Skull Cube Model
-    public static HashMap<String, SkullCubeModel> SKULL_VARIANTS = new HashMap<>();
-    //SkullType or Owner-ID
     public static Set<String> GENERATED_SKULLS = new HashSet<>();
     //Map<key: Owner-ID, value: 0 -> default player head | 1 -> hd player head
     public static Map<String, Integer> PLAYER_HEAD_TYPES = new HashMap<>();

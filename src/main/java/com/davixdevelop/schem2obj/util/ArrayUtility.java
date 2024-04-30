@@ -2,6 +2,7 @@ package com.davixdevelop.schem2obj.util;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 /**
  * An utility class for manipulating with array and arraylists
@@ -92,5 +93,13 @@ public class ArrayUtility {
             return null;
 
         return Arrays.copyOf(org, org.length);
+    }
+
+    public static Double[] floatListToArray(List<Float> floatList){
+        Double[] array = new Double[floatList.size()];
+        for(int c = 0; c < floatList.size(); c++)
+            array[c] = floatList.get(c).doubleValue();
+
+        return array;
     }
 }

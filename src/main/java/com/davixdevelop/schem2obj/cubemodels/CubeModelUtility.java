@@ -22,7 +22,6 @@ import com.davixdevelop.schem2obj.util.LogUtility;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.io.InputStream;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.*;
@@ -103,14 +102,20 @@ public class CubeModelUtility {
 
             String diffuseTexturePath = null;
 
-            if(materialPath.startsWith("blocks") || materialPath.startsWith("painting") || materialPath.startsWith("items") || (materialPath.startsWith("entity") && !materialPath.contains("-"))) {
+            if(materialPath.startsWith("blocks") || materialPath.startsWith("painting") || materialPath.startsWith("items") || materialPath.startsWith("models") || (materialPath.startsWith("entity") && !materialPath.contains("-"))) {
                 diffuseTexturePath = materialPath;
             }else if(materialPath.startsWith("entity") && materialPath.contains("-")){
                 String materialName = textureName(materialPath);
                 //If material path contains a -, it means the texture for that material is in a subfolder with the name of the entity
                 //Ex: black-bed -> diffuseTextureFile = entity/bed/black
                 diffuseTexturePath = String.format("entity/%s/%s", materialName.substring(materialName.indexOf('-') + 1), materialName.substring(0, materialName.indexOf('-')));
+            }else{
+                diffuseTexturePath = materialPath;
             }
+
+            //Check if texture path contains the namespace, ex. ":minecraft", and remove it
+            if(diffuseTexturePath != null && diffuseTexturePath.contains(":"))
+                diffuseTexturePath = diffuseTexturePath.substring(diffuseTexturePath.indexOf(":") + 1);
 
             String diffusePath = ResourceLoader.getResourcePath("textures", diffuseTexturePath,"png");
 

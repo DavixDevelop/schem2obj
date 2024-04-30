@@ -24,7 +24,7 @@ import java.util.*;
  * @author DavixDevelop
  */
 public class RedstoneWireCubeModel extends CubeModel implements IAdjacentCheck {
-    static AdjacentBlockState ADJACENT_REDSTONE_WIRE_STATES = new AdjacentBlockState("assets/minecraft/redstone_wire_states.json");
+    static AdjacentBlockState ADJACENT_REDSTONE_WIRE_STATES = new AdjacentBlockState("assets/schem2obj/redstone_wire_states.json");
     static Set<String> MODIFIED_REDSTONE_WIRE_MATERIALS = new HashSet<>();
 
     private String power;

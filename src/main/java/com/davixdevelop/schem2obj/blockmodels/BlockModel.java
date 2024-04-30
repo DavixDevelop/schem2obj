@@ -229,7 +229,13 @@ public class BlockModel {
                 fixedDisplay.scale = new Double[]{rawFixedDisplay.scale[0], rawFixedDisplay.scale[2], rawFixedDisplay.scale[1]};
         }
 
-        model = new BlockModel(modelName, rawModel.parent, rawModel.ambientOcclusion, new BlockTextures(particle, textureVariables),cubeElements, fixedDisplay);
+        String parentModel = rawModel.parent;
+        //Check if parent model path includes the namespace, ex. "minecraft:", and remove it
+        if(parentModel != null && parentModel.contains(":"))
+            parentModel = parentModel.substring(parentModel.indexOf(":") + 1);
+
+
+        model = new BlockModel(modelName, parentModel, rawModel.ambientOcclusion, new BlockTextures(particle, textureVariables),cubeElements, fixedDisplay);
         return model;
     }
 

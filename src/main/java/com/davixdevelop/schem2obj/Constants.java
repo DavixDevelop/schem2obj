@@ -47,6 +47,7 @@ public class Constants {
         EntityFolderFilter.add("zombie");
         EntityFolderFilter.add("chest");
         EntityFolderFilter.add("boat");
+        EntityFolderFilter.add("armorstand");
 
         SupportedEntities.add("minecart");
         SupportedEntities.add("bed");
@@ -61,6 +62,7 @@ public class Constants {
         SupportedEntities.add("painting");
         SupportedEntities.add("boat");
         SupportedEntities.add("item_frame");
+        SupportedEntities.add("armor_stand");
 
         BANNER_COLORS.put(0, new IntegerString("black", 1644825));
         BANNER_COLORS.put(1, new IntegerString("red",10040115));
@@ -152,6 +154,7 @@ public class Constants {
     public static int CONSTANT_BIOME_ID = 1;
 
     public static int SNOW_COLOR = 16316922;
+    public static int DEFAULT_LEATHER_COLOR = 10511680;
 
     public static int SWAMPLAND_PURPLE_OVERLAY = 10716067;
 

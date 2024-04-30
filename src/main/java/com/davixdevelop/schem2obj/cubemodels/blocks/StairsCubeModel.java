@@ -15,7 +15,7 @@ import java.util.Map;
  * @author DavixDevelop
  */
 public class StairsCubeModel extends BlockCubeModel implements IAdjacentCheck {
-    public static AdjacentBlockState ADJACENT_STAIRS_STATES = new AdjacentBlockState("assets/minecraft/stairs_states.json");
+    public static AdjacentBlockState ADJACENT_STAIRS_STATES = new AdjacentBlockState("assets/schem2obj/stairs_states.json");
 
     private String half;
     private String facing;

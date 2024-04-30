@@ -29,7 +29,7 @@ public class ResourceLoader {
             Integer resourcePackIndex = RESOURCES.get(path);
             return RESOURCE_PACKS.get(resourcePackIndex).getResource(path);
         }else{
-            return ResourceLoader.class.getClassLoader().getResourceAsStream("assets/minecraft/" + path);
+            return ResourceLoader.class.getClassLoader().getResourceAsStream("assets/schem2obj/" + path);
         }
     }
 
@@ -146,9 +146,9 @@ public class ResourceLoader {
                     String textureFolderPath = Paths.get(resourcePack, "assets","minecraft").toString();
 
                     for (File textureFolder : textureFolders) {
-                        //Scan for textures in blocks and entities
-                        if (!textureFolder.getName().equals("blocks") && !textureFolder.getName().equals("entity") && !textureFolder.getName().equals("font") && !textureFolder.getName().equals("painting") && !textureFolder.getName().equals("items"))
-                            continue;
+                        //Scan for textures in blocks, entities, font, painting, items and models
+                        //if (!textureFolder.getName().equals("blocks") && !textureFolder.getName().equals("entity") && !textureFolder.getName().equals("font") && !textureFolder.getName().equals("painting") && !textureFolder.getName().equals("items") && !textureFolder.getName().equals("models"))
+                            //continue;
 
                         File[] textures = textureFolder.listFiles();
                         //String textureFolderName = textureFolder.getName();
@@ -168,7 +168,7 @@ public class ResourceLoader {
 
                 if(modelsSubfolder != null){
                     for(File modelsSubFolder : modelsSubfolder){
-                        if(modelsSubFolder.isDirectory() && (modelsSubFolder.getName().equals("block") || modelsSubFolder.getName().equals("item"))){
+                        if(modelsSubFolder.isDirectory()) {// && (modelsSubFolder.getName().equals("block") || modelsSubFolder.getName().equals("item"))){
                             File[] blockModels = modelsSubFolder.listFiles();
 
                             if(blockModels != null)
@@ -267,9 +267,9 @@ public class ResourceLoader {
                         //Get the type of the texture (ex. blocks/dirt.png -> blocks)
                         String textureType = assetPath.substring(0, assetPath.indexOf("/"));
 
-                        //Scan only for texture types of blocks and entities and font
-                        if(!textureType.equals("blocks") && !textureType.equals("entity") && !textureType.equals("font") && !textureType.equals("painting") && !textureType.equals("items"))
-                            continue;
+                        //Scan only for texture types of blocks, entities, font, painting, items and models
+                        //if(!textureType.equals("blocks") && !textureType.equals("entity") && !textureType.equals("font") && !textureType.equals("painting") && !textureType.equals("items") && !textureType.equals("models"))
+                        //    continue;
 
                         //Get the path to the texture (ex. textures/entity/bed/blue.png - > blue.png)
                         String textureFilePath = fullPath.substring(17);

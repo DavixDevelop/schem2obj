@@ -208,4 +208,20 @@ public class CubeModel implements ICubeModel {
         }
     }
 
+
+    /**
+     * Create the cube model from the name and a map of texture variables
+     * @param name The name of the cube model
+     * @param modelsMaterials A map of texture variables and the material it's set to, ex key: #north, value: block/dirt
+     */
+    public void fromName(String name, HashMap<String,String> modelsMaterials){
+        setName(name);
+
+        //Set the materials the cubes to the cube model
+        materials = new HashedStringList();
+        for(String textureVariable : modelsMaterials.keySet())
+            materials.put(modelsMaterials.get(textureVariable));
+
+    }
+
 }

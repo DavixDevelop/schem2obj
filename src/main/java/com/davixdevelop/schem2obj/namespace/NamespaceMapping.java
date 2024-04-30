@@ -30,7 +30,7 @@ public class NamespaceMapping {
 
         //Get the input stream of items.json
         //items.json was generated using ExtractBlocks (https://github.com/DavixDevelop/ExtractBlocks)
-        InputStream itemsStream = this.getClass().getClassLoader().getResourceAsStream("assets/minecraft/items.json");
+        InputStream itemsStream = this.getClass().getClassLoader().getResourceAsStream("assets/schem2obj/items.json");
 
         if(itemsStream != null){
             //Get reader for input stream
