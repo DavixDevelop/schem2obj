@@ -81,7 +81,7 @@ public class SchemeToObj {
                 return;
             }
         } else {
-            LogUtility.Log("Could not find versions/1.12.2/1.12.2.jar in minecraft folder");
+            LogUtility.Log("Could not find versions/1.12.2/1.12.2.jar in minecraft folder: " + minecraftFolder);
             return;
         }
 
@@ -300,10 +300,6 @@ public class SchemeToObj {
                                 case "water":
                                     if (waterObject == null)
                                         waterObject = new WaterCubeModel();
-
-                                    if (z == 15 && y == 4) {
-                                        String w = "2";
-                                    }
 
                                     waterObject.addBlock(namespace);
                                     break;
