@@ -1,4 +1,4 @@
-<div align="center" style="text-align:center">
+<div align="center">
 
 # <img src="Schem2Obj_Banner.png" />
 
@@ -107,7 +107,7 @@ You can contact me on Discord, under `davixdevelop`.
 Hi, I'm David, a broke computer technician and amateur artist based in Celje, Slovenia.
 Duo to various reason, like depression and mental health problems for the last 4 years of my life, I had to drop out of university, and I'm yet to find a job at 25.
 If you found my projects or help usefully, I would appreciate any donation.
-<div align="center" style="text-align:center">
+<div align="center">
 
 [![PayPal Donate](https://img.shields.io/badge/PayPal-00457C?style=for-the-badge&logo=paypal&logoColor=white)](https://www.paypal.com/donate/?hosted_button_id=8HPGBZVX6PZFL)
 [![Linkedin](https://img.shields.io/badge/LinkedIn-0077B5?style=for-the-badge&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/davixdevelop/)
