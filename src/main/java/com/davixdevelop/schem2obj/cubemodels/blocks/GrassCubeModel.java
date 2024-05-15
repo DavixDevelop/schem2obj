@@ -27,7 +27,6 @@ import java.util.Map;
  */
 public class GrassCubeModel extends BlockCubeModel {
     //To mark if grass_top and grass_side was colored based on the biomes grass color
-    //ToDo: Add option to choose biomes colors
     private static boolean NORMAL_MATERIAL_COLORED;
     //To mark if grass_top and grass_side was colored to white and was sawed as snowy_grass_top and snowy_grass_side
     private static boolean SNOWY_MATERIAL_GENERATED;

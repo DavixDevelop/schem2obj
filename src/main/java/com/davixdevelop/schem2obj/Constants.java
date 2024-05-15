@@ -158,6 +158,10 @@ public class Constants {
 
     public static int SWAMPLAND_PURPLE_OVERLAY = 10716067;
 
+    public static int SPRUCE_LEAVES_COLOR = 6396257;
+
+    public static int BIRCH_LEAVES_COLOR = 8431445;
+
     public static Map<Integer, Integer> REDSTONE_COLORS = new HashMap<>();
 
     public static Map<Integer, IntegerString> BANNER_COLORS = new HashMap<>();

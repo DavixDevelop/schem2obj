@@ -1,5 +1,5 @@
 - [0.8](https://github.com/DavixDevelop/schem2obj/releases/tag/v0.8)
-  - Added support for armor stands & armor
+  - Added support for armor stands & armor and vines
   - Added improved glass shader in `MCImportCleanUp_Blender.py` script
 - [0.7](https://github.com/DavixDevelop/schem2obj/releases/tag/v0.7)
   - Dropped `alpha` tag

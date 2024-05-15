@@ -385,6 +385,8 @@ public class CubeModelFactory {
                 return new DoublePlantCubeModel();
             case "cobblestone_wall":
                 return new CobblestoneWallCubeModel();
+            case "vine":
+                return new VineCubeModel();
             default:
                 return new BlockCubeModel();
 
@@ -393,7 +395,6 @@ public class CubeModelFactory {
     }
 
     public static boolean isTranslucentOrNotFull(ICubeModel object){
-
         return (object instanceof GlassCubeModel) ||
                 (object instanceof GlassPaneCubeModel) ||
                 (object instanceof IronBarsCubeModel) ||
@@ -409,6 +410,7 @@ public class CubeModelFactory {
                 (object instanceof DoublePlantCubeModel) ||
                 (object instanceof CobblestoneWallCubeModel) ||
                 (object instanceof FenceGateCubeModel) ||
+                (object instanceof VineCubeModel) ||
                 (object.getName() != null && isTranslucentOrNotFull(object.getName())) ||
                 object instanceof TileEntityCubeModel ||
                 object instanceof EntityCubeModel;
@@ -438,7 +440,9 @@ public class CubeModelFactory {
                 blockType.equals("skull") ||
                 blockType.contains("redstone_torch") ||
                 blockType.contains("door") ||
-                blockType.equals("barrier");
+                blockType.equals("barrier") ||
+                blockType.contains("tripwire_hook") ||
+                blockType.equals("vine");
     }
 
     public void clearData(){

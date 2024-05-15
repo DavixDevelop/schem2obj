@@ -58,13 +58,19 @@ public class LeavesCubeModel extends BlockCubeModel {
             //Get the biome of the column
             Biome biome = Constants.LOADED_SCHEMATIC.getBiome(blockNamespace.getPosition("X"), blockNamespace.getPosition("Z"));
 
+            int foliage_color = biome.getFoliageColor();
+
+            if(blockNamespace.getResource().contains("spruce"))
+                foliage_color = Constants.SPRUCE_LEAVES_COLOR;
+            else if(blockNamespace.getResource().contains("birch"))
+                foliage_color = Constants.BIRCH_LEAVES_COLOR;
+
             //Color the leaves with the foliage color
-            BufferedImage leavesImage = ImageUtility.colorImage(leaves_material.getDefaultDiffuseImage(), biome.getFoliageColor());
+            BufferedImage leavesImage = ImageUtility.colorImage(leaves_material.getDefaultDiffuseImage(), foliage_color);
 
             //Overlay texture with purple color if biome is swampland
             if(biome.getResource().contains("swampland"))
                 leavesImage = ImageUtility.colorColoredImage(leavesImage, Constants.SWAMPLAND_PURPLE_OVERLAY);
-
 
             leaves_material.setDiffuseImage(leavesImage);
 

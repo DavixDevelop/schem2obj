@@ -38,6 +38,7 @@ All basic blocks (that are only basic cubes), and builtin blocks (ex, water, ban
 - Double Plant
 - Fence Gate
 - Wall
+- Vines
 
 ### Supported entities
 - Beds
