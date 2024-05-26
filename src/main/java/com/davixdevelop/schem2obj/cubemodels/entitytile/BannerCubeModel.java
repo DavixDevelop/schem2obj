@@ -59,7 +59,14 @@ public class BannerCubeModel extends TileEntityCubeModel {
                     EntityValues patternValues = (EntityValues) patternMap;
                     Integer patternColorIndex = patternValues.getInteger("Color");
                     IntegerString patternColor = Constants.BANNER_COLORS.get(patternColorIndex);
-                    IntegerString pattern = Constants.PATTERNS.get(patternValues.getString("Pattern"));
+                    String patternCode = patternValues.getString("Pattern");
+
+                    if(patternCode.equals("rd"))
+                        patternCode = "rud";
+                    else if(patternCode.equals("rud"))
+                        patternCode = "rd";
+
+                    IntegerString pattern = Constants.PATTERNS.get(patternCode);
 
                     patternCodes.add(generateColoredPattern(pattern, patternColor, patternColorIndex));
                 }
